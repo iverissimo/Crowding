@@ -48,7 +48,16 @@ def ang2pix(dist_in_deg,h,d,r):
     dist_in_px = dist_in_deg/deg_per_px
     return dist_in_px 
 
-
+#define unique trials
+def unique_trials(ecc,bins):
+    trials = 2*len(ecc)*len(bins)
+    
+    trgt_fl_dist = np.tile(bins,int(trials*(1/float(len(bins)))))
+    trgt_ecc = np.tile(np.repeat(ecc,len(bins)),2)
+    trgt_vf = np.hstack((np.repeat(['right'],trials/2.0),np.repeat(['left'],trials/2.0)))
+    
+    return trials,trgt_fl_dist,trgt_ecc,trgt_vf
+    
 #######################################
 
 pp = '0' #raw_input("Participant number: ")
@@ -56,7 +65,13 @@ pp = '0' #raw_input("Participant number: ")
 ########## Initial parameters #########
 # general info
 num_blk = 2 #total number of blocks
-num_trl = 72 #total number of trials
+num_rep = 3 #number of repetions of unique display per block
+ecc_deg = [4,8,12]
+dist_bin = np.arange(0.2,0.9,0.1) # target-flanker spacing ratio
+
+num_trl, _, _, _ = unique_trials(ecc_deg,dist_bin) 
+num_trl = num_trl*num_rep#total number of trials
+
 
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
 stim_time = 2.5 #stimulus presentation time (seconds)
@@ -78,33 +93,26 @@ linewidth = ang2pix(0.05,screenHeight,screenDis,vRes)
 # gabor info
 siz_gab = ang2pix(1.5,screenHeight,screenDis,vRes) #size in deg of visual angle
 gab_sf = 0.16 #degrees
-num_fl = 6 # number of distractors
+num_fl = 2 # number of distractors
 dist_fl = 360/num_fl #distance between stim (degrees)
-init_dgr = 0 #initial pos (degree)
+init_dgr = 90 #initial pos (degree)
 hyp = 100 
 
 ort_fl = np.arange(init_dgr,init_dgr+360,dist_fl) #orientation of distractors (degrees)
 ort_trgt = [60,120] #orientation of target (degrees)
 
-# ecc
-ecc_deg = [3,6,9,12]
-#ecc_pix = [ang2pix(ecc_deg[i],screenHeight,screenDis,vRes) for i in range(len(ecc_deg))]
 
-# target-flanker spacing
-dist_bin = np.arange(0.1,0.9,0.1)
 
 #np.vstack((trls,trgt_type))
 
 #labels
-trgt_fl_dist = np.tile(dist_bin,int(num_trl*(1/float(len(dist_bin)))))
-trgt_ecc = np.tile(np.repeat(ecc_deg,int(num_trl*(1/float(len(dist_bin))))),2)
-trgt_vf = np.hstack((np.repeat(['right'],len(trgt_ecc)),np.repeat(['left'],len(trgt_ecc))))
+_, trgt_fl_dist, trgt_ecc,trgt_vf = unique_trials(ecc_deg,dist_bin) 
 
 
 #trls = np.vstack((trgt_vf,np.tile(trgt_ecc,2)))
 #trls = np.vstack((trls,trgt_fl_dist)) #info about trials (3xnum_trl with type,#set,trgt)
 
-trls_idx = range(0,num_trl) #range of indexes for all trials 
+trls_idx = np.repeat(range(0,num_trl/num_rep),num_rep) #range of indexes for all trials 
 ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #taget orientation labels
 
 
