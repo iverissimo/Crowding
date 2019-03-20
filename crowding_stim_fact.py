@@ -48,7 +48,7 @@ def ang2pix(dist_in_deg,h,d,r):
     dist_in_px = dist_in_deg/deg_per_px
     return dist_in_px 
 
-#define unique trials
+#define unique trials,with balanced visual field, #ecc and #bins for target-flank dist
 def unique_trials(ecc,bins):
     trials = 2*len(ecc)*len(bins)
     
@@ -72,15 +72,15 @@ dist_bin = np.arange(0.2,0.9,0.1) # target-flanker spacing ratio
 num_trl, _, _, _ = unique_trials(ecc_deg,dist_bin) 
 num_trl = num_trl*num_rep#total number of trials
 
-
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
-stim_time = 2.5 #stimulus presentation time (seconds)
-iti = 3.4 #inter-trial-interval (seconds)
+
+stim_time = 0.5 #stimulus presentation time (seconds)
+iti = 0.5 #inter-trial-interval (seconds)
 
 # screen info   
-hRes = 1920#2560#1920 #900 
-vRes = 1080#1600#1080 #700 
-screenHeight = 30 #height of the screen in cm 
+hRes = 1280#2560#1920 #900 
+vRes = 800#1600#1080 #700 
+screenHeight = 21.9#30 #height of the screen in cm 
 screenDis = 71    #distance between screen and chinrest in cm     
 backCol = 'black'
 
@@ -92,25 +92,20 @@ linewidth = ang2pix(0.05,screenHeight,screenDis,vRes)
 
 # gabor info
 siz_gab = ang2pix(1.5,screenHeight,screenDis,vRes) #size in deg of visual angle
-gab_sf = 0.16 #degrees
+gab_sf = 6/ang2pix(1,screenHeight,screenDis,vRes) #sf cycles per pixel = sf_CyclesDeg / pixelsPerDegree
+sd_gab = ang2pix(0.06,screenHeight,screenDis,vRes) #standard deviation of gaussian
 num_fl = 2 # number of distractors
 dist_fl = 360/num_fl #distance between stim (degrees)
-init_dgr = 90 #initial pos (degree)
-hyp = 100 
+initpos_fl = 90 #initial pos (degree)
 
-ort_fl = np.arange(init_dgr,init_dgr+360,dist_fl) #orientation of distractors (degrees)
+pos_fl = np.arange(initpos_fl,initpos_fl+360,dist_fl) #position of distractors (degrees), equally spaced
+ort_fl = np.repeat(0,num_fl) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
 ort_trgt = [60,120] #orientation of target (degrees)
 
-
-
-#np.vstack((trls,trgt_type))
 
 #labels
 _, trgt_fl_dist, trgt_ecc,trgt_vf = unique_trials(ecc_deg,dist_bin) 
 
-
-#trls = np.vstack((trgt_vf,np.tile(trgt_ecc,2)))
-#trls = np.vstack((trls,trgt_fl_dist)) #info about trials (3xnum_trl with type,#set,trgt)
 
 trls_idx = np.repeat(range(0,num_trl/num_rep),num_rep) #range of indexes for all trials 
 ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #taget orientation labels
@@ -123,11 +118,25 @@ display_idx = np.array(np.zeros((num_blk,num_trl)),object) #array for idx of all
 trgt_ort_lbl = np.array(np.zeros((num_blk,num_trl)),object) #array for target orientations
 
 # create a window
-win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = False, screen = 1,allowStencil=True)
-#win = visual.Window(size= (hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)   
+#win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
+win = visual.Window(size= (hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 0,allowStencil=True)   
    
 #pause
 core.wait(2.0)
+
+text = 'Indicate the orientation of the middle gabor by pressing the left or right arrow keys.\nPlease keep your eyes fixated on the center.'
+BlockText = visual.TextStim(win, text=text, alignVert='center',alignHoriz='center',color='white', pos = (0,140),height=30)
+text2 = 'Press spacebar to start'
+PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
+    
+BlockText.draw()
+draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
+PressText.draw()
+win.flip()
+event.waitKeys(keyList = 'space') 
+
+core.wait(2.0)
+
 
 for j in range(num_blk):
     
@@ -159,16 +168,16 @@ for j in range(num_blk):
 
         if trgt_vf[trls_idx[k]] == 'left':
             xpos_trgt = -ang2pix(float(trgt_ecc[trls_idx[k]]),screenHeight,screenDis,vRes)
-            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))           
+            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))           
         else:
             xpos_trgt = ang2pix(float(trgt_ecc[trls_idx[k]]),screenHeight,screenDis,vRes)
-            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))            
+            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))            
              
         trgt.draw()
         
-        for i in range(len(ort_fl)):
-            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[trls_idx[k]]),screenHeight,screenDis,vRes), ort_fl[i])
-            flank = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl))
+        for i in range(len(pos_fl)):
+            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[trls_idx[k]]),screenHeight,screenDis,vRes), pos_fl[i])
+            flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl))
             flank.draw()
 
     
@@ -191,7 +200,7 @@ for j in range(num_blk):
     
         draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
         win.flip() # flip the screen
-        core.wait(2.0) #pause
+        core.wait(iti) #pause
 
     display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
@@ -215,14 +224,6 @@ for d in range(num_blk):
         
 df.to_csv('data_crowding_pp_'+pp+'.csv', sep='\t')
 
-    
-    #df = pd.DataFrame(np.array([trgt_ort_lbl[d][:],target_ecc[0][:], target_flank_dist[0][:],key_trl[d][:],RT_trl[d][:]]),columns=['target_orientation', 'target_ecc', 'target_flank_ratio','key_pressed','RT'])
-    
-#dict_var = {'target_orientation':trgt_ort_lbl,'display_index':display_idx,'key_press':key_trl,'RT':RT_trl}
-
-#save data of interest
-#with open('data_crowding_pp_' + pp + '.pickle', 'wb') as write_file:
-#    pickle.dump(dict_var, write_file,protocol=pickle.HIGHEST_PROTOCOL)
     
 #cleanup
 win.close() #close display
