@@ -57,6 +57,28 @@ def uniq_trials(ecc):
     trgt_vf = np.hstack((np.repeat(['right'],trials/2.0),np.repeat(['left'],trials/2.0)))
     
     return trials,trgt_ecc,trgt_vf
+
+
+###################################
+
+def staircase_1upDdown(D,response,step,max_val,min_val,curr_dist,counter):
+
+    if response == 0: #if incorrect response
+        if curr_dist < max_val: #and if the distance is not max value defined
+            curr_dist = curr_dist + step # increase the flanker target separation by step
+        counter = 1
+        reversal = 'True'
+        
+    else: #if correct response
+        if counter == D: #if counted necessary number of responses (i.e. too easy)
+            if curr_dist > min_val: #and if distance not minimal
+                curr_dist = curr_dist - step #reduce distance between flanker and target
+            counter = 1
+        counter = counter + 1    
+        reversal = 'False'
+        
+    return curr_dist,counter,reversal          
+            
     
 #######################################
 
@@ -67,7 +89,6 @@ pp = '0' #raw_input("Participant number: ")
 num_blk = 2 #total number of blocks
 num_rep = 5#20 #number of repetions of unique display per block
 ecc_deg = [4,8,12]
-dist_bin = np.arange(0.2,0.9,0.1) # target-flanker spacing ratio
 
 num_trl, _, _ = uniq_trials(ecc_deg) 
 num_trl = num_trl*num_rep#total number of trials
@@ -102,7 +123,13 @@ pos_fl = np.arange(initpos_fl,initpos_fl+360,dist_fl) #position of distractors (
 ort_fl = np.repeat(0,num_fl) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
 ort_trgt = [5,355] #orientation of target (degrees)
 
-trgt_fl_dist = [0.2]
+max_dist = 0.8 #ratio of ecc that is max possible flk-trgt distance 
+min_dist = 0.2 #ratio of ecc that is min possible flk-trgt distance
+step_stair = 0.05 #distance staircase step
+Down_factor = 3 #number of correct responses needed to increase difficulty
+trgt_fl_dist = max_dist #we start with max distance to make it easy
+
+
 #labels
 _, trgt_ecc,trgt_vf = uniq_trials(ecc_deg) 
 
@@ -140,6 +167,8 @@ core.wait(2.0)
 
 for j in range(num_blk):
     
+    counter = 1 #staircase counter
+    
     np.random.shuffle(ort_lbl) #randomize target orientation
     np.random.shuffle(trls_idx) #randomize index for display
 
@@ -176,7 +205,7 @@ for j in range(num_blk):
         trgt.draw()
         
         for i in range(len(pos_fl)):
-            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[0]),screenHeight,screenDis,vRes), pos_fl[i])
+            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist),screenHeight,screenDis,vRes), pos_fl[i])
             flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl))
             flank.draw()
 
@@ -196,12 +225,15 @@ for j in range(num_blk):
                 key_trl[j][k] = key[0] 
                 time.sleep(stim_time-(core.getTime() - t0)) 
                 break
-        
+         
         if key_trl[j][k] == ort_lbl[k]:
+            response = 1
             print 'correct' 
         else:
+            response = 0
             print 'wrong'
-        
+            
+        trgt_fl_dist,counter,_ = staircase_1upDdown(Down_factor,response,step_stair,max_dist,min_dist,trgt_fl_dist,counter)
     
         draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
         win.flip() # flip the screen
