@@ -65,7 +65,7 @@ pp = '0' #raw_input("Participant number: ")
 ########## Initial parameters #########
 # general info
 num_blk = 2 #total number of blocks
-num_rep = 3 #number of repetions of unique display per block
+num_rep = 1#3 #number of repetions of unique display per block
 ecc_deg = [4,8,12]
 dist_bin = np.arange(0.2,0.9,0.1) # target-flanker spacing ratio
 
@@ -74,7 +74,7 @@ num_trl = num_trl*num_rep#total number of trials
 
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
 
-stim_time = 0.5 #stimulus presentation time (seconds)
+stim_time = 1.5#0.5 #stimulus presentation time (seconds)
 iti = 0.5 #inter-trial-interval (seconds)
 
 # screen info   
@@ -100,7 +100,7 @@ initpos_fl = 90 #initial pos (degree)
 
 pos_fl = np.arange(initpos_fl,initpos_fl+360,dist_fl) #position of distractors (degrees), equally spaced
 ort_fl = np.repeat(0,num_fl) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
-ort_trgt = [60,120] #orientation of target (degrees)
+ort_trgt = [5,355] #orientation of target (degrees)
 
 
 #labels
@@ -197,7 +197,11 @@ for j in range(num_blk):
                 time.sleep(stim_time-(core.getTime() - t0)) 
                 break
             
-    
+        if key_trl[j][k] == ort_lbl[k]:
+            print 'correct' 
+        else:
+            print 'wrong'
+        
         draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
         win.flip() # flip the screen
         core.wait(iti) #pause
