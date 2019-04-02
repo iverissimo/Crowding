@@ -1,0 +1,29 @@
+{
+    "ecc": [4,8,12],
+    "stim_time": 1.5,
+	"iti": 0.5,
+ 
+	"hRes": 1280, 
+	"vRes": 1024, 
+	"screenHeight": 30, 
+	"screenDis": 50,     
+	"backCol": "black",
+
+	"siz_gab_deg": 3,
+	"gab_sf_deg": 3,
+	"sd_gab_deg": 0.12,
+
+	"fixlineSize_deg": 0.5,
+	"fixcolor": "white",
+	"linewidth_deg": 0.1,
+
+	"num_fl": 2,
+	"initpos_fl": 90,
+	"ort_trgt": [5,355],
+	"max_dist": 0.8,
+	"min_dist": 0.2, 
+	"step_stair": 0.05,
+	"Down_factor": 3 
+
+
+}
