@@ -1,16 +1,16 @@
 {
     "ecc": [4,8,12],
-    "stim_time": 1.5,
+    "stim_time": 1.75,
 	"iti": 0.5,
  
 	"hRes": 1280, 
 	"vRes": 1024, 
 	"screenHeight": 30, 
 	"screenDis": 50,     
-	"backCol": "black",
+	"backCol": "gray",
 
 	"siz_gab_deg": 3,
-	"gab_sf_deg": 3,
+	"gab_sf_deg": 4,
 	"sd_gab_deg": 0.12,
 
 	"fixlineSize_deg": 0.5,
