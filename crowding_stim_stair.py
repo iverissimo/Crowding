@@ -209,16 +209,16 @@ for j in range(num_blk):
 
         if trgt_vf[trls_idx[k]] == 'left':
             xpos_trgt = -ang2pix(float(trgt_ecc[trls_idx[k]]),params['screenHeight'],params['screenDis'],params['vRes'])
-            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))           
+            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None)           
         else:
             xpos_trgt = ang2pix(float(trgt_ecc[trls_idx[k]]),params['screenHeight'],params['screenDis'],params['vRes'])
-            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0))            
+            trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None)            
              
         trgt.draw()
         
         for i in range(len(pos_fl)):
             xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
-            flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl))
+            flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
             flank.draw()
 
     
