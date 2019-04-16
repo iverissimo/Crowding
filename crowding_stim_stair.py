@@ -22,6 +22,7 @@ import time
 import pandas as pd
 import json
 import sys
+import os
 
 
 
@@ -82,28 +83,26 @@ def staircase_1upDdown(D,response,step,max_val,min_val,curr_dist,counter):
     
 #######################################
     
-# define participant number and open json parameter file
-if len(sys.argv)<2:
-    raise NameError('Please add subject number (ex:01)'\
-                    'as 1st argument in the command line!')
-    
-elif len(sys.argv)<3:
-    raise NameError('Please add if running in ex:lab or Inesmac '\
-                    'as 2nd argument in the command line!')    
+## for labs will have to run with spyder/openSesame so just add input in console ########
+        
+print 'Specify setting json file: lab or mac'
+
+filename = str(raw_input('File: '))
+
+if filename == 'mac':
+    with open('mac_parameters.json','r') as json_file:
+        params = json.load(json_file)
+elif filename =='lab':
+    with open('lab_parameters.json','r') as json_file:
+        params = json.load(json_file)
 else:
-    pp = str(sys.argv[1]).zfill(2) #fill subject number with 0 in case user forgets
-    
-    if sys.argv[2]=='Inesmac':
-        
-        with open('mac_parameters.json','r') as json_file:
-            params = json.load(json_file)
-            
-    elif sys.argv[2]=='lab':
-        with open('lab_parameters.json','r') as json_file:
-            params = json.load(json_file)
-    else:
-        raise NameError('Machine not defined, no parametes will be given') 
-        
+    raise NameError('Machine not defined, no parametes will be given') 
+      
+
+print 'Please add subject number (ex:01)'
+
+pp = str(raw_input('Subject number: ').zfill(2))
+
 
 ########## Initial parameters #########
         
