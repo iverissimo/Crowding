@@ -172,11 +172,14 @@ PressText.draw()
 win.flip()
 event.waitKeys(keyList = 'space') 
 
-
-for j in range(num_blk):
+counter1 = 1 #staircase counter per eccentricity
+counter2 = 1
+counter3 = 1
+trgt_fl_dist1 = params['max_dist'] #we start with max distance to make it easy
+trgt_fl_dist2 = params['max_dist']
+trgt_fl_dist3 = params['max_dist']
     
-    counter = 1 #staircase counter
-    trgt_fl_dist = params['max_dist'] #we start with max distance to make it easy
+for j in range(num_blk):
     
     np.random.shuffle(ort_lbl) #randomize target orientation
     np.random.shuffle(trls_idx) #randomize index for display
@@ -237,18 +240,28 @@ for j in range(num_blk):
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-                time.sleep(params['stim_time']-(core.getTime() - t0)) 
+                #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
          
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
         else:
             response = 0
-            
-        trgt_fl_dist,counter = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist,counter)
-        print 'response is %d and distance is %.2f' % (response, trgt_fl_dist)
-        distances[j][k] = trgt_fl_dist
+        
+        if trgt_ecc == ecc[0]:
+            trgt_fl_dist1,counter1 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist1,counter=counter1)
+            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist1)
+            distances[j][k] = trgt_fl_dist1
 
+        elif trgt_ecc == ecc[1]:
+            trgt_fl_dist2,counter2 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist2,counter=counter2)
+            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist2)
+            distances[j][k] = trgt_fl_dist2
+        
+        else: #trgt_ecc == ecc[2]
+            trgt_fl_dist3,counter3 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist3,counter=counter3)
+            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist3)
+            distances[j][k] = trgt_fl_dist3
     
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
         win.flip() # flip the screen
