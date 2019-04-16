@@ -19,6 +19,7 @@ import time
 #import itertools
 import pickle
 import pandas as pd
+from PIL import ImageGrab
 
 
 ############# functions #################
@@ -201,6 +202,10 @@ for j in range(num_blk):
             print 'correct' 
         else:
             print 'wrong'
+
+        im = ImageGrab.grab()
+        filename = 'screenshot_%d.png' %(k)
+        im.save(filename)
         
         draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
         win.flip() # flip the screen
