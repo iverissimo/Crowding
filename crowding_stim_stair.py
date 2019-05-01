@@ -75,7 +75,8 @@ def staircase_1upDdown(D,response,step,max_val,min_val,curr_dist,counter):
         if counter == D: #if counted necessary number of responses (i.e. too easy)
             if curr_dist > min_val: #and if distance not minimal
                 curr_dist = curr_dist - step #reduce distance between flanker and target
-            counter = 1
+            counter = 0
+        
         counter = counter + 1    
         
     return curr_dist,counter        
@@ -147,8 +148,8 @@ ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)
 
 
 # array to save variables
-RT_trl = np.array(np.zeros((num_blk,num_trl)),object) #array for all RTs
-key_trl = np.array(np.zeros((num_blk,num_trl)),object) #array for all key presses
+RT_trl = np.array(np.zeros((num_blk,num_trl)),object); RT_trl[:]=np.nan #array for all RTs
+key_trl = np.array(np.zeros((num_blk,num_trl)),object); key_trl[:]=np.nan #array for all key presses
 display_idx = np.array(np.zeros((num_blk,num_trl)),object) #array for idx of all displays
 trgt_ort_lbl = np.array(np.zeros((num_blk,num_trl)),object) #array for target orientations
 distances = np.array(np.zeros((num_blk,num_trl)),object) #array for all distance values
@@ -172,12 +173,8 @@ PressText.draw()
 win.flip()
 event.waitKeys(keyList = 'space') 
 
-counter1 = 1 #staircase counter per eccentricity
-counter2 = 1
-counter3 = 1
-trgt_fl_dist1 = params['max_dist'] #we start with max distance to make it easy
-trgt_fl_dist2 = params['max_dist']
-trgt_fl_dist3 = params['max_dist']
+counters = [1,1,1] #staircase counter per eccentricity
+trgt_fl_dist = [params['max_dist'],params['max_dist'],params['max_dist']]#we start with max distance to make it easy
     
 for j in range(num_blk):
     
@@ -216,12 +213,13 @@ for j in range(num_blk):
              
         trgt.draw()
         
+        #Draw flankers, depending on eccentricity
+        ecc_index = params['ecc'].index(trgt_ecc[trls_idx[k]])
         for i in range(len(pos_fl)):
-            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
+            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
             flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
             flank.draw()
-
-    
+                
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
         win.flip() # flip the screen
         
@@ -242,27 +240,21 @@ for j in range(num_blk):
                 key_trl[j][k] = key[0] 
                 #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
-         
+            
+            if core.getTime() >= 0.25: #return to fixation display after 250ms
+                draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+                win.flip()
+                
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
         else:
             response = 0
         
-        if trgt_ecc == ecc[0]:
-            trgt_fl_dist1,counter1 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist1,counter=counter1)
-            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist1)
-            distances[j][k] = trgt_fl_dist1
+       
+        trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
+        print 'response is %d and distance is %.2f and counter is %i and ecc is %f' % (response, trgt_fl_dist[ecc_index],counters[ecc_index], trgt_ecc[trls_idx[k]])
+        distances[j][k] = trgt_fl_dist[ecc_index]
 
-        elif trgt_ecc == ecc[1]:
-            trgt_fl_dist2,counter2 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist2,counter=counter2)
-            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist2)
-            distances[j][k] = trgt_fl_dist2
-        
-        else: #trgt_ecc == ecc[2]
-            trgt_fl_dist3,counter3 = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],trgt_fl_dist=trgt_fl_dist3,counter=counter3)
-            print 'response is %d and distance is %.2f' % (response, trgt_fl_dist3)
-            distances[j][k] = trgt_fl_dist3
-    
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
         win.flip() # flip the screen
         core.wait(params['iti']) #pause
