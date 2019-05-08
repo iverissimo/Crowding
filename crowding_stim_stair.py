@@ -24,6 +24,10 @@ import json
 import sys
 import os
 
+# append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
+sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
+import psychoLink as PL
+
 
 
 ############# functions #################
@@ -104,6 +108,11 @@ print 'Please add subject number (ex:01)'
 
 pp = str(raw_input('Subject number: ').zfill(2))
 
+output_dir = os.getcwd()+'/output_crowding/'
+
+if not os.path.exists(output_dir): #check if path to save output exists
+        os.makedirs(output_dir)       # if not create it
+     
 
 ########## Initial parameters #########
         
@@ -158,6 +167,12 @@ distances = np.array(np.zeros((num_blk,num_trl)),object) #array for all distance
 # create a window
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
 win = visual.Window(size= (params['hRes'], params['vRes']), color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
+
+# start tracker, define filename (saved in cwd)
+tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+
+# calibrate
+tracker.calibrate()
    
 #pause
 core.wait(2.0)
@@ -195,12 +210,19 @@ for j in range(num_blk):
     PressText.draw()
     win.flip()
     event.waitKeys(keyList = 'space') 
+    
+    # start tracking the block
+    tracker.startTrial()
+    tracker.logVar('block_Nr', j)
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
     for k in range(num_trl):
+        
+        # Log trial number to eyelink log
+        tracker.logVar('trial_Nr', k)
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
@@ -232,12 +254,14 @@ for j in range(num_blk):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
+                    tracker.stopTrial()
                     win.close()
                     core.quit()
                     break 
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
+                tracker.logVar('RT', RT_trl[j][k])
                 #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
             
@@ -247,8 +271,10 @@ for j in range(num_blk):
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
+            tracker.logVar('response', 'correct')
         else:
             response = 0
+            tracker.logVar('response', 'incorrect')
         
        
         trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
@@ -261,6 +287,9 @@ for j in range(num_blk):
 
     display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
+    
+    # stop tracking the block
+    tracker.stopTrial()
 
 
 
@@ -276,10 +305,11 @@ for d in range(num_blk):
     else:
         df=pd.concat([df, pd.DataFrame(data=dict_var)])
         
-df.to_csv('data_crowding_pp_'+pp+'.csv', sep='\t')
+df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
+tracker.cleanUp()
 win.close() #close display
 core.quit()
 
