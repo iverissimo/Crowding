@@ -117,7 +117,7 @@ if not os.path.exists(output_dir): #check if path to save output exists
 ########## Initial parameters #########
         
 # general info
-num_blk = 2 #total number of blocks
+num_blk = 5 #total number of blocks
 num_rep = 20 #number of repetions of unique display per block
 
 num_trl, trgt_ecc,trgt_vf = uniq_trials(params['ecc']) 
@@ -169,15 +169,15 @@ distances = np.array(np.zeros((num_blk,num_trl)),object) #array for all distance
 win = visual.Window(size= (params['hRes'], params['vRes']), color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
 # start tracker, define filename (saved in cwd)
-tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+#tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
 
 # calibrate
-tracker.calibrate()
+#tracker.calibrate()
    
 #pause
 core.wait(2.0)
 
-text = 'Indicate the orientation of the middle gabor by pressing the left or right arrow keys.\nPlease keep your eyes fixated on the center.'
+text = 'Indicate the orientation of the middle gabor by pressing the left or right arrow keys.\nPlease keep your eyes fixated on the center.\nThe experiment will start with a practice block.'
 BlockText = visual.TextStim(win, text=text, alignVert='center',alignHoriz='center',color='white', pos = (0,140),height=30)
 text2 = 'Press spacebar to start'
 PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
@@ -198,31 +198,51 @@ for j in range(num_blk):
 
     #np.random.shuffle(trgt_ecc)
     
-    text = 'Block %i' %(j+1)
-    BlockText = visual.TextStim(win, text=text, color='white', height=50, pos = (0,140))
-    #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
-    text2 = 'Press spacebar to start'
-    PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
+    #Text for training block
+    if j == 0:
+        text = 'Practice block' 
+        BlockText = visual.TextStim(win, text=text, color='white', height=50, pos = (0,140))
+        #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
+        text2 = 'Press spacebar to start'
+        PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
     
-    BlockText.draw()
-    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-    #trgt.draw()
-    PressText.draw()
+        BlockText.draw()
+        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+        #trgt.draw()
+        PressText.draw()
+        
+        num_trl_blk = num_trl/2#define number of trials in this block (training block = half length)
+        
+    #Text for experimental blocks
+    else:
+        text = 'Block %i out of %i' %(j, len(num_blk)-1)
+        BlockText = visual.TextStim(win, text=text, color='white', height=50, pos = (0,140))
+        #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
+        text2 = 'Press spacebar to start'
+        PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
+    
+        BlockText.draw()
+        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+        #trgt.draw()
+        PressText.draw()
+        
+        num_trl_blk = num_trl#define number of trials in this block 
+    
     win.flip()
     event.waitKeys(keyList = 'space') 
     
     # start tracking the block
-    tracker.startTrial()
-    tracker.logVar('block_Nr', j)
+    #tracker.startTrial()
+    #tracker.logVar('block_Nr', j)
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
-    for k in range(num_trl):
+    for k in range(num_trl_blk):
         
         # Log trial number to eyelink log
-        tracker.logVar('trial_Nr', k)
+        #tracker.logVar('trial_Nr', k)
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
@@ -254,14 +274,14 @@ for j in range(num_blk):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
-                    tracker.stopTrial()
+                    #tracker.stopTrial()
                     win.close()
                     core.quit()
                     break 
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-                tracker.logVar('RT', RT_trl[j][k])
+                #tracker.logVar('RT', RT_trl[j][k])
                 #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
             
@@ -271,25 +291,24 @@ for j in range(num_blk):
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-            tracker.logVar('response', 'correct')
+            #tracker.logVar('response', 'correct')
         else:
             response = 0
-            tracker.logVar('response', 'incorrect')
+            #tracker.logVar('response', 'incorrect')
         
        
         trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
         print 'response is %d and distance is %.2f and counter is %i and ecc is %f' % (response, trgt_fl_dist[ecc_index],counters[ecc_index], trgt_ecc[trls_idx[k]])
         distances[j][k] = trgt_fl_dist[ecc_index]
 
-        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-        win.flip() # flip the screen
+        #Pause for ITI
         core.wait(params['iti']) #pause
 
     display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
     
     # stop tracking the block
-    tracker.stopTrial()
+    #tracker.stopTrial()
 
 
 
@@ -309,7 +328,7 @@ df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
-tracker.cleanUp()
+#tracker.cleanUp()
 win.close() #close display
 core.quit()
 
