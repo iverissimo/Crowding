@@ -1,6 +1,6 @@
 {
     "ecc": [4,8,12],
-    "stim_time": 1.75,
+    "stim_time": 2,
 	"iti": 0.5,
  
 	"hRes": 1280, 
