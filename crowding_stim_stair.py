@@ -118,10 +118,11 @@ if not os.path.exists(output_dir): #check if path to save output exists
         
 # general info
 num_blk = 5 #total number of blocks
-num_rep = 20 #number of repetions of unique display per block
+num_rep_fl = 20 #number of repetions of unique display per block - with flankers
+num_rep_nofl = 4 #number of repetions of unique display per block - without flankers
 
 num_trl, trgt_ecc,trgt_vf = uniq_trials(params['ecc']) 
-num_trl = num_trl*num_rep#total number of trials
+num_trl = num_trl*num_rep_fl + num_trl*num_rep_nofl#total number of trials
 
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
 
@@ -152,9 +153,9 @@ pos_fl = np.arange(params['initpos_fl'],params['initpos_fl']+360,dist_fl) #posit
 ort_fl = np.repeat(0,params['num_fl']) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
 
 
-trls_idx = np.repeat(range(0,num_trl/num_rep),num_rep) #range of indexes for all trials 
-ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #taget orientation labels
-
+trls_idx = np.repeat(range(0,num_trl/(num_rep_fl+num_rep_nofl)),(num_rep_fl+num_rep_nofl)) #range of indexes for all trials 
+ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #target orientation labels
+flank_lbl = np.append(np.repeat(['no flankers'],num_trl/6),np.repeat(['flankers'],num_trl/1.2)) #flanker presence labels
 
 # array to save variables
 RT_trl = np.array(np.zeros((num_blk,num_trl)),object); RT_trl[:]=np.nan #array for all RTs
@@ -162,23 +163,23 @@ key_trl = np.array(np.zeros((num_blk,num_trl)),object); key_trl[:]=np.nan #array
 display_idx = np.array(np.zeros((num_blk,num_trl)),object) #array for idx of all displays
 trgt_ort_lbl = np.array(np.zeros((num_blk,num_trl)),object) #array for target orientations
 distances = np.array(np.zeros((num_blk,num_trl)),object) #array for all distance values
-
+flank_trl = np.array(np.zeros((num_blk,num_trl)),object) #array for flanker presence
 
 # create a window
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
 win = visual.Window(size= (params['hRes'], params['vRes']), color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
 # start tracker, define filename (saved in cwd)
-#tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
 
 # calibrate
-#tracker.calibrate()
+tracker.calibrate()
    
 #pause
 core.wait(2.0)
 
 text = 'Indicate the orientation of the middle gabor by pressing the left or right arrow keys.\nPlease keep your eyes fixated on the center.\nThe experiment will start with a practice block.'
-BlockText = visual.TextStim(win, text=text, alignVert='center',alignHoriz='center',color='white', pos = (0,140),height=30)
+BlockText = visual.TextStim(win, text=text, color='white', pos = (0,140),height=30)
 text2 = 'Press spacebar to start'
 PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
     
@@ -195,7 +196,7 @@ for j in range(num_blk):
     
     np.random.shuffle(ort_lbl) #randomize target orientation
     np.random.shuffle(trls_idx) #randomize index for display
-
+    np.random.shuffle(flank_lbl) #randomize flanker presence
     #np.random.shuffle(trgt_ecc)
     
     #Text for training block
@@ -205,35 +206,30 @@ for j in range(num_blk):
         #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
         text2 = 'Press spacebar to start'
         PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
-    
-        BlockText.draw()
-        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-        #trgt.draw()
-        PressText.draw()
         
         num_trl_blk = num_trl/2#define number of trials in this block (training block = half length)
         
     #Text for experimental blocks
     else:
-        text = 'Block %i out of %i' %(j, len(num_blk)-1)
+        text = 'Block %i out of %i' %(j, num_blk-1)
         BlockText = visual.TextStim(win, text=text, color='white', height=50, pos = (0,140))
         #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
         text2 = 'Press spacebar to start'
         PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
     
-        BlockText.draw()
-        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-        #trgt.draw()
-        PressText.draw()
-        
         num_trl_blk = num_trl#define number of trials in this block 
+    
+    BlockText.draw()
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    #trgt.draw()
+    PressText.draw()
     
     win.flip()
     event.waitKeys(keyList = 'space') 
     
     # start tracking the block
-    #tracker.startTrial()
-    #tracker.logVar('block_Nr', j)
+    tracker.startTrial()
+    tracker.logVar('block_Nr', j)
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
@@ -242,7 +238,7 @@ for j in range(num_blk):
     for k in range(num_trl_blk):
         
         # Log trial number to eyelink log
-        #tracker.logVar('trial_Nr', k)
+        tracker.logVar('trial_Nr', k)
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
@@ -255,12 +251,14 @@ for j in range(num_blk):
              
         trgt.draw()
         
-        #Draw flankers, depending on eccentricity
         ecc_index = params['ecc'].index(trgt_ecc[trls_idx[k]])
-        for i in range(len(pos_fl)):
-            xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
-            flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
-            flank.draw()
+        
+        #Draw flankers, depending on eccentricity
+        if flank_lbl[k] == 'flankers':
+            for i in range(len(pos_fl)):
+                xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
+                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+                flank.draw()
                 
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
         win.flip() # flip the screen
@@ -274,14 +272,14 @@ for j in range(num_blk):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
-                    #tracker.stopTrial()
+                    tracker.stopTrial()
                     win.close()
                     core.quit()
                     break 
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-                #tracker.logVar('RT', RT_trl[j][k])
+                tracker.logVar('RT', RT_trl[j][k])
                 #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
             
@@ -291,14 +289,14 @@ for j in range(num_blk):
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-            #tracker.logVar('response', 'correct')
+            tracker.logVar('response', 'correct')
         else:
             response = 0
-            #tracker.logVar('response', 'incorrect')
+            tracker.logVar('response', 'incorrect')
         
        
         trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
-        print 'response is %d and distance is %.2f and counter is %i and ecc is %f' % (response, trgt_fl_dist[ecc_index],counters[ecc_index], trgt_ecc[trls_idx[k]])
+        print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx[k]],flank_lbl[k],trls_idx[k])
         distances[j][k] = trgt_fl_dist[ecc_index]
 
         #Pause for ITI
@@ -306,9 +304,10 @@ for j in range(num_blk):
 
     display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
+    flank_trl[j][:] = flank_lbl
     
     # stop tracking the block
-    #tracker.stopTrial()
+    tracker.stopTrial()
 
 
 
@@ -318,7 +317,7 @@ for d in range(num_blk):
     for l in range(num_trl):
         target_ecc[0][l] = trgt_ecc[display_idx[0][l]]
     
-    dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc[0][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
+    dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc[0][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
     if d==0:
         df = pd.DataFrame(data=dict_var)
     else:
@@ -328,7 +327,7 @@ df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
-#tracker.cleanUp()
+tracker.cleanUp()
 win.close() #close display
 core.quit()
 
