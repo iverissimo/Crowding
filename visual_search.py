@@ -21,9 +21,9 @@ import json
 import sys
 import os
 
-## append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
-#sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
-#import psychoLink as PL
+# append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
+sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
+import psychoLink as PL
 
 
 ############# functions #################
@@ -120,7 +120,7 @@ else:
 
 print 'Please add subject number (ex:01)'
 
-#pp = str(raw_input('Subject number: ').zfill(2))
+pp = str(raw_input('Subject number: ').zfill(2))
 
 output_dir = os.getcwd()+'/output_VS/'
 
@@ -130,45 +130,34 @@ if not os.path.exists(output_dir): #check if path to save output exists
 ####################################################
     
 # variables to save in settings json
-   
-h = 21.9
-d = 50.0
-r = 800.0    
 
-params['ort_trgt'] = [5,355]
-
-ecc = np.array(range(2,24,2))
-ecc_pix = [ang2pix(j,h,d,r) for _,j in enumerate(ecc)] # in pixels
-trgt_ecc = [4,8,12]
+ecc = np.array(range(params['min_ecc_vs'],params['max_ecc_vs'],params['step_ecc_vs'])) # all ecc presented on screen
+ecc_pix = [ang2pix(j,params['screenHeight'],params['screenDis'],params['vRes']) for _,j in enumerate(ecc)] # in pixels
 n_points = [(i+1)*6 for i, _ in enumerate(ecc)] # number of points per ecc
 
-set_size = [5,15,30] #number of items to be displayed
+num_trl,tg_ecc,tg_set_size = uniq_trials(params['ecc'],params['set_size'])
+num_trl = num_trl*params['rep_vs'] #total number of trials per block
 
-num_blk = 5 #total number of blocks
-num_rep = 20 #number of repetions of unique display per block 
-
-num_trl,tg_ecc,tg_set_size = uniq_trials(trgt_ecc,set_size)
-num_trl = num_trl*num_rep #total number of trials per block
-
-trls_idx = np.repeat(range(0,num_trl/num_rep),(num_rep)) #range of indexes for all trials 
+trls_idx = np.repeat(range(0,num_trl/params['rep_vs']),(params['rep_vs'])) #range of indexes for all trials 
 ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #target orientation labels
 
+# gabor info
+siz_gab = ang2pix(params['siz_gab_deg'],params['screenHeight'],params['screenDis'],params['vRes']) #size in deg of visual angle
+gab_sf = params['gab_sf_deg']/ang2pix(1,params['screenHeight'],params['screenDis'],params['vRes']) #sf cycles per pixel = sf_CyclesDeg / pixelsPerDegree
+sd_gab = ang2pix(params['sd_gab_deg'],params['screenHeight'],params['screenDis'],params['vRes']) #standard deviation of gaussian
+
+# fixation cross info
+fixpos = (0,0) #center position
+fixlineSize = ang2pix(params['fixlineSize_deg'],params['screenHeight'],params['screenDis'],params['vRes'])
+linewidth = ang2pix(params['linewidth_deg'],params['screenHeight'],params['screenDis'],params['vRes']) 
 
 
-siz_gab = ang2pix(1.6,h,d,r) #size in deg of visual angle
-gab_sf = 3/ang2pix(1,h,d,r) #sf cycles per pixel = sf_CyclesDeg / pixelsPerDegree
-sd_gab = ang2pix(0.075,h,d,r) #standard deviation of gaussian
-
-fixpos = (0,0)
-fixlineSize = 15
-fixcolor = 'white'
-linewidth = 2
-
+# ellipse params
 ax_major_deg = ecc[-1] #size of 1/2 of major axis - parallel to xx - in degrees
-ax_major_pix = ang2pix(ax_major_deg,h,d,r)
+ax_major_pix = ang2pix(ax_major_deg,params['screenHeight'],params['screenDis'],params['vRes'])
 
-ax_minor_deg = trgt_ecc[-1]+2 #size of 1/2 minor axis - parallel to yy - in degrees
-ax_minor_pix = ang2pix(ax_minor_deg,h,d,r)
+ax_minor_deg = params['ecc'][-1]+2 #size of 1/2 minor axis - parallel to yy - in degrees
+ax_minor_pix = ang2pix(ax_minor_deg,params['screenHeight'],params['screenDis'],params['vRes'])
 
 # define initial circle grid for positions
 circles = circle_points(ecc_pix,n_points)
@@ -180,59 +169,76 @@ for j in range(len(circles)):
 # number of possible positions
 num_pos = count_set_size(pos_list)
 
-
 # array to save variables
-RT_trl = np.array(np.zeros((num_blk,num_trl)),object); RT_trl[:]=np.nan #array for all RTs
-key_trl = np.array(np.zeros((num_blk,num_trl)),object); key_trl[:]=np.nan #array for all key presses
-display_idx = np.array(np.zeros((num_blk,num_trl)),object) #array for idx of all displays
-trgt_ort_lbl = np.array(np.zeros((num_blk,num_trl)),object) #array for target orientations
-distances = np.array(np.zeros((num_blk,num_trl)),object) #array for all distance values
+RT_trl = np.array(np.zeros((params['blk_vs'],num_trl)),object); RT_trl[:]=np.nan #array for all RTs
+key_trl = np.array(np.zeros((params['blk_vs'],num_trl)),object); key_trl[:]=np.nan #array for all key presses
+trgt_ort_lbl = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for target orientations
+
+trgt_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for idx of all displays
+distr_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for all distance values
 
 
 # create a window
-#win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
-#win = visual.Window(size= (params['hRes'], params['vRes']), color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
+win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
-# create a window
-win = visual.Window(size= (1280, r), color = "grey", units='pix',fullscr  = True, screen = 1,allowStencil=True)   
+## start tracker, define filename (saved in cwd)
+#tracker = PL.eyeLink(win, fileName = 'eyedata_visualsearch_pp_'+pp+'.EDF', fileDest=output_dir)
+
+## calibrate
+#tracker.calibrate()
 
 #pause
 core.wait(2.0)
+
+text = 'Indicate the orientation of the tilted gabor by pressing the left or right arrow keys.'
+BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=30)
+text2 = 'Press spacebar to start'
+PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-140))
     
-for j in range(num_blk):
+BlockText.draw()
+draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+PressText.draw()
+win.flip()
+event.waitKeys(keyList = 'space') 
+    
+for j in range(params['blk_vs']):
     
     np.random.shuffle(ort_lbl) #randomize target orientation
     np.random.shuffle(trls_idx) #randomize index for display
         
     text = 'Block %i' %(j+1)
     BlockText = visual.TextStim(win, text=text, color='white', height=50, pos = (0,140))
-    #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
     text2 = 'Press spacebar to start'
     PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
     
     BlockText.draw()
-    draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
-    #trgt.draw()
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     PressText.draw()
     win.flip()
     event.waitKeys(keyList = 'space') 
+    
+    ## start tracking the block
+    #tracker.startTrial()
+    #tracker.logVar('block_Nr', j)
 
-    draw_fixation(fixpos,fixlineSize,fixcolor,linewidth) #draw fixation 
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
     for k in range(num_trl):
-        
-        
+                
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
-
+        trgt_ort_lbl[j][k] = ort_trl # save orientation in var
+        
         tg_pos = rnd.choice(pos_list[np.where(ecc == tg_ecc[trls_idx[k]])[0][0]])  #randomly choose position within a certain ecc for target
+        trgt_pos_all[j][k] = tg_pos #save target position
         
         # all possible positions for distractors, except for the position already assigned to target
         all_pos = np.concatenate(pos_list).tolist() # had to convert from np array to list to pop
         all_pos.pop(np.where(all_pos == tg_pos)[0][0])
     
-        distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one pos of set if target)
+        distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one position of set already given to target)
+        distr_pos_all[j][k] = distr_pos # save positions of distractors
         
         # draw display
         trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(tg_pos[0],tg_pos[1]),units=None)                        
@@ -248,27 +254,62 @@ for j in range(num_blk):
         t0 = core.getTime() #get the time (seconds)
         key = [] # reset key to nothing 
            
-        while core.getTime() - t0 < params['stim_time']: # while current time < stimulus presentation time (seconds)
+        while(len(key)==0): # core.getTime() - t0 < params['stim_time']: # while current time < stimulus presentation time (seconds)
             
             key = event.getKeys(keyList = ['left','right','s'])
             
-            if len(key)>0:
-                if key[0] == 's': #stop key
-                    win.close()
-                    core.quit()
-                    break 
-                
-                RT_trl[j][k] = core.getTime() - t0 
-                key_trl[j][k] = key[0] 
-                #time.sleep(params['stim_time']-(core.getTime() - t0)) 
-                break
+        if key[0] == 's': #stop key
+            #tracker.stopTrial()
+            #tracker.cleanUp()
+            win.close()
+            core.quit()
+        else:
             
+            RT_trl[j][k] = core.getTime() - t0 # reaction time
+            key_trl[j][k] = key[0] # pressed key
+            #tracker.logVar('RT', RT_trl[j][k])
+                   
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
+            #tracker.logVar('response', 'correct')
+            print('correct')
         else:
             response = 0
+            #tracker.logVar('response', 'incorrect')
+            print('incorrect')
 
+       
+        if 'tracker' in locals(): # if tracker object defined
+            
+            fixDot = visual.Circle(win,radius=20,edges=50)
+            waitForFixation = False
+            
+            while not waitForFixation:
+                waitForFixation = tracker.waitForFixation(fixDot,maxDist=0, maxWait=4, nRings=3, fixTime=200)
+            
+        else:      # if no tracker
+            draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+            win.flip()
+            #Pause for ITI
+            core.wait(params['iti']) #pause
+            
+    ## stop tracking the block
+    #tracker.stopTrial()
+
+# save relevant variables in panda dataframe
+for d in range(params['blk_vs']): 
+    dict_var = {'target_orientation':trgt_ort_lbl[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+    if d==0:
+        df = pd.DataFrame(data=dict_var)
+    else:
+        df=pd.concat([df, pd.DataFrame(data=dict_var)])
+        
+df.to_csv(output_dir+'data_visualsearch_pp_'+pp+'.csv', sep='\t')
+   
+
+## cleanup
+#tracker.cleanUp()
 win.close() #close display
 core.quit()
 
