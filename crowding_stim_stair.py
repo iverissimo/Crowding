@@ -165,12 +165,12 @@ flank_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for fl
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
-## start tracker, define filename (saved in cwd)
-#tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
-#
-## calibrate
-#tracker.calibrate()
-#   
+# start tracker, define filename (saved in cwd)
+tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+
+# calibrate
+tracker.calibrate()
+   
 #pause
 core.wait(2.0)
 
@@ -215,6 +215,10 @@ for j in range(params['blk_crw']):
     
         num_trl_blk = num_trl#define number of trials in this block 
     
+    if j == 1:
+        counters = [1,1,1] #staircase counter per eccentricity
+        trgt_fl_dist = [params['max_dist'],params['max_dist'],params['max_dist']]#we start with max distance to make it easy
+    
     BlockText.draw()
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     #trgt.draw()
@@ -222,10 +226,10 @@ for j in range(params['blk_crw']):
     
     win.flip()
     event.waitKeys(keyList = 'space') 
-#    
-#    # start tracking the block
-#    tracker.startTrial()
-#    tracker.logVar('block_Nr', j)
+    
+    # start tracking the block
+    tracker.startTrial()
+    tracker.logVar('block_Nr', j)
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
@@ -233,8 +237,8 @@ for j in range(params['blk_crw']):
     
     for k in range(num_trl_blk):
         
-#        # Log trial number to eyelink log
-#        tracker.logVar('trial_Nr', k)
+        # Log trial number to eyelink log
+        tracker.logVar('trial_Nr', k)
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
@@ -268,31 +272,32 @@ for j in range(params['blk_crw']):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
-#                    tracker.stopTrial()
-#                    tracker.cleanUp()
+                    tracker.stopTrial()
+                    tracker.cleanUp()
                     win.close()
                     core.quit()
                     break 
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-#                tracker.logVar('RT', RT_trl[j][k])
+                tracker.logVar('RT', RT_trl[j][k])
                 #time.sleep(params['stim_time']-(core.getTime() - t0)) 
                 break
             
-            if core.getTime() >= 0.25: #return to fixation display after 250ms
+            if core.getTime() >= params['display_time']: #return to fixation display after 250ms
                 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
                 win.flip()
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-#            tracker.logVar('response', 'correct')
+            tracker.logVar('response', 'correct')
         else:
             response = 0
-#            tracker.logVar('response', 'incorrect')
+            tracker.logVar('response', 'incorrect')
         
-       
-        trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
+        if flank_lbl[k] == 'flankers':
+            trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
+        
         print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx[k]],flank_lbl[k],trls_idx[k])
         distances[j][k] = trgt_fl_dist[ecc_index]
 
@@ -303,8 +308,8 @@ for j in range(params['blk_crw']):
     trgt_ort_lbl[j][:] = ort_lbl
     flank_trl[j][:] = flank_lbl
     
-#    # stop tracking the block
-#    tracker.stopTrial()
+    # stop tracking the block
+    tracker.stopTrial()
 
 
 
@@ -324,7 +329,7 @@ df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
-#tracker.cleanUp()
+tracker.cleanUp()
 win.close() #close display
 core.quit()
 

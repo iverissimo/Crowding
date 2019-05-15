@@ -131,9 +131,9 @@ if not os.path.exists(output_dir): #check if path to save output exists
     
 # variables to save in settings json
 
-ecc = np.array(range(params['min_ecc_vs'],params['max_ecc_vs'],params['step_ecc_vs'])) # all ecc presented on screen
+ecc = [2,4,8,12,15,20] # np.array(range(params['min_ecc_vs'],params['max_ecc_vs'],params['step_ecc_vs'])) # all ecc presented on screen
 ecc_pix = [ang2pix(j,params['screenHeight'],params['screenDis'],params['vRes']) for _,j in enumerate(ecc)] # in pixels
-n_points = [(i+1)*6 for i, _ in enumerate(ecc)] # number of points per ecc
+n_points = [(i+1)*4 for i, _ in enumerate(ecc)] # number of points per ecc
 
 num_trl,tg_ecc,tg_set_size = uniq_trials(params['ecc'],params['set_size'])
 num_trl = num_trl*params['rep_vs'] #total number of trials per block
@@ -181,11 +181,11 @@ distr_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for
 # create a window
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
-## start tracker, define filename (saved in cwd)
-#tracker = PL.eyeLink(win, fileName = 'eyedata_visualsearch_pp_'+pp+'.EDF', fileDest=output_dir)
+# start tracker, define filename (saved in cwd)
+tracker = PL.eyeLink(win, fileName = 'eyedata_visualsearch_pp_'+pp+'.EDF', fileDest=output_dir)
 
-## calibrate
-#tracker.calibrate()
+# calibrate
+tracker.calibrate()
 
 #pause
 core.wait(2.0)
@@ -217,15 +217,18 @@ for j in range(params['blk_vs']):
     win.flip()
     event.waitKeys(keyList = 'space') 
     
-    ## start tracking the block
-    #tracker.startTrial()
-    #tracker.logVar('block_Nr', j)
+    # start tracking the block
+    tracker.startTrial()
+    tracker.logVar('block_Nr', j)
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
     for k in range(num_trl):
+        
+        # Log trial number to eyelink log
+        tracker.logVar('trial_Nr', k)
                 
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
         trgt_ort_lbl[j][k] = ort_trl # save orientation in var
@@ -259,24 +262,24 @@ for j in range(params['blk_vs']):
             key = event.getKeys(keyList = ['left','right','s'])
             
         if key[0] == 's': #stop key
-            #tracker.stopTrial()
-            #tracker.cleanUp()
+            tracker.stopTrial()
+            tracker.cleanUp()
             win.close()
             core.quit()
         else:
             
             RT_trl[j][k] = core.getTime() - t0 # reaction time
             key_trl[j][k] = key[0] # pressed key
-            #tracker.logVar('RT', RT_trl[j][k])
+            tracker.logVar('RT', RT_trl[j][k])
                    
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-            #tracker.logVar('response', 'correct')
+            tracker.logVar('response', 'correct')
             print('correct')
         else:
             response = 0
-            #tracker.logVar('response', 'incorrect')
+            tracker.logVar('response', 'incorrect')
             print('incorrect')
 
        
@@ -294,8 +297,8 @@ for j in range(params['blk_vs']):
             #Pause for ITI
             core.wait(params['iti']) #pause
             
-    ## stop tracking the block
-    #tracker.stopTrial()
+    # stop tracking the block
+    tracker.stopTrial()
 
 # save relevant variables in panda dataframe
 for d in range(params['blk_vs']): 
@@ -309,7 +312,7 @@ df.to_csv(output_dir+'data_visualsearch_pp_'+pp+'.csv', sep='\t')
    
 
 ## cleanup
-#tracker.cleanUp()
+tracker.cleanUp()
 win.close() #close display
 core.quit()
 

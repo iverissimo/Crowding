@@ -2,7 +2,8 @@
     "ecc": [4,8,12],
     "stim_time": 2,
 	"iti": 0.5,
- 
+	"display_time":0.350,
+	
 	"hRes": 1280, 
 	"vRes": 1024, 
 	"screenHeight": 30, 
@@ -36,7 +37,7 @@
 
 	"min_ecc_vs": 2,
 	"max_ecc_vs": 24,
-	"step_ecc_vs": 2
+	"step_ecc_vs": 3
 
 
 }
