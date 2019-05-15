@@ -10,7 +10,7 @@
 	"backCol": [128,128,128],
 	"textCol": [255,255,255],
 
-	"siz_gab_deg": 3,
+	"siz_gab_deg": 2.2,
 	"gab_sf_deg": 4,
 	"sd_gab_deg": 0.12,
 
@@ -28,7 +28,7 @@
 
 	"set_size": [5,15,30],
 
-	"blk_vs": 5,
+	"blk_vs": 4,
 	"rep_vs": 20,
 	"blk_crw": 5,
 	"rep_fl_crw":20,

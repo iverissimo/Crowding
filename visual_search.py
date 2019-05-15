@@ -32,11 +32,15 @@ import psychoLink as PL
 def draw_fixation(posit,lineSize,linecolor,linewidth): 
     
     t = lineSize/2.0
-    vertical_line = visual.Line(win,start = (posit[0],posit[1]-t),end = (posit[0],posit[1]+t),lineColor = linecolor,lineWidth=linewidth)
-    horizontal_line = visual.Line(win,start = (posit[0]-t,posit[1]),end = (posit[0]+t,posit[1]),lineColor = linecolor,lineWidth=linewidth)
+    fixation = visual.ShapeStim(win, 
+        vertices=((posit[0], posit[1]-t), (posit[0], posit[1]+t), posit, (posit[0]-t,posit[1]), (posit[1]+t, posit[1])),
+        lineWidth=linewidth,
+        closeShape=False,
+        lineColor=linecolor)
     
-    vertical_line.draw()
-    horizontal_line.draw() 
+    fixation.draw()
+    
+    return fixation
 
 
 # Calculate the number of degrees that correspond to a single pixel
@@ -131,7 +135,7 @@ if not os.path.exists(output_dir): #check if path to save output exists
     
 # variables to save in settings json
 
-ecc = [2,4,8,12,15,20] # np.array(range(params['min_ecc_vs'],params['max_ecc_vs'],params['step_ecc_vs'])) # all ecc presented on screen
+ecc = np.array(range(params['min_ecc_vs'],params['max_ecc_vs'],params['step_ecc_vs'])) # all ecc presented on screen
 ecc_pix = [ang2pix(j,params['screenHeight'],params['screenDis'],params['vRes']) for _,j in enumerate(ecc)] # in pixels
 n_points = [(i+1)*4 for i, _ in enumerate(ecc)] # number of points per ecc
 
@@ -181,11 +185,11 @@ distr_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for
 # create a window
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
-# start tracker, define filename (saved in cwd)
-tracker = PL.eyeLink(win, fileName = 'eyedata_visualsearch_pp_'+pp+'.EDF', fileDest=output_dir)
-
-# calibrate
-tracker.calibrate()
+## start tracker, define filename (saved in cwd)
+#tracker = PL.eyeLink(win, fileName = 'eyedata_visualsearch_pp_'+pp+'.EDF', fileDest=output_dir)
+#
+## calibrate
+#tracker.calibrate()
 
 #pause
 core.wait(2.0)
@@ -217,18 +221,26 @@ for j in range(params['blk_vs']):
     win.flip()
     event.waitKeys(keyList = 'space') 
     
-    # start tracking the block
-    tracker.startTrial()
-    tracker.logVar('block_Nr', j)
+    
+    
+    
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
     for k in range(num_trl):
+
+# =============================================================================
+#         
+#        # Start recording eye movements
+#        tracker.startTrial()
+#         
+# =============================================================================
         
-        # Log trial number to eyelink log
-        tracker.logVar('trial_Nr', k)
+#        if k == 0: tracker.logVar('block_Nr', j) # save block start
+#        tracker.logVar('trial_Nr', k) # save trial number
+        
                 
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
         trgt_ort_lbl[j][k] = ort_trl # save orientation in var
@@ -237,11 +249,18 @@ for j in range(params['blk_vs']):
         trgt_pos_all[j][k] = tg_pos #save target position
         
         # all possible positions for distractors, except for the position already assigned to target
-        all_pos = np.concatenate(pos_list).tolist() # had to convert from np array to list to pop
-        all_pos.pop(np.where(all_pos == tg_pos)[0][0])
+        all_pos = np.concatenate(pos_list) 
+        all_pos = all_pos.tolist() # had to convert from np array to list to pop
+        
+        tg_idx = [idx for idx,lst in enumerate(all_pos) if lst==tg_pos.tolist()]        
+        all_pos.pop(tg_idx[0]) 
+        
+        if [lst for idx,lst in enumerate(all_pos) if lst==tg_pos.tolist()] or len(tg_idx)>1:  
+            print('target position still in lisT!!')
     
         distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one position of set already given to target)
         distr_pos_all[j][k] = distr_pos # save positions of distractors
+        
         
         # draw display
         trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(tg_pos[0],tg_pos[1]),units=None)                        
@@ -262,43 +281,43 @@ for j in range(params['blk_vs']):
             key = event.getKeys(keyList = ['left','right','s'])
             
         if key[0] == 's': #stop key
-            tracker.stopTrial()
-            tracker.cleanUp()
+#            tracker.stopTrial()
+#            tracker.cleanUp()
             win.close()
             core.quit()
         else:
             
             RT_trl[j][k] = core.getTime() - t0 # reaction time
             key_trl[j][k] = key[0] # pressed key
-            tracker.logVar('RT', RT_trl[j][k])
+#            tracker.logVar('RT', RT_trl[j][k])
                    
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-            tracker.logVar('response', 'correct')
+#            tracker.logVar('response', 'correct')
             print('correct')
         else:
             response = 0
-            tracker.logVar('response', 'incorrect')
+#            tracker.logVar('response', 'incorrect')
             print('incorrect')
 
+# =============================================================================
+#        # stop tracking the trial
+#        tracker.stopTrial()
+#         
+# =============================================================================
+
+        fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+        win.flip()
        
         if 'tracker' in locals(): # if tracker object defined
-            
-            fixDot = visual.Circle(win,radius=20,edges=50)
-            waitForFixation = False
-            
-            while not waitForFixation:
-                waitForFixation = tracker.waitForFixation(fixDot,maxDist=0, maxWait=4, nRings=3, fixTime=200)
+                       
+            waitForFixation = tracker.waitForFixation(fixation,maxDist=0, maxWait=4, nRings=3, fixTime=200)
             
         else:      # if no tracker
-            draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
-            win.flip()
             #Pause for ITI
             core.wait(params['iti']) #pause
             
-    # stop tracking the block
-    tracker.stopTrial()
 
 # save relevant variables in panda dataframe
 for d in range(params['blk_vs']): 
@@ -312,7 +331,7 @@ df.to_csv(output_dir+'data_visualsearch_pp_'+pp+'.csv', sep='\t')
    
 
 ## cleanup
-tracker.cleanUp()
+#tracker.cleanUp()
 win.close() #close display
 core.quit()
 

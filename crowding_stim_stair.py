@@ -36,11 +36,13 @@ import psychoLink as PL
 def draw_fixation(posit,lineSize,linecolor,linewidth): 
     
     t = lineSize/2.0
-    vertical_line = visual.Line(win,start = (posit[0],posit[1]-t),end = (posit[0],posit[1]+t),lineColor = linecolor,lineWidth=linewidth)
-    horizontal_line = visual.Line(win,start = (posit[0]-t,posit[1]),end = (posit[0]+t,posit[1]),lineColor = linecolor,lineWidth=linewidth)
+    fixation = visual.ShapeStim(win, 
+        vertices=((posit[0], posit[1]-t), (posit[0], posit[1]+t), posit, (posit[0]-t,posit[1]), (posit[1]+t, posit[1])),
+        lineWidth=linewidth,
+        closeShape=False,
+        lineColor=linecolor)
     
-    vertical_line.draw()
-    horizontal_line.draw() 
+    fixation.draw()
 
 # transform polar coordinates to cartesian
     
@@ -165,11 +167,11 @@ flank_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for fl
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
-# start tracker, define filename (saved in cwd)
-tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
-
-# calibrate
-tracker.calibrate()
+## start tracker, define filename (saved in cwd)
+#tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+#
+## calibrate
+#tracker.calibrate()
    
 #pause
 core.wait(2.0)
@@ -225,11 +227,7 @@ for j in range(params['blk_crw']):
     PressText.draw()
     
     win.flip()
-    event.waitKeys(keyList = 'space') 
-    
-    # start tracking the block
-    tracker.startTrial()
-    tracker.logVar('block_Nr', j)
+    event.waitKeys(keyList = 'space')     
 
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
@@ -237,8 +235,16 @@ for j in range(params['blk_crw']):
     
     for k in range(num_trl_blk):
         
-        # Log trial number to eyelink log
-        tracker.logVar('trial_Nr', k)
+# =============================================================================
+#         
+#        # Start recording eye movements
+#        tracker.startTrial()
+#         
+# =============================================================================
+        
+#        if k == 0: tracker.logVar('block_Nr', j) # save block start
+#        tracker.logVar('trial_Nr', k) # save trial number
+  
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
@@ -272,16 +278,15 @@ for j in range(params['blk_crw']):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
-                    tracker.stopTrial()
-                    tracker.cleanUp()
+#                    tracker.stopTrial()
+#                    tracker.cleanUp()
                     win.close()
                     core.quit()
                     break 
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-                tracker.logVar('RT', RT_trl[j][k])
-                #time.sleep(params['stim_time']-(core.getTime() - t0)) 
+#                tracker.logVar('RT', RT_trl[j][k])
                 break
             
             if core.getTime() >= params['display_time']: #return to fixation display after 250ms
@@ -290,16 +295,22 @@ for j in range(params['blk_crw']):
                 
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-            tracker.logVar('response', 'correct')
+#            tracker.logVar('response', 'correct')
         else:
             response = 0
-            tracker.logVar('response', 'incorrect')
+#            tracker.logVar('response', 'incorrect')
         
         if flank_lbl[k] == 'flankers':
             trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
         
         print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx[k]],flank_lbl[k],trls_idx[k])
         distances[j][k] = trgt_fl_dist[ecc_index]
+        
+# =============================================================================
+#        # stop tracking the trial
+#        tracker.stopTrial()
+#         
+# =============================================================================
 
         #Pause for ITI
         core.wait(params['iti']) #pause
@@ -307,9 +318,6 @@ for j in range(params['blk_crw']):
     display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
     flank_trl[j][:] = flank_lbl
-    
-    # stop tracking the block
-    tracker.stopTrial()
 
 
 
@@ -329,7 +337,7 @@ df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
-tracker.cleanUp()
+#tracker.cleanUp()
 win.close() #close display
 core.quit()
 
