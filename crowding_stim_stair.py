@@ -209,6 +209,10 @@ for j in range(params['blk_crw']):
         
     #Text for experimental blocks
     else:
+        
+        ## calibrate between blocks, gives participant time to have break
+        #tracker.calibrate()
+        
         text = 'Block %i out of %i' %(j, params['blk_crw']-1)
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
         #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
@@ -280,6 +284,21 @@ for j in range(params['blk_crw']):
                 if key[0] == 's': #stop key
 #                    tracker.stopTrial()
 #                    tracker.cleanUp()
+                    
+                    # save relevant variables in panda dataframe
+                    for d in range(params['blk_crw']):
+                        target_ecc = np.zeros((1,num_trl))
+                        for l in range(num_trl):
+                            target_ecc[0][l] = trgt_ecc[display_idx[0][l]]
+                        
+                        dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc[0][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
+                        if d==0:
+                            df = pd.DataFrame(data=dict_var)
+                        else:
+                            df=pd.concat([df, pd.DataFrame(data=dict_var)])
+                            
+                    df.to_csv(output_dir+'data_crowding_pp_'+pp+'_block-'+str(j)+'_trial-'+str(k)+'.csv', sep='\t')                                      
+                    
                     win.close()
                     core.quit()
                     break 
@@ -304,6 +323,11 @@ for j in range(params['blk_crw']):
             trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
         
         print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx[k]],flank_lbl[k],trls_idx[k])
+
+#        tracker.logVar('distance', trgt_fl_dist[ecc_index])
+#        tracker.logVar('ecc', trgt_ecc[trls_idx[k]])
+#        tracker.logVar('flank-condition', flank_lbl[k])
+
         distances[j][k] = trgt_fl_dist[ecc_index]
         
 # =============================================================================

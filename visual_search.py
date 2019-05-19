@@ -248,6 +248,8 @@ for j in range(params['blk_vs']):
         tg_pos = rnd.choice(pos_list[np.where(ecc == tg_ecc[trls_idx[k]])[0][0]])  #randomly choose position within a certain ecc for target
         trgt_pos_all[j][k] = tg_pos #save target position
         
+#        tracker.logVar('target_pos', tg_pos)  
+        
         # all possible positions for distractors, except for the position already assigned to target
         all_pos = np.concatenate(pos_list) 
         all_pos = all_pos.tolist() # had to convert from np array to list to pop
@@ -261,6 +263,7 @@ for j in range(params['blk_vs']):
         distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one position of set already given to target)
         distr_pos_all[j][k] = distr_pos # save positions of distractors
         
+#        tracker.logVar('distractor_pos', distr_pos) 
         
         # draw display
         trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(tg_pos[0],tg_pos[1]),units=None)                        
@@ -283,6 +286,17 @@ for j in range(params['blk_vs']):
         if key[0] == 's': #stop key
 #            tracker.stopTrial()
 #            tracker.cleanUp()
+            
+            # save relevant variables in panda dataframe
+            for d in range(params['blk_vs']): 
+                dict_var = {'target_orientation':trgt_ort_lbl[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+                if d==0:
+                    df = pd.DataFrame(data=dict_var)
+                else:
+                    df=pd.concat([df, pd.DataFrame(data=dict_var)])
+                    
+            df.to_csv(output_dir+'data_visualsearch_pp_'+pp+'_block-'+str(j)+'_trial-'+str(k)+'.csv', sep='\t')
+            
             win.close()
             core.quit()
         else:
