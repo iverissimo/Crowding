@@ -176,14 +176,42 @@ win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', 
 #pause
 core.wait(2.0)
 
-text = 'Indicate the orientation of the middle gabor by pressing the left or right arrow keys.\nPlease keep your eyes fixated on the center.\nThe experiment will start with a practice block.'
-BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=30)
-text2 = 'Press spacebar to start'
-PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-140))
+#Instructions
+#Slide 1 - Intro
+text1 = 'Welcome!\n\nIn this experiment, you will have to indicate the orientation of a gabor shape appearing in the periphery of your visual field.\n\nIt is important that you keep your eyes fixated on the cross in the center during the whole task.\n\nOn the next slide, you will see an example of how the display will look.'#Please keep your eyes fixated on the center.\nThe experiment will start with a practice block.
+Instruction1 = visual.TextStim(win, text=text1, colorSpace='rgb255', color = params['textCol'], pos = (0,120),height=30, wrapWidth = 700)
+text2 = 'Press spacebar to continue'
+PressText1 = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-160))
     
-BlockText.draw()
+Instruction1.draw()
+PressText1.draw()
+win.flip()
+event.waitKeys(keyList = 'space') 
+
+#Slide2 - Example Screen
+PressText1.draw()
+xpos_trgt = ang2pix((8.0),params['screenHeight'],params['screenDis'],params['vRes'])
+trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=params['ort_trgt'][0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None) 
+trgt.draw()
 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-PressText.draw()
+
+xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[0])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+flank.draw()
+xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[1])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[1],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+flank.draw()
+
+win.flip() # flip the screen
+event.waitKeys(keyList = 'space') 
+
+#Slide3 - Response etc.
+text3 = 'In the experiment, these stimuli will only be presented for a very short time. Please Indicate the orientation of the middle gabor as best as you can, using the left or right arrow keys.\n\nMake sure to just press once after each stimulus - only the first answer counts.\n\nThe experiment will start with a practice block.'
+Instruction2 = visual.TextStim(win, text=text3, colorSpace='rgb255', color = params['textCol'], pos = (0,120),height=30, wrapWidth = 700)
+text4 = 'Press spacebar to start'
+PressText2 = visual.TextStim(win, text=text4, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-160))
+Instruction2.draw()
+PressText2.draw()
 win.flip()
 event.waitKeys(keyList = 'space') 
 
@@ -202,8 +230,6 @@ for j in range(params['blk_crw']):
         text = 'Practice block' 
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
         #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
-        text2 = 'Press spacebar to start'
-        PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-140))
         
         num_trl_blk = num_trl/2#define number of trials in this block (training block = half length)
         
@@ -216,9 +242,7 @@ for j in range(params['blk_crw']):
         text = 'Block %i out of %i' %(j, params['blk_crw']-1)
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
         #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
-        text2 = 'Press spacebar to start'
-        PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-140))
-    
+        
         num_trl_blk = num_trl#define number of trials in this block 
     
     if j == 1:
@@ -228,7 +252,7 @@ for j in range(params['blk_crw']):
     BlockText.draw()
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     #trgt.draw()
-    PressText.draw()
+    PressText2.draw()
     
     win.flip()
     event.waitKeys(keyList = 'space')     
