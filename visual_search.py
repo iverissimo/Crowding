@@ -182,7 +182,7 @@ trgt_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for 
 distr_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for all distance values
 trgt_ecc_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for ecc of all targets
 
-
+set_size_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for all set sizes
 
 # create a window
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
@@ -268,8 +268,10 @@ for j in range(params['blk_vs']):
     
         distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one position of set already given to target)
         distr_pos_all[j][k] = distr_pos # save positions of distractors
+        set_size_all[j][k] = tg_set_size[trls_idx[k]] #save set size
         
 #        tracker.logVar('distractor_pos', distr_pos) 
+#        tracker.logVar('distractor_pos', tg_set_size[trls_idx[k]]) 
         
         # draw display
         trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(tg_pos[0],tg_pos[1]),units=None)                        
@@ -296,7 +298,7 @@ for j in range(params['blk_vs']):
             
             # save relevant variables in panda dataframe
             for d in range(params['blk_vs']): 
-                dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+                dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:],'set_size':set_size_all[d][:]}
                 if d==0:
                     df = pd.DataFrame(data=dict_var)
                 else:
@@ -342,7 +344,7 @@ for j in range(params['blk_vs']):
 
 # save relevant variables in panda dataframe
 for d in range(params['blk_vs']): 
-    dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+    dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:],'set_size':set_size_all[d][:]}
     if d==0:
         df = pd.DataFrame(data=dict_var)
     else:
