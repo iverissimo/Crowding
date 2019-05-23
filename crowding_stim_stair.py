@@ -119,8 +119,11 @@ if not os.path.exists(output_dir): #check if path to save output exists
 ########## Initial parameters #########
         
 # general info
-num_trl, trgt_ecc,trgt_vf = uniq_trials(params['ecc']) 
-num_trl = num_trl*params['rep_fl_crw'] + num_trl*params['rep_nofl_crw']#total number of trials
+num_uniq_trl, trgt_ecc,trgt_vf = uniq_trials(params['ecc'])
+
+num_trl_fl = num_uniq_trl*params['rep_fl_crw'] #number of flanker present trials
+num_trl_nofl = num_uniq_trl*params['rep_nofl_crw'] #number of no flanker trials
+num_trl = num_trl_fl + num_trl_nofl #total number of trials
 
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
 
@@ -151,17 +154,23 @@ pos_fl = np.arange(params['initpos_fl'],params['initpos_fl']+360,dist_fl) #posit
 ort_fl = np.repeat(0,params['num_fl']) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
 
 
-trls_idx = np.repeat(range(0,num_trl/(params['rep_fl_crw']+params['rep_nofl_crw'])),(params['rep_fl_crw']+params['rep_nofl_crw'])) #range of indexes for all trials 
+#trls_idx = np.repeat(range(0,num_trl/(params['rep_fl_crw']+params['rep_nofl_crw'])),(params['rep_fl_crw']+params['rep_nofl_crw'])) #range of indexes for all trials 
+trls_idx_fl = np.repeat(range(0,num_trl_fl/params['rep_fl_crw']),(params['rep_fl_crw'])) #range of indexes for all trials 
+trls_idx_nofl = np.repeat(range(0,num_trl_nofl/params['rep_nofl_crw']),(params['rep_nofl_crw'])) #range of indexes for all trials 
+
+
 ort_lbl = np.append(np.repeat(['right'],num_trl/2),np.repeat(['left'],num_trl/2)) #target orientation labels
-flank_lbl = np.append(np.repeat(['no flankers'],num_trl/6),np.repeat(['flankers'],num_trl/1.2)) #flanker presence labels
+flank_lbl = np.append(np.repeat(['no flankers'],num_trl_nofl),np.repeat(['flankers'],num_trl_fl)) #flanker presence labels
 
 # array to save variables
 RT_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object); RT_trl[:]=np.nan #array for all RTs
 key_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object); key_trl[:]=np.nan #array for all key presses
-display_idx = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for idx of all displays
 trgt_ort_lbl = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for target orientations
 distances = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for all distance values
 flank_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for flanker presence
+
+target_ecc_all = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array to save all target ecc
+target_vf_all = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array to save all target vf
 
 # create a window
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
@@ -221,9 +230,12 @@ trgt_fl_dist = [params['max_dist'],params['max_dist'],params['max_dist']]#we sta
 for j in range(params['blk_crw']):
     
     np.random.shuffle(ort_lbl) #randomize target orientation
-    np.random.shuffle(trls_idx) #randomize index for display
+    np.random.shuffle(trls_idx_fl) #randomize index for display
+    np.random.shuffle(trls_idx_nofl) #randomize index for display
     np.random.shuffle(flank_lbl) #randomize flanker presence
-    #np.random.shuffle(trgt_ecc)
+    
+    fl_counter = 0 # counters used to balance ecc of flankers and no flankers
+    nofl_counter = 0
     
     #Text for training block
     if j == 0:
@@ -237,7 +249,7 @@ for j in range(params['blk_crw']):
     else:
         
         ## calibrate between blocks, gives participant time to have break
-        #tracker.calibrate()
+#        tracker.calibrate()
         
         text = 'Block %i out of %i' %(j, params['blk_crw']-1)
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
@@ -272,25 +284,36 @@ for j in range(params['blk_crw']):
         
 #        if k == 0: tracker.logVar('block_Nr', j) # save block start
 #        tracker.logVar('trial_Nr', k) # save trial number
+        
+        if flank_lbl[k]=='flankers': # doing this to guarantee balanced ecc for no flank and flank conditions
+            trls_idx = trls_idx_fl[fl_counter]
+            fl_counter += 1
+        else : 
+            trls_idx = trls_idx_fl[nofl_counter]
+            nofl_counter += 1
   
         
         ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
 
-        if trgt_vf[trls_idx[k]] == 'left':
-            xpos_trgt = -ang2pix(float(trgt_ecc[trls_idx[k]]),params['screenHeight'],params['screenDis'],params['vRes'])
+        if trgt_vf[trls_idx] == 'left':
+            xpos_trgt = -ang2pix(float(trgt_ecc[trls_idx]),params['screenHeight'],params['screenDis'],params['vRes'])
             trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None)           
         else:
-            xpos_trgt = ang2pix(float(trgt_ecc[trls_idx[k]]),params['screenHeight'],params['screenDis'],params['vRes'])
+            xpos_trgt = ang2pix(float(trgt_ecc[trls_idx]),params['screenHeight'],params['screenDis'],params['vRes'])
             trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_trl,sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None)            
              
         trgt.draw()
         
-        ecc_index = params['ecc'].index(trgt_ecc[trls_idx[k]])
+        ecc_index = params['ecc'].index(trgt_ecc[trls_idx])
+        target_ecc_all[j][k] = trgt_ecc[trls_idx] # save all target ecc
+        target_vf_all[j][k] = trgt_vf[trls_idx] # save all target vf 
+        
+#        tracker.logVar('VF', trgt_vf[trls_idx]) # log VF 
         
         #Draw flankers, depending on eccentricity
         if flank_lbl[k] == 'flankers':
             for i in range(len(pos_fl)):
-                xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx[k]])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
+                xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
                 flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
                 flank.draw()
                 
@@ -310,18 +333,14 @@ for j in range(params['blk_crw']):
 #                    tracker.cleanUp()
                     
                     # save relevant variables in panda dataframe
-                    for d in range(params['blk_crw']):
-                        target_ecc = np.zeros((1,num_trl))
-                        for l in range(num_trl):
-                            target_ecc[0][l] = trgt_ecc[display_idx[0][l]]
-                        
-                        dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc[0][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
+                    for d in range(params['blk_crw']):    
+                        dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc_all[d][:], 'target_vf':target_vf_all[d][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
                         if d==0:
                             df = pd.DataFrame(data=dict_var)
                         else:
                             df=pd.concat([df, pd.DataFrame(data=dict_var)])
                             
-                    df.to_csv(output_dir+'data_crowding_pp_'+pp+'_block-'+str(j)+'_trial-'+str(k)+'.csv', sep='\t')                                      
+                    df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')                                    
                     
                     win.close()
                     core.quit()
@@ -346,10 +365,10 @@ for j in range(params['blk_crw']):
         if flank_lbl[k] == 'flankers':
             trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
         
-        print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx[k]],flank_lbl[k],trls_idx[k])
+        print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx],flank_lbl[k],trls_idx)
 
 #        tracker.logVar('distance', trgt_fl_dist[ecc_index])
-#        tracker.logVar('ecc', trgt_ecc[trls_idx[k]])
+#        tracker.logVar('ecc', trgt_ecc[trls_idx])
 #        tracker.logVar('flank-condition', flank_lbl[k])
 
         distances[j][k] = trgt_fl_dist[ecc_index]
@@ -363,19 +382,14 @@ for j in range(params['blk_crw']):
         #Pause for ITI
         core.wait(params['iti']) #pause
 
-    display_idx[j][:] = trls_idx
     trgt_ort_lbl[j][:] = ort_lbl
     flank_trl[j][:] = flank_lbl
 
 
 
 # save relevant variables in panda dataframe
-for d in range(params['blk_crw']):
-    target_ecc = np.zeros((1,num_trl))
-    for l in range(num_trl):
-        target_ecc[0][l] = trgt_ecc[display_idx[0][l]]
-    
-    dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc[0][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
+for d in range(params['blk_crw']):    
+    dict_var = {'target_orientation':trgt_ort_lbl[d][:], 'target_ecc':target_ecc_all[d][:], 'target_vf':target_vf_all[d][:], 'flanker_presence':flank_trl[d][:], 'target_flank_ratio':distances[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:]}
     if d==0:
         df = pd.DataFrame(data=dict_var)
     else:
