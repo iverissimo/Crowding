@@ -180,6 +180,8 @@ trgt_ort_lbl = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for 
 
 trgt_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for idx of all displays
 distr_pos_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for all distance values
+trgt_ecc_all = np.array(np.zeros((params['blk_vs'],num_trl)),object) #array for ecc of all targets
+
 
 
 # create a window
@@ -241,14 +243,20 @@ for j in range(params['blk_vs']):
 #        if k == 0: tracker.logVar('block_Nr', j) # save block start
 #        tracker.logVar('trial_Nr', k) # save trial number
         
-                
-        ort_trl = params['ort_trgt'][0] if ort_lbl[k]=='right' else params['ort_trgt'][1] #define target orientation for trial
-        trgt_ort_lbl[j][k] = ort_trl # save orientation in var
+        if ort_lbl[k]=='right': #define target orientation for trial
+            ort_trl = params['ort_trgt'][0]
+            trgt_ort_lbl[j][k] = 'right' # save orientation in var
+        else:
+            ort_trl = params['ort_trgt'][1]
+            trgt_ort_lbl[j][k] = 'left'
         
         tg_pos = rnd.choice(pos_list[np.where(ecc == tg_ecc[trls_idx[k]])[0][0]])  #randomly choose position within a certain ecc for target
         trgt_pos_all[j][k] = tg_pos #save target position
+        trgt_ecc_all[j][k] = tg_ecc[trls_idx[k]] #save target ecc
         
-#        tracker.logVar('target_pos', tg_pos)  
+#        tracker.logVar('target_pos', tg_pos) # save target position
+#        tracker.logVar('target_ecc', tg_ecc[trls_idx[k]]) # save target ecc
+
         
         # all possible positions for distractors, except for the position already assigned to target
         all_pos = np.concatenate(pos_list) 
@@ -257,8 +265,6 @@ for j in range(params['blk_vs']):
         tg_idx = [idx for idx,lst in enumerate(all_pos) if lst==tg_pos.tolist()]        
         all_pos.pop(tg_idx[0]) 
         
-        if [lst for idx,lst in enumerate(all_pos) if lst==tg_pos.tolist()] or len(tg_idx)>1:  
-            print('target position still in lisT!!')
     
         distr_pos = rnd.sample(all_pos,tg_set_size[trls_idx[k]]-1)  #randomly choose positions within a certain set size for distractors (-1 because one position of set already given to target)
         distr_pos_all[j][k] = distr_pos # save positions of distractors
@@ -274,7 +280,8 @@ for j in range(params['blk_vs']):
             distr.draw()
                 
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
-        win.flip() # flip the screen   
+        win.flip() # flip the screen
+#        tracker.logVar('display', True)
         
         t0 = core.getTime() #get the time (seconds)
         key = [] # reset key to nothing 
@@ -289,7 +296,7 @@ for j in range(params['blk_vs']):
             
             # save relevant variables in panda dataframe
             for d in range(params['blk_vs']): 
-                dict_var = {'target_orientation':trgt_ort_lbl[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+                dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
                 if d==0:
                     df = pd.DataFrame(data=dict_var)
                 else:
@@ -335,7 +342,7 @@ for j in range(params['blk_vs']):
 
 # save relevant variables in panda dataframe
 for d in range(params['blk_vs']): 
-    dict_var = {'target_orientation':trgt_ort_lbl[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
+    dict_var = {'target_orientation':trgt_ort_lbl[d][:],'target_ecc':trgt_ecc_all[d][:],'key_pressed':key_trl[d][:],'RT':RT_trl[d][:],'target_position':trgt_pos_all[d][:],'distractor_position':distr_pos_all[d][:]}
     if d==0:
         df = pd.DataFrame(data=dict_var)
     else:
