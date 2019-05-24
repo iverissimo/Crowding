@@ -196,16 +196,19 @@ win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', 
 #pause
 core.wait(2.0)
 
-text = 'Indicate the orientation of the tilted gabor by pressing the left or right arrow keys.'
-BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=30)
-text2 = 'Press spacebar to start'
-PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-140))
+# Instructions
+# Slide 1
+text1 = 'In this task, you will see a screen with several gabors. Only one of the gabors will be tilted.\n\nYour task is to find this tilted gabor and indicate its orientation by pressing the left or right arrow keys.\n\nThis time, you can move your eyes around. Please return to the fixation cross at the end of each trial. '
+BlockText = visual.TextStim(win, text=text1, colorSpace='rgb255', color = params['textCol'], pos = (0,120),height=30, wrapWidth = 700)
+text2 = 'Press spacebar to continue'
+PressText = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-160))
     
 BlockText.draw()
-draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
 PressText.draw()
 win.flip()
 event.waitKeys(keyList = 'space') 
+
+
     
 for j in range(params['blk_vs']):
     
