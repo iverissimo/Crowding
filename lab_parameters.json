@@ -4,8 +4,8 @@
 	"iti": 0.5,
 	"display_time":0.350,
 	
-	"hRes": 1680, 
-	"vRes": 1050, 
+	"hRes": 1920, 
+	"vRes": 1080, 
 	"screenHeight": 30, 
 	"screenDis": 50,     
 	"backCol": [128,128,128],
