@@ -1,0 +1,721 @@
+	RT	flanker_presence	key_pressed	target_ecc	target_flank_ratio	target_orientation	target_vf
+0	1.1915328357281396	flankers	right	4	0.8	right	right
+1	0.9500581167103519	flankers	right	12	0.8	right	right
+2	0.6582016121010383	flankers	left	4	0.8	left	left
+3	0.48324394165138074	no flankers	right	4	0.8	right	right
+4	0.725092705917632	flankers	left	12	0.8	left	left
+5	0.6000307332924422	flankers	left	8	0.8	left	right
+6	0.6000130573720526	flankers	right	4	0.75	right	left
+7	0.8833198340635136	flankers	right	8	0.8	left	left
+8	0.7834175362804672	flankers	left	4	0.75	left	left
+9	0.6584641850258777	flankers	right	12	0.8	left	right
+10	0.9000643460476567	flankers	right	8	0.8	left	right
+11		flankers		4	0.8	left	right
+12	2.8509546609711833e-05	flankers	left	4	0.8	left	right
+13	0.024993464185172343	flankers	left	12	0.8	right	right
+14	0.7917297796757339	flankers	left	8	0.8	right	left
+15	0.9083167193948611	flankers	right	12	0.8	left	right
+16	0.7749060111527797	flankers	right	8	0.8	right	right
+17	0.8249034880591353	flankers	right	12	0.8	right	left
+18	0.7167827432858758	no flankers	left	12	0.8	left	right
+19	0.9499914043717581	flankers	right	4	0.8	right	left
+20	0.5666999373079307	flankers	left	8	0.8	left	left
+21	0.5914296881892369	no flankers	left	4	0.8	left	left
+22	0.5582556947101693	flankers	left	4	0.75	left	left
+23	0.6500510178320837	flankers	right	12	0.8	left	right
+24	0.5916845635347272	flankers	left	4	0.75	left	right
+25	0.6834120339372021	flankers	left	8	0.75	left	left
+26	0.7915741175511357	no flankers	left	12	0.8	right	left
+27	0.7581098968894366	no flankers	right	8	0.75	left	right
+28	0.6082360658874677	flankers	left	4	0.75	left	right
+29	0.633333019728525	flankers	left	12	0.8	left	left
+30	0.5915770825431537	flankers	left	8	0.75	left	right
+31	0.7333690272862441	flankers	right	8	0.75	right	right
+32	0.6833450365029421	flankers	right	12	0.8	right	right
+33	0.7251115222188673	flankers	right	12	0.75	right	left
+34	0.6000347246263118	flankers	left	8	0.7	left	right
+35	0.7333676018079132	no flankers	left	4	0.75	right	left
+36	0.700060183651658	flankers	left	12	0.8	right	left
+37	0.6666703729079018	flankers	right	12	0.8	right	left
+38	0.6000543962145457	flankers	right	4	0.7	right	right
+39	0.5750843098576297	flankers	left	12	0.8	left	left
+40	0.7166054139070184	flankers	left	12	0.8	right	left
+41	0.5249534082722676	flankers	left	4	0.7	left	left
+42	0.5750643531737296	flankers	right	8	0.7	right	right
+43	0.6165192295466113	flankers	right	8	0.7	right	left
+44	0.5416012728946953	flankers	right	8	0.6499999999999999	right	left
+45	0.6750638685116428	flankers	left	8	0.6499999999999999	left	right
+46	0.5999258181600453	flankers	left	8	0.6499999999999999	left	left
+47	0.6083560910792585	flankers	left	8	0.5999999999999999	left	right
+48	0.5750235845225689	no flankers	left	8	0.5999999999999999	left	left
+49	0.6248080951136217	no flankers	left	4	0.7	left	left
+50	0.4917232509887981	flankers	left	8	0.5999999999999999	left	left
+51	0.791691861979416	flankers	left	12	0.8	left	right
+52	0.49166252565555624	flankers	right	8	0.5999999999999999	right	right
+53	0.6416957250221458	flankers	right	8	0.5499999999999998	right	left
+54	0.658262052338614	flankers	right	8	0.5499999999999998	right	left
+55	0.5582038073353033	flankers	right	4	0.7	right	left
+56	0.6832133223979326	flankers	left	8	0.5999999999999999	right	right
+57	0.7999730299688963	flankers	right	8	0.5999999999999999	right	right
+58	0.6083549506984127	flankers	right	4	0.6499999999999999	right	left
+59	0.5750384094862966	no flankers	right	12	0.8	right	right
+60	0.525018124943017	flankers	left	8	0.5999999999999999	left	right
+61	0.5998132054501184	flankers	left	8	0.6499999999999999	right	left
+62	0.6333689417569985	flankers	left	8	0.6499999999999999	left	left
+63	0.43318916055613954	no flankers	right	8	0.6499999999999999	right	right
+64	0.5332445546046074	no flankers	right	4	0.6499999999999999	right	right
+65	0.5584250414176495	flankers	left	4	0.6499999999999999	left	left
+66	0.8082675974455924	flankers	left	12	0.8	right	left
+67	0.5583916852483526	flankers	right	4	0.6499999999999999	right	left
+68	0.5916822827712167	flankers	left	4	0.5999999999999999	left	right
+69	0.5500611957413639	flankers	left	8	0.6499999999999999	left	left
+70	0.6499181633462285	flankers	left	12	0.8	left	left
+71	0.5331995095220918	flankers	right	4	0.5999999999999999	right	right
+72		flankers		0.0	0.0	right	0.0
+73		flankers		0.0	0.0	left	0.0
+74		flankers		0.0	0.0	right	0.0
+75		flankers		0.0	0.0	left	0.0
+76		flankers		0.0	0.0	left	0.0
+77		no flankers		0.0	0.0	left	0.0
+78		flankers		0.0	0.0	right	0.0
+79		flankers		0.0	0.0	right	0.0
+80		flankers		0.0	0.0	right	0.0
+81		flankers		0.0	0.0	left	0.0
+82		flankers		0.0	0.0	left	0.0
+83		flankers		0.0	0.0	left	0.0
+84		flankers		0.0	0.0	right	0.0
+85		flankers		0.0	0.0	right	0.0
+86		flankers		0.0	0.0	left	0.0
+87		flankers		0.0	0.0	left	0.0
+88		no flankers		0.0	0.0	right	0.0
+89		flankers		0.0	0.0	right	0.0
+90		flankers		0.0	0.0	right	0.0
+91		flankers		0.0	0.0	left	0.0
+92		no flankers		0.0	0.0	right	0.0
+93		no flankers		0.0	0.0	left	0.0
+94		flankers		0.0	0.0	left	0.0
+95		no flankers		0.0	0.0	left	0.0
+96		flankers		0.0	0.0	right	0.0
+97		flankers		0.0	0.0	left	0.0
+98		no flankers		0.0	0.0	right	0.0
+99		no flankers		0.0	0.0	right	0.0
+100		flankers		0.0	0.0	right	0.0
+101		flankers		0.0	0.0	right	0.0
+102		flankers		0.0	0.0	left	0.0
+103		no flankers		0.0	0.0	left	0.0
+104		flankers		0.0	0.0	left	0.0
+105		flankers		0.0	0.0	left	0.0
+106		no flankers		0.0	0.0	left	0.0
+107		flankers		0.0	0.0	left	0.0
+108		no flankers		0.0	0.0	left	0.0
+109		no flankers		0.0	0.0	left	0.0
+110		no flankers		0.0	0.0	right	0.0
+111		flankers		0.0	0.0	right	0.0
+112		flankers		0.0	0.0	right	0.0
+113		flankers		0.0	0.0	left	0.0
+114		flankers		0.0	0.0	right	0.0
+115		flankers		0.0	0.0	right	0.0
+116		flankers		0.0	0.0	right	0.0
+117		flankers		0.0	0.0	right	0.0
+118		flankers		0.0	0.0	right	0.0
+119		flankers		0.0	0.0	left	0.0
+120		flankers		0.0	0.0	right	0.0
+121		flankers		0.0	0.0	left	0.0
+122		no flankers		0.0	0.0	left	0.0
+123		flankers		0.0	0.0	left	0.0
+124		flankers		0.0	0.0	right	0.0
+125		flankers		0.0	0.0	right	0.0
+126		flankers		0.0	0.0	left	0.0
+127		flankers		0.0	0.0	left	0.0
+128		flankers		0.0	0.0	right	0.0
+129		flankers		0.0	0.0	right	0.0
+130		flankers		0.0	0.0	left	0.0
+131		flankers		0.0	0.0	right	0.0
+132		flankers		0.0	0.0	right	0.0
+133		flankers		0.0	0.0	left	0.0
+134		flankers		0.0	0.0	right	0.0
+135		flankers		0.0	0.0	left	0.0
+136		flankers		0.0	0.0	right	0.0
+137		flankers		0.0	0.0	right	0.0
+138		flankers		0.0	0.0	right	0.0
+139		flankers		0.0	0.0	right	0.0
+140		flankers		0.0	0.0	left	0.0
+141		flankers		0.0	0.0	left	0.0
+142		flankers		0.0	0.0	left	0.0
+143		flankers		0.0	0.0	right	0.0
+0	0.5916996735941211	flankers	left	4	0.8	left	right
+1	0.6001000114883936	flankers	left	4	0.8	left	right
+2	0.49147835398434836	no flankers	right	4	0.8	right	right
+3	0.4750195076576347	flankers	right	4	0.75	right	right
+4	0.6834456752021651	flankers	right	12	0.8	left	left
+5	0.5333580225997139	flankers	left	8	0.8	left	right
+6	0.5917033798341436	flankers	right	4	0.75	right	right
+7	0.5665987284173752	flankers	left	4	0.75	left	right
+8	1.775124394278464	flankers	left	12	0.8	right	left
+9	0.666576291403544	flankers	left	8	0.8	left	left
+10	0.5668048524385085	flankers	left	4	0.7	left	left
+11	0.900035836499228	flankers	left	12	0.8	right	right
+12	0.674945268798183	flankers	left	8	0.75	left	left
+13	0.6666002394231327	flankers	left	4	0.7	left	left
+14	0.6083771881440043	flankers	left	8	0.75	left	right
+15	0.5415910094579885	flankers	left	8	0.75	left	right
+16	0.6000649447469186	flankers	right	4	0.7	right	left
+17	0.5248889766971843	no flankers	right	4	0.7	right	right
+18	0.6250472902102047	flankers	right	4	0.6499999999999999	right	left
+19	0.5248878363163385	no flankers	left	4	0.6499999999999999	left	right
+20	0.5415684869167308	flankers	right	8	0.7	right	right
+21	0.8166456978942733	flankers	right	4	0.6499999999999999	right	left
+22	0.8416859177377773	flankers	right	8	0.75	left	left
+23	0.7833667892864469	flankers	right	8	0.75	right	left
+24	0.775023755579241	flankers	left	8	0.75	left	right
+25	0.650057575030587	flankers	right	8	0.7	right	left
+26	0.675091522771254	flankers	right	12	0.8	right	right
+27	0.8834084987538517	flankers	left	8	0.75	right	left
+28	0.6167416040098033	flankers	left	4	0.7	right	right
+29	0.7084308716202941	flankers	right	4	0.7	right	left
+30	0.7000750086153857	flankers	left	8	0.75	left	left
+31	1.3582677827580483	no flankers	left	12	0.8	right	left
+32	0.7748435752455407	flankers	right	12	0.8	right	left
+33	0.6917453743972146	flankers	right	12	0.75	right	right
+34	0.6500866547667101	flankers	left	8	0.75	left	left
+35	0.6582429509435315	no flankers	left	8	0.75	left	right
+36	0.524983058203361	no flankers	left	4	0.7	left	right
+37	0.6583635463248356	flankers	left	4	0.7	left	left
+38		no flankers		4	0.7	left	right
+39	4.761094351124484e-05	flankers	left	12	0.8	right	right
+40	0.01668321645774995	flankers	right	12	0.8	left	right
+41	0.8250833832953504	flankers	left	8	0.7	left	right
+42	0.5498542164350511	flankers	left	4	0.6499999999999999	left	left
+43	0.6082058457686799	flankers	left	8	0.7	left	left
+44	0.816736643348122	flankers	left	12	0.8	left	left
+45	0.9082374628560501	no flankers	right	12	0.8	right	left
+46	0.6665774317843898	flankers	left	12	0.8	left	right
+47	0.9500621080478595	flankers	left	8	0.7	left	right
+48		flankers		12	0.8	right	left
+49	4.7896039177430794e-05	flankers	left	12	0.8	left	left
+50	3.421145629545208e-05	flankers	left	8	0.75	right	right
+51	6.870800825709011e-05	flankers	right	12	0.8	right	left
+52	4.5900369514129125e-05	flankers	left	4	0.6499999999999999	left	right
+53	0.033403210232791025	flankers	left	8	0.75	left	left
+54	1.9582027239739546	flankers	left	12	0.75	left	right
+55	0.8001152926062787	flankers	left	12	0.8	right	left
+56	0.8167249544349033	flankers	left	12	0.8	right	right
+57	0.7333721633349342	flankers	right	12	0.8	right	right
+58	0.6500592856009462	flankers	right	12	0.8	right	right
+59	0.658258916288105	no flankers	right	8	0.75	right	left
+60	0.6333481297879189	flankers	right	12	0.75	right	right
+61	0.5332086325779528	no flankers	right	4	0.6499999999999999	right	left
+62	0.5249611058497976	flankers	right	4	0.6499999999999999	right	right
+63	0.6581420271486422	flankers	left	8	0.75	left	right
+64	1.3833826976133423	flankers	left	12	0.8	right	left
+65	0.6249172866791923	no flankers	right	12	0.8	right	right
+66	0.6334102805994917	flankers	left	8	0.7	left	left
+67	0.49986386691489315	no flankers	left	8	0.7	left	left
+68	0.48340758644735615	flankers	right	4	0.5999999999999999	right	right
+69	0.6000851865264849	flankers	right	12	0.8	right	right
+70	0.6333672311830014	flankers	right	8	0.7	right	right
+71	0.6833461768837878	flankers	left	12	0.8	left	left
+72	0.5832289171194134	no flankers	right	4	0.5999999999999999	right	left
+73	0.8665733264115261	no flankers	left	8	0.7	left	right
+74	0.5500842884739541	flankers	right	8	0.7	right	right
+75	1.041529856480338	no flankers	left	8	0.7	left	right
+76	0.7666830026373646	flankers	right	4	0.5999999999999999	right	left
+77	0.6415708532076678	flankers	left	4	0.5999999999999999	left	left
+78	0.5248858406484942	flankers	right	4	0.5499999999999998	right	right
+79	0.574970556766857	flankers	left	4	0.5499999999999998	left	right
+80	0.5999038658101199	no flankers	right	4	0.5499999999999998	right	left
+81	0.5415664912488865	flankers	left	8	0.6499999999999999	left	right
+82	0.6751094837854907	flankers	right	12	0.8	left	left
+83	0.5916266891545092	flankers	left	4	0.5499999999999998	left	right
+84	0.549948583031437	flankers	right	4	0.49999999999999983	right	left
+85	0.7251180794155516	flankers	left	12	0.8	left	left
+86	0.6332460656103649	flankers	left	12	0.8	right	right
+87	0.6500558644565899	flankers	right	12	0.8	right	left
+88	0.5333862470506574	flankers	left	8	0.6499999999999999	left	left
+89	0.5833720350419753	flankers	right	8	0.6499999999999999	right	left
+90	0.6083270113413164	flankers	left	4	0.49999999999999983	left	left
+91	0.5750264354774117	flankers	right	8	0.5999999999999999	right	right
+92	0.7000995268263068	flankers	left	8	0.5999999999999999	left	right
+93	0.583339534159677	flankers	right	4	0.49999999999999983	right	right
+94	0.4916052214666706	flankers	right	8	0.5999999999999999	right	right
+95	1.466766849212945	flankers	right	12	0.8	left	right
+96	0.8000987570703728	flankers	right	12	0.8	left	left
+97	0.641554317669943	flankers	right	4	0.44999999999999984	right	left
+98	0.6333675162786676	flankers	right	4	0.44999999999999984	right	right
+99	0.8499431377094879	flankers	right	12	0.8	left	right
+100	0.7167268645735021	flankers	left	12	0.8	left	left
+101	0.7915270767989568	no flankers	right	4	0.44999999999999984	right	left
+102	0.6417450465378352	flankers	left	8	0.6499999999999999	right	right
+103	0.6749797653483256	flankers	left	8	0.6499999999999999	left	left
+104	0.49164656030916376	flankers	left	4	0.49999999999999983	right	left
+105	0.8165601692562632	no flankers	left	8	0.6499999999999999	left	right
+106	0.5499157970552915	flankers	left	4	0.49999999999999983	left	left
+107	0.8000283384899376	flankers	right	12	0.8	left	left
+108	0.6082625797662331	no flankers	left	4	0.49999999999999983	left	left
+109	0.791816733792075	flankers	right	12	0.8	right	right
+110		no flankers		8	0.6499999999999999	left	left
+111	3.563693280739244e-05	flankers	right	4	0.49999999999999983	right	left
+112	0.0001046300349116791	flankers	right	4	0.44999999999999984	right	right
+113	0.00010548532191023696	flankers	right	4	0.49999999999999983	left	left
+114	4.9321515689371154e-05	flankers	left	4	0.5499999999999998	right	right
+115	4.9891705202753656e-05	flankers	right	8	0.7	left	left
+116	0.00010520022806304041	no flankers	left	8	0.7	right	left
+117	4.732584784505889e-05	flankers	right	8	0.7	right	right
+118	4.3049414671259e-05	flankers	right	8	0.75	left	left
+119	4.7040752178872935e-05	flankers	left	4	0.5999999999999999	right	right
+120	5.901476106373593e-05	flankers	right	8	0.8	left	left
+121	4.618546699930448e-05	flankers	left	12	0.8	right	left
+122	0.00010919156193267554	flankers	right	12	0.8	left	right
+123	0.8415590502554551	no flankers	left	8	0.8	right	right
+124	0.758430344192675	flankers	left	8	0.8	left	right
+125	1.5916851337242406	no flankers	right	8	0.8	left	left
+126	0.6748885348006297	flankers	left	12	0.8	left	right
+127	1.0666670087812236	flankers	left	12	0.8	left	left
+128	1.0501203530511702	no flankers	right	12	0.8	right	right
+129	0.8584726238514122	flankers	left	4	0.5999999999999999	left	right
+130	0.883293035089082	flankers	right	8	0.8	right	left
+131	0.6833889412046119	flankers	left	4	0.5999999999999999	left	left
+132	0.6250290441003017	flankers	right	12	0.75	right	right
+133	0.8667369712075015	flankers	right	4	0.5499999999999998	right	right
+134	1.3667362584710645	flankers	right	12	0.8	left	left
+135	0.8166328685983899	flankers	left	8	0.75	left	left
+136	0.7083610232311912	flankers	right	8	0.75	right	left
+137	0.5999184056781814	flankers	left	12	0.8	right	right
+138	0.583476665078706	flankers	right	4	0.5499999999999998	right	left
+139	0.5750204484720598	flankers	left	8	0.75	left	right
+140	0.566688248392893	flankers	right	8	0.7	right	right
+141	0.616544603042712	flankers	left	4	0.5499999999999998	left	right
+142	0.5500044617438107	flankers	right	4	0.49999999999999983	right	left
+143	0.6917105927514058	flankers	left	12	0.8	left	left
+0	0.5417127452201385	flankers	right	8	0.7	right	right
+1	0.5248579012932169	no flankers	right	8	0.7	right	right
+2	0.5248895468903356	flankers	left	4	0.49999999999999983	left	right
+3	0.5918134266848938	flankers	left	12	0.8	left	left
+4	0.7000484947384393	flankers	left	4	0.49999999999999983	left	right
+5	0.774964455722511	flankers	left	12	0.8	right	left
+6	0.5333919489621621	flankers	left	12	0.8	left	left
+7	0.5916189915769792	flankers	left	4	0.44999999999999984	left	left
+8	0.6832558016212715	flankers	left	12	0.8	right	right
+9	0.6165351948930038	flankers	left	12	0.8	right	right
+10	0.6248505743387796	no flankers	left	4	0.44999999999999984	left	right
+11	0.5916922611122573	flankers	right	4	0.44999999999999984	right	left
+12	0.6584040298803302	flankers	left	12	0.8	left	left
+13	0.8831966728212137	flankers	right	12	0.8	right	right
+14	0.5750218739485717	flankers	right	8	0.7	right	right
+15	0.6499942838363495	flankers	right	4	0.44999999999999984	right	left
+16	0.6499680550532503	flankers	right	4	0.39999999999999986	right	left
+17	0.7250781660495704	flankers	right	12	0.75	right	right
+18	0.5998608163936296	flankers	right	4	0.39999999999999986	right	right
+19	0.7333852777283028	flankers	left	8	0.75	right	left
+20	0.7333596191365359	flankers	left	12	0.8	right	right
+21	0.6167096733170183	flankers	right	8	0.75	right	left
+22	0.733265252534693	flankers	right	4	0.39999999999999986	right	right
+23	0.7584297740013426	flankers	left	8	0.75	left	right
+24	0.6082320745517791	flankers	left	4	0.34999999999999987	left	right
+25		flankers		8	0.8	right	left
+26	0.00012401652747939806	flankers	left	8	0.8	right	right
+27	0.0001034896540659247	flankers	right	12	0.8	left	right
+28	4.561527384794317e-05	flankers	left	8	0.8	right	left
+29	0.1500448882816272	flankers	right	4	0.39999999999999986	left	left
+30	0.7749769999227283	flankers	right	4	0.39999999999999986	right	right
+31	0.7333918349231681	flankers	left	8	0.8	left	left
+32	0.6581272021849145	flankers	right	8	0.8	right	right
+33	0.4833710942275502	flankers	right	8	0.75	right	right
+34	0.608366069420299	flankers	left	4	0.39999999999999986	left	left
+35	0.9083024646224658	no flankers	left	12	0.8	left	left
+36	0.5998859047940641	flankers	left	8	0.75	left	left
+37	0.7250448098802735	flankers	right	4	0.34999999999999987	right	right
+38	0.5167246978471667	flankers	left	8	0.75	left	right
+39	0.6500008410330338	flankers	right	8	0.7	right	left
+40	0.6750467627844046	flankers	right	8	0.7	right	right
+41	0.6415121235422703	no flankers	left	4	0.34999999999999987	left	right
+42	0.9916130615911243	no flankers	left	12	0.8	left	left
+43	0.8415479315317498	no flankers	left	12	0.8	right	left
+44	0.666807788920778	flankers	right	4	0.34999999999999987	right	right
+45	0.7082367216080456	flankers	left	4	0.39999999999999986	right	right
+46	0.5417429653407453	flankers	left	12	0.8	right	left
+47	0.7417263157658454	flankers	left	8	0.7	left	right
+48	0.9332061237364542	flankers	left	12	0.8	left	left
+49	0.8167699995174189	flankers	left	4	0.39999999999999986	left	left
+50	0.8165516163917346	flankers	right	12	0.8	right	left
+51	0.46676314297292265	flankers	left	4	0.39999999999999986	left	right
+52	0.5917507056838076	flankers	right	4	0.44999999999999984	left	left
+53	0.6667171285625955	flankers	left	12	0.75	left	right
+54	0.616447100393998	flankers	right	4	0.49999999999999983	left	right
+55	0.8999366232765169	no flankers	right	4	0.49999999999999983	right	left
+56	0.5333791196644597	flankers	left	8	0.6499999999999999	left	left
+57	0.6082970763163758	flankers	right	4	0.49999999999999983	right	right
+58	0.5584204798906285	flankers	left	8	0.6499999999999999	left	right
+59	0.6998888412781525	flankers	right	4	0.49999999999999983	right	right
+60	0.7500781874314271	flankers	right	4	0.44999999999999984	right	right
+61	0.5917153538448474	flankers	right	12	0.75	right	right
+62	0.6248979001866246	no flankers	left	12	0.75	left	right
+63	0.5250574681194848	flankers	right	8	0.6499999999999999	right	left
+64	0.8332077487812057	no flankers	right	12	0.75	right	right
+65	0.5665171911132347	no flankers	right	4	0.44999999999999984	right	left
+66	0.5748895896540489	flankers	left	8	0.7	right	left
+67	1.7331706008426409	no flankers	right	12	0.75	right	left
+68	0.5166585556999053	flankers	right	12	0.75	right	left
+69	0.691627059779421	flankers	right	12	0.8	left	right
+70	0.6499597872843879	flankers	left	8	0.7	left	left
+71	0.4583374315807305	flankers	left	12	0.8	right	left
+72	0.4083801531360223	flankers	right	12	0.8	right	right
+73	0.5332519670864713	flankers	left	4	0.44999999999999984	left	left
+74	0.4833907658157841	flankers	right	12	0.8	left	right
+75		no flankers		12	0.8	left	right
+76	4.647056084650103e-05	flankers	right	12	0.8	left	left
+77	0.03341290347816539	flankers	left	12	0.8	right	right
+78	0.058187699441987206	no flankers	right	8	0.7	left	right
+79	0.6250555579790671	flankers	right	12	0.8	right	right
+80	0.7750522651276697	flankers	right	4	0.44999999999999984	right	left
+81	0.658412867842344	flankers	right	4	0.39999999999999986	right	left
+82	0.7083872520142904	flankers	right	12	0.8	left	left
+83	0.7584069663644186	flankers	left	8	0.7	left	left
+84	0.5832177983957081	flankers	right	12	0.8	left	right
+85	0.7582632782505243	no flankers	left	4	0.39999999999999986	left	left
+86	0.6334356540955923	flankers	right	8	0.75	left	right
+87	0.7250627708926913	flankers	left	8	0.8	right	left
+88	1.9499038800640847	no flankers	left	4	0.39999999999999986	left	left
+89	0.6998557702045218	flankers	left	12	0.8	left	left
+90	0.6501046157809469	flankers	right	12	0.8	left	right
+91	0.6417698498426034	flankers	left	8	0.8	left	right
+92	0.7833727762917988	flankers	left	4	0.39999999999999986	left	left
+93	0.783385320492016	flankers	left	4	0.39999999999999986	left	right
+94	0.891656025480188	flankers	right	4	0.34999999999999987	right	left
+95	0.5832175133000419	no flankers	right	12	0.8	right	right
+96	0.6414710697936243	no flankers	left	4	0.34999999999999987	left	right
+97	0.7166903723536961	flankers	right	8	0.8	right	right
+98	0.48341442873788765	flankers	right	8	0.75	right	right
+99	0.8498171255123452	no flankers	left	8	0.75	left	left
+100	0.5332864636402519	no flankers	right	12	0.8	right	right
+101	1.4166744355188712	flankers	right	12	0.8	left	left
+102	0.6249452260344697	flankers	left	8	0.8	right	left
+103	0.5415468196588336	no flankers	left	8	0.8	left	left
+104	0.5417167365576461	flankers	right	8	0.8	right	right
+105	0.6167156603223702	flankers	left	4	0.34999999999999987	left	left
+106	0.5999782757262437	flankers	left	4	0.39999999999999986	right	left
+107	0.7165623644905281	no flankers	left	4	0.39999999999999986	left	right
+108	0.6833960685889906	flankers	right	8	0.8	right	left
+109	0.5000420515825681	flankers	right	12	0.8	right	right
+110	1.2582440343066992	flankers	left	12	0.8	left	left
+111	0.641549756142922	flankers	left	8	0.8	right	left
+112	1.1166117430238955	no flankers	right	8	0.8	left	right
+113	0.5915679594891117	flankers	left	12	0.75	left	right
+114	0.6247935552473791	flankers	right	4	0.44999999999999984	left	right
+115	1.2666018929776328	flankers	left	4	0.49999999999999983	right	left
+116	0.6499389753153082	flankers	left	12	0.75	left	left
+117	0.6917254177133145	flankers	left	12	0.75	left	right
+118	0.5750438263003161	flankers	left	4	0.49999999999999983	left	left
+119	0.6333837667207263	flankers	right	12	0.7	right	right
+120	0.5665499770930182	flankers	right	12	0.7	right	left
+121	0.6499757526307803	flankers	right	12	0.75	left	left
+122	0.8417152825713856	flankers	right	12	0.8	left	right
+123	0.6167159454180364	flankers	left	8	0.8	right	left
+124	0.6334416411009443	flankers	right	4	0.5499999999999998	left	left
+125	0.8084278210972116	flankers	right	4	0.5999999999999999	left	right
+126	0.7583875798736699	flankers	left	8	0.8	left	right
+127	0.574897287231579	flankers	right	4	0.5999999999999999	right	right
+128	0.6833789628617524	flankers	left	4	0.5999999999999999	left	left
+129	0.7748971731925849	no flankers	right	4	0.5999999999999999	right	right
+130	0.7083838308662962	flankers	left	12	0.8	left	left
+131	0.8248903736657667	flankers	right	4	0.6499999999999999	left	right
+132	0.5000429068677477	flankers	right	8	0.8	right	right
+133	0.5583828472881578	flankers	right	8	0.75	right	right
+134	0.4500958918597462	flankers	right	8	0.75	right	right
+135	0.6998680293090729	no flankers	right	8	0.75	right	left
+136	0.8750606184221397	flankers	right	12	0.8	right	left
+137	0.6083937236799102	flankers	left	4	0.6499999999999999	left	right
+138	0.774801381117868	flankers	left	8	0.75	left	left
+139	0.5666879632972268	flankers	left	8	0.7	left	left
+140	0.5250346604807419	flankers	right	8	0.7	right	right
+141	0.5666568878914404	flankers	right	4	0.6499999999999999	right	left
+142	0.6082203856367414	flankers	left	8	0.7	left	left
+143	0.5499559955151199	flankers	left	12	0.75	left	left
+0	0.5083856554774684	flankers	left	4	0.5999999999999999	left	left
+1	0.4584012929644814	flankers	left	12	0.75	left	left
+2	0.7917477406899707	flankers	right	4	0.5999999999999999	right	right
+3	0.6332027311018464	flankers	left	4	0.5999999999999999	left	right
+4	0.5250289585710561	flankers	right	8	0.6499999999999999	right	left
+5	0.7250488012159622	flankers	left	12	0.75	left	left
+6	0.4164811407936213	no flankers	left	4	0.5999999999999999	left	left
+7	0.6250681021792843	flankers	left	4	0.5499999999999998	left	left
+8	0.5083309171495785	flankers	left	8	0.6499999999999999	left	right
+9	0.7998760975096957	no flankers	right	12	0.75	right	left
+10	0.7167123247054406	flankers	left	12	0.7	left	left
+11	0.7832265223169088	no flankers	left	4	0.5499999999999998	left	right
+12	1.5249995937392669	flankers	right	4	0.5999999999999999	left	left
+13	0.5332978674578044	flankers	right	4	0.5999999999999999	right	right
+14	0.5583731540427834	flankers	left	8	0.6499999999999999	left	left
+15	0.6748973727608245	flankers	left	8	0.5999999999999999	left	left
+16	0.9416406730870222	flankers	left	8	0.5999999999999999	left	left
+17	1.6583860688660934	flankers	left	12	0.75	right	right
+18	1.0165466557300533	flankers	right	8	0.5999999999999999	right	left
+19	0.5833629119879333	flankers	right	4	0.5999999999999999	right	left
+20	0.7916260049260018	flankers	right	12	0.75	right	right
+21	0.6334208291318646	flankers	left	4	0.5499999999999998	left	right
+22	0.6833761119087285	flankers	right	12	0.8	left	right
+23	0.5417709046960226	flankers	right	8	0.6499999999999999	left	right
+24	0.5249018059948867	no flankers	right	4	0.5499999999999998	right	right
+25	0.5751416140446963	flankers	left	4	0.5499999999999998	left	left
+26	0.6665446458064253	flankers	left	12	0.8	right	left
+27	0.3750465061984869	flankers	right	4	0.5499999999999998	right	right
+28	0.6331938931416516	flankers	left	8	0.7	right	left
+29	0.48324394164956175	no flankers	left	8	0.7	left	left
+30	0.6499170229653828	flankers	right	8	0.7	right	left
+31	0.5999303796870663	flankers	right	4	0.49999999999999983	right	left
+32	0.6332976678913838	flankers	right	12	0.8	right	right
+33	0.658333611299895	flankers	left	8	0.7	left	left
+34	0.7250556435064937	flankers	right	4	0.49999999999999983	right	left
+35	0.5415633551983774	flankers	right	8	0.6499999999999999	right	left
+36	0.5834236373211752	flankers	right	4	0.5499999999999998	left	right
+37	0.5165436622282868	flankers	right	4	0.5499999999999998	right	left
+38	0.5750626426015515	flankers	right	12	0.8	right	right
+39	1.2667675334432715	no flankers	left	12	0.8	left	left
+40	0.624875662739214	flankers	right	8	0.6499999999999999	right	right
+41	0.36643206160806585	flankers	right	12	0.75	right	right
+42	1.1000362926533853	flankers	left	12	0.8	right	left
+43	0.5082185895353177	no flankers	right	4	0.5499999999999998	right	left
+44	0.5500600553586992	no flankers	right	8	0.6499999999999999	right	right
+45	0.4917081409294042	flankers	right	8	0.6499999999999999	right	right
+46	0.4584164030256943	flankers	right	12	0.8	left	right
+47	0.6415828272183717	no flankers	right	12	0.8	left	left
+48	0.6416817553435976	no flankers	left	4	0.5499999999999998	left	left
+49	0.6501040455914335	flankers	right	8	0.7	left	right
+50	0.46670127725701605	flankers	left	8	0.75	right	left
+51	0.6666210513922124	flankers	left	4	0.5499999999999998	left	right
+52	0.7915302128494659	no flankers	left	4	0.5499999999999998	left	right
+53	0.5667392804807605	flankers	right	4	0.5999999999999999	left	right
+54	0.6914830865680415	flankers	right	12	0.8	left	left
+55	0.5750629276972177	no flankers	right	8	0.75	right	left
+56	0.6332261089282838	flankers	left	12	0.8	left	right
+57	0.6750863910529006	flankers	right	8	0.75	right	left
+58	0.5334424108586973	flankers	right	4	0.6499999999999999	left	right
+59	0.6584237014685641	flankers	left	12	0.8	left	left
+60	0.7500251596757153	flankers	left	12	0.8	right	left
+61	0.466596077028953	flankers	right	8	0.75	right	right
+62	0.4416080296559812	flankers	right	4	0.6499999999999999	right	right
+63	0.49170614526155987	flankers	right	12	0.8	right	right
+64	0.649966059385406	flankers	left	4	0.7	right	left
+65	0.6416466886021226	flankers	right	8	0.7	right	right
+66	0.5334324325176567	flankers	right	12	0.8	right	right
+67	0.5665690784881008	flankers	right	12	0.75	right	right
+68	0.45837763004237786	flankers	left	8	0.7	left	left
+69	0.40837188536715985	flankers	right	4	0.7	right	right
+70	0.5332300147365459	no flankers	left	8	0.7	left	left
+71	0.6334416411009443	flankers	left	12	0.75	left	left
+72	0.5415493855198292	no flankers	left	8	0.7	right	left
+73	1.950073511865412	flankers	right	12	0.8	left	left
+74	0.5749104016231286	no flankers	left	12	0.8	left	right
+75	0.5915950435592094	flankers	right	4	0.7	right	right
+76		flankers		12	0.8	right	left
+77	0.7250536478404683	flankers	left	12	0.8	left	left
+78	0.7584314845753397	flankers	left	8	0.7	left	left
+79	0.5081530175775697	no flankers	left	8	0.7	left	left
+80	0.5415716229654208	no flankers	left	4	0.7	left	left
+81	0.7750622434668912	flankers	left	12	0.8	right	left
+82	0.7668301118974341	flankers	left	8	0.6499999999999999	left	right
+83	0.7167103290375962	flankers	right	8	0.7	left	right
+84	0.608305058991391	flankers	left	8	0.7	left	left
+85	0.4915439259420964	flankers	right	8	0.75	left	right
+86	0.6000444178735052	flankers	left	12	0.8	left	left
+87	0.5582271851635596	no flankers	right	12	0.8	left	right
+88	0.7750998760693619	flankers	left	12	0.8	left	left
+89	0.5166118000452116	flankers	right	4	0.6499999999999999	right	right
+90	0.6250344609143212	flankers	left	4	0.6499999999999999	left	left
+91	0.5333486144500057	flankers	right	8	0.75	right	right
+92	0.4584012929663004	flankers	right	4	0.6499999999999999	right	right
+93	0.5581647492581396	flankers	right	12	0.75	right	right
+94	0.5248587565783964	flankers	right	8	0.8	left	right
+95	0.5417552244452963	flankers	left	4	0.5999999999999999	left	left
+96	0.40824786883968045	flankers	left	4	0.5999999999999999	left	left
+97	0.7000484947384393	flankers	right	12	0.75	right	left
+98	0.6082816811613156	flankers	left	12	0.75	left	right
+99	0.5831411077142548	flankers	left	8	0.8	left	left
+100	0.5332411334584322	flankers	right	8	0.8	right	right
+101	0.6583663972796785	flankers	left	8	0.75	left	left
+102	0.6000372904873075	flankers	right	4	0.5999999999999999	right	left
+103	0.4833445803506038	flankers	right	4	0.5499999999999998	right	right
+104	0.5583811367159797	flankers	right	12	0.8	left	right
+105	0.6501128835498093	flankers	left	8	0.75	left	right
+106	0.5582913316447957	flankers	right	4	0.5499999999999998	right	right
+107	0.6000546813102119	flankers	left	12	0.8	left	right
+108	0.5000243756621785	flankers	right	4	0.5999999999999999	left	right
+109	0.7750231853897276	flankers	right	4	0.5999999999999999	right	left
+110	0.6167490164916671	flankers	left	12	0.8	right	right
+111	0.7167425448242284	flankers	left	12	0.8	left	left
+112	0.3917639341125323	flankers	right	8	0.75	right	right
+113	0.6500607110792771	flankers	right	4	0.5999999999999999	right	left
+114	0.358233856399238	no flankers	right	4	0.5999999999999999	right	right
+115	0.3667083191139682	flankers	right	4	0.5499999999999998	right	right
+116	0.38325554503535386	flankers	right	8	0.8	left	right
+117	0.7167371280102088	flankers	right	4	0.5499999999999998	right	left
+118	0.5083158070883655	flankers	left	8	0.8	left	right
+119	0.4583017946479231	flankers	right	8	0.8	right	right
+120	0.45821455543409684	no flankers	right	12	0.8	left	right
+121	1.1167454527985683	flankers	left	12	0.8	right	left
+122	0.6584060255499935	flankers	left	8	0.8	right	left
+123	0.5167232723706547	flankers	right	12	0.8	right	right
+124	0.5167155747931247	flankers	left	8	0.8	left	left
+125	0.6083917280120659	flankers	right	4	0.5499999999999998	right	left
+126	0.6917462296842132	flankers	left	4	0.49999999999999983	left	right
+127	0.575037554199298	flankers	right	12	0.8	right	left
+128	0.4833425846809405	flankers	right	12	0.75	right	right
+129	0.5250474897766253	no flankers	right	8	0.8	right	right
+130	0.44162114404753083	flankers	left	8	0.8	left	left
+131	0.5999434940786159	no flankers	right	4	0.49999999999999983	right	left
+132	0.616712239176195	flankers	right	12	0.8	left	left
+133	0.6332358021754771	flankers	right	4	0.49999999999999983	right	left
+134	0.5082545115637913	flankers	right	8	0.75	right	right
+135	0.6915589219624962	no flankers	right	12	0.8	left	left
+136	0.4248937377924449	flankers	right	8	0.8	left	right
+137	0.4917252466584614	flankers	right	12	0.8	right	right
+138	0.44165164926380385	flankers	right	4	0.5499999999999998	left	right
+139	0.44170952364220284	flankers	right	4	0.5999999999999999	left	left
+140	0.6583792265755619	flankers	left	8	0.8	right	left
+141	0.449984419534303	flankers	right	12	0.8	right	right
+142	0.3832016619926435	no flankers	right	4	0.5999999999999999	right	right
+143	0.6583202118144982	flankers	left	4	0.5999999999999999	left	left
+0	0.6247590586954175	no flankers	left	4	0.5999999999999999	left	right
+1	0.6664804993270081	flankers	left	4	0.5999999999999999	left	right
+2	0.46667504847209784	flankers	right	4	0.5499999999999998	right	right
+3	0.6417139711320488	flankers	left	8	0.8	right	left
+4	0.4667175276990747	flankers	left	4	0.5499999999999998	left	left
+5	0.47499784040155646	flankers	left	8	0.8	left	left
+6	0.3917374202337669	flankers	right	8	0.8	right	right
+7	0.4666918691054889	flankers	left	8	0.75	left	left
+8	0.44152763273450546	flankers	right	8	0.8	left	right
+9	0.5749511702742893	flankers	right	12	0.75	right	right
+10	0.4581424262814835	flankers	right	8	0.8	right	right
+11		flankers		12	0.8	right	left
+12	0.6415349311791942	no flankers	left	4	0.5499999999999998	left	right
+13	0.7667043847959576	flankers	left	4	0.5499999999999998	left	right
+14	0.7250200065736863	flankers	left	8	0.8	left	right
+15	0.5748582291525963	flankers	right	8	0.75	right	left
+16	0.6167966274351784	flankers	right	8	0.75	right	left
+17	0.549913516291781	flankers	left	4	0.49999999999999983	left	right
+18	0.8581373515826272	flankers	left	12	0.8	left	left
+19	0.44160574889247073	flankers	right	4	0.49999999999999983	right	right
+20	0.7334092257460725	flankers	right	4	0.49999999999999983	right	left
+21	0.7583887202545156	flankers	right	12	0.8	right	left
+22		flankers		12	0.8	right	left
+23	0.5831730384070397	flankers	right	4	0.44999999999999984	right	left
+24	0.699830111612755	flankers	left	12	0.8	left	left
+25	0.5583990977302165	flankers	left	8	0.75	left	left
+26		flankers		12	0.8	left	left
+27	0.7498934455707058	flankers	left	8	0.7	left	left
+28	0.42491911128854554	flankers	right	4	0.44999999999999984	right	right
+29	0.5917430081044586	flankers	right	8	0.75	left	right
+30	0.4832231296823011	flankers	right	12	0.8	left	right
+31	0.6083170330002758	flankers	left	8	0.75	left	left
+32	0.6249979686945153	flankers	left	4	0.44999999999999984	left	right
+33		no flankers		8	0.75	left	left
+34	0.5500697486058925	flankers	right	4	0.39999999999999986	right	left
+35	0.5249448554095579	flankers	left	8	0.75	left	left
+36	0.4749525102233747	flankers	left	4	0.44999999999999984	right	right
+37	0.5167440843415534	flankers	left	12	0.8	left	right
+38	0.42507363303047896	flankers	left	12	0.8	right	right
+39	1.7667006785559352	flankers	left	12	0.8	right	left
+40	0.5581884121802432	no flankers	right	4	0.44999999999999984	right	left
+41	0.5667734919388749	flankers	left	4	0.44999999999999984	left	right
+42	0.53342216908095	flankers	left	8	0.7	left	right
+43	0.7667229160033457	flankers	right	4	0.44999999999999984	right	left
+44	0.49998788344237255	flankers	left	12	0.8	left	right
+45	0.6583709588085185	flankers	right	4	0.39999999999999986	right	left
+46	0.5332898847846081	flankers	right	12	0.8	left	left
+47	0.3916801160448813	flankers	right	12	0.8	left	left
+48	0.5415528066641855	flankers	right	12	0.8	left	left
+49	0.7498712081232952	no flankers	right	8	0.7	right	left
+50	0.5417968483834557	flankers	left	12	0.8	left	right
+51	0.5749802500122314	flankers	left	12	0.8	left	right
+52	0.5333603033632244	flankers	left	8	0.7	left	right
+53	0.5748858834122075	no flankers	right	8	0.7	right	right
+54	0.4584081352550129	flankers	right	8	0.75	left	right
+55	0.6000190443774045	flankers	right	8	0.8	left	left
+56	0.48339219129229605	flankers	right	8	0.8	right	right
+57	0.7417086398454558	flankers	right	4	0.39999999999999986	right	right
+58		flankers		12	0.8	left	left
+59	0.5667592371628416	flankers	right	4	0.39999999999999986	right	left
+60	0.5166480071693513	flankers	left	12	0.8	right	right
+61	0.6500601408897637	flankers	left	12	0.8	left	right
+62	0.7333921200188342	flankers	left	12	0.8	left	right
+63	0.6333823412442143	flankers	left	8	0.8	left	left
+64	0.4834395171383221	flankers	right	4	0.44999999999999984	left	right
+65	0.5665385732736468	flankers	right	12	0.75	right	right
+66	0.6915027581562754	no flankers	left	8	0.8	left	left
+67	0.6831511715863599	no flankers	left	8	0.8	left	right
+68	0.9915158440380765	flankers	left	12	0.75	left	left
+69	0.5165396708907792	flankers	right	4	0.44999999999999984	right	right
+70	0.4831276227014314	flankers	right	4	0.44999999999999984	right	right
+71		flankers		12	0.8	left	left
+72		no flankers		12	0.8	left	right
+73	4.618546518031508e-05	flankers	right	8	0.75	right	left
+74	0.0749319263304642	flankers	right	8	0.8	left	right
+75	0.6998506384861685	flankers	right	8	0.8	left	right
+76	0.7751089991234039	flankers	right	12	0.8	right	right
+77	0.5166996094467322	flankers	right	4	0.39999999999999986	right	right
+78	0.6583564189386379	flankers	right	4	0.44999999999999984	left	right
+79	0.6915925632274593	no flankers	right	8	0.8	right	right
+80	1.0917052329550643	no flankers	left	12	0.8	left	left
+81	0.508269336527519	no flankers	right	4	0.44999999999999984	right	right
+82	0.6500980585842626	flankers	left	4	0.44999999999999984	left	left
+83	0.650084944194532	flankers	right	4	0.49999999999999983	left	right
+84	0.6917348258666607	flankers	left	4	0.49999999999999983	left	left
+85	0.5999209715373581	flankers	left	12	0.8	right	right
+86	0.724998339319427	no flankers	right	8	0.8	right	right
+87	1.2666703158884047	no flankers	left	8	0.8	left	left
+88	0.716728290051833	flankers	right	4	0.49999999999999983	right	left
+89	0.6999427243208629	flankers	left	12	0.8	left	right
+90	0.8249587965783576	flankers	left	12	0.8	right	right
+91	0.7917867987689533	flankers	right	8	0.8	right	left
+92	0.8749132240682229	flankers	right	12	0.8	left	left
+93	0.6748460555754718	no flankers	left	8	0.8	right	left
+94	0.6249275501140801	no flankers	right	4	0.49999999999999983	right	right
+95	0.6750496137392474	flankers	left	12	0.8	left	right
+96	0.5498795899293327	flankers	right	4	0.44999999999999984	right	right
+97	0.8417680252332502	flankers	left	8	0.8	left	left
+98	0.5416178084306011	flankers	right	8	0.75	right	right
+99	0.5748371320878505	flankers	right	4	0.44999999999999984	right	left
+100	0.6083506742652389	flankers	right	4	0.44999999999999984	right	right
+101	1.0832949167179322	flankers	right	12	0.8	left	left
+102	0.9751071745122317	flankers	right	4	0.49999999999999983	left	left
+103	0.6333441384522303	flankers	left	12	0.8	left	right
+104	0.5667190387048322	flankers	right	8	0.75	right	left
+105	0.5500928413366637	flankers	right	4	0.49999999999999983	right	left
+106	0.5417218682759994	flankers	right	4	0.49999999999999983	right	left
+107	0.5417954229051247	flankers	right	8	0.75	right	right
+108	0.4416191483796865	flankers	right	8	0.7	right	right
+109	0.9581516918842681	no flankers	right	12	0.8	right	left
+110	0.5334558103440941	flankers	left	4	0.5499999999999998	right	left
+111	0.8250277896804619	flankers	left	12	0.8	left	right
+112	0.8164598156508873	no flankers	left	4	0.5499999999999998	left	right
+113	0.6583803669582267	flankers	right	12	0.75	right	left
+114	0.5583854131473345	flankers	left	4	0.5499999999999998	left	left
+115	0.8417229801470967	flankers	right	12	0.75	right	right
+116	0.6500071131322329	flankers	right	4	0.5499999999999998	right	left
+117	0.7000453586879303	no flankers	right	4	0.5499999999999998	right	left
+118	0.608468133596034	flankers	right	12	0.75	right	left
+119	0.48334828658880724	flankers	right	4	0.49999999999999983	right	left
+120	0.6998104400245211	flankers	left	8	0.7	left	left
+121	0.7168018446827773	flankers	right	4	0.5499999999999998	left	left
+122	0.558369447800942	flankers	right	8	0.7	right	left
+123	0.4749767433368106	flankers	right	4	0.5999999999999999	left	right
+124	1.3414859232671006	no flankers	right	12	0.75	right	left
+125	0.5833606312244228	flankers	right	12	0.8	left	right
+126	0.7415789214101096	flankers	right	4	0.6499999999999999	left	right
+127		no flankers		12	0.8	left	left
+128	0.6668037975850893	flankers	right	8	0.6499999999999999	right	left
+129	0.808378214487675	flankers	left	8	0.6499999999999999	left	left
+130	0.7500548096031707	flankers	right	8	0.6499999999999999	right	left
+131	0.6498799605542445	no flankers	right	4	0.6499999999999999	right	left
+132	0.6667556164520647	flankers	right	8	0.5999999999999999	right	right
+133	0.7251394615741447	flankers	right	12	0.8	right	left
+134	0.7916921470732632	flankers	left	8	0.5999999999999999	left	right
+135	0.5249397236912046	flankers	right	8	0.5999999999999999	right	right
+136	0.6833969238778081	flankers	left	8	0.6499999999999999	right	right
+137	0.7582256456498726	no flankers	right	12	0.8	right	left
+138	0.7332318963653961	flankers	right	12	0.8	left	left
+139	0.6000267419531156	flankers	right	8	0.6499999999999999	right	right
+140	0.7584417480120464	flankers	left	4	0.7	right	left
+141	1.4083351080535067	flankers	left	12	0.8	right	left
+142	0.5997567565500503	no flankers	left	8	0.6499999999999999	left	left
+143	0.9167441413592314	flankers	left	8	0.6499999999999999	left	right
