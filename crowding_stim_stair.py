@@ -25,8 +25,8 @@ import sys
 import os
 
 # append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
-sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
-import psychoLink as PL
+#sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
+#import psychoLink as PL
 
 
 
@@ -77,7 +77,7 @@ def staircase_1upDdown(D,response,step,max_val,min_val,curr_dist,counter):
             curr_dist = curr_dist + step # increase the flanker target separation by step
         counter = 1
         
-    else: #if correct response
+    elif response == 1: #if correct response
         if counter == D: #if counted necessary number of responses (i.e. too easy)
             if curr_dist > min_val: #and if distance not minimal
                 curr_dist = curr_dist - step #reduce distance between flanker and target
@@ -187,9 +187,9 @@ core.wait(2.0)
 
 #Instructions
 #Slide 1 - Intro
-text1 = 'Welcome!\n\nIn this experiment, you will have to indicate the orientation of a gabor shape appearing in the periphery of your visual field.\n\nIt is important that you keep your eyes fixated on the cross in the center during the whole task.\n\nOn the next slide, you will see an example of how the display will look.'#Please keep your eyes fixated on the center.\nThe experiment will start with a practice block.
+text1 = 'Welcome!\n\nIn this experiment, you will have to indicate the orientation of a shape that will appear in the periphery of your visual field.\n\nHowever, it is important that you keep your eyes fixated on the cross in the center of the screen during the whole task.\n\nOn the next slide, you will see an example of how the task display will look.'
 Instruction1 = visual.TextStim(win, text=text1, colorSpace='rgb255', color = params['textCol'], pos = (0,120),height=30, wrapWidth = 700)
-text2 = 'Press spacebar to continue'
+text2 = 'Press spacebar to continue with instructions'
 PressText1 = visual.TextStim(win, text=text2, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-160))
     
 Instruction1.draw()
@@ -215,7 +215,7 @@ win.flip() # flip the screen
 event.waitKeys(keyList = 'space') 
 
 #Slide3 - Response etc.
-text3 = 'In the experiment, these stimuli will only be presented for a very short time. Please Indicate the orientation of the middle gabor as best as you can, using the left or right arrow keys.\n\nMake sure to just press once after each stimulus - only the first answer counts.\n\nThe experiment will start with a practice block.'
+text3 = 'In the experiment, these stimuli will only be presented for a very short time. Please Indicate the orientation of the middle shape as best as you can, using the left or right arrow keys.\n\nSometimes, there will only be one shape presented, so do not let this confuse you.\n\nMake sure to just press once after each stimulus - only the first answer counts.\n\nThe experiment will start with a practice block.'
 Instruction2 = visual.TextStim(win, text=text3, colorSpace='rgb255', color = params['textCol'], pos = (0,120),height=30, wrapWidth = 700)
 text4 = 'Press spacebar to start'
 PressText2 = visual.TextStim(win, text=text4, colorSpace='rgb255', color = params['textCol'], height=30, pos = (0,-160))
@@ -354,12 +354,16 @@ for j in range(params['blk_crw']):
             if core.getTime() >= params['display_time']: #return to fixation display after 250ms
                 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
                 win.flip()
-                
+        print'key is:',key_trl[j][k]  
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
 #            tracker.logVar('response', 'correct')
-        else:
+        # needs to include condition for misses, doesn't work
+        elif (key_trl[j][k] == 'left' and ort_lbl[k] == 'right') or (key_trl[j][k] == 'right' and ort_lbl[k] == 'left'):
             response = 0
+        
+        else:
+            response = 2
 #            tracker.logVar('response', 'incorrect')
         
         if flank_lbl[k] == 'flankers':
