@@ -4,10 +4,10 @@
 	"iti": 0.5,
 	"display_time":0.350,
 	
-	"hRes": 1920, 
-	"vRes": 1080, 
+	"hRes": 1680, 
+	"vRes": 1050, 
 	"screenHeight": 30, 
-	"screenDis": 50,     
+	"screenDis": 57,     
 	"backCol": [128,128,128],
 	"textCol": [255,255,255],
 
@@ -27,7 +27,7 @@
 	"step_stair": 0.05,
 	"Down_factor": 3, 
 
-	"set_size": [5,15,30],
+	"set_size": [5,15,60],
 
 	"blk_vs": 4,
 	"rep_vs": 20,

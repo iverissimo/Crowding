@@ -25,8 +25,8 @@ import sys
 import os
 
 # append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
-#sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
-#import psychoLink as PL
+sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
+import psychoLink as PL
 
 
 
@@ -127,18 +127,6 @@ num_trl = num_trl_fl + num_trl_nofl #total number of trials
 
 l_trl = r_trl = num_trl/2 #number of trials for left and right target locations
 
-# screen info   
-# params['screenHeight'] - height of the screen in cm 
-# params['screenDis'] - distance between screen and chinrest in cm 
-# num_fl - number of distractors
-# initpos_fl - initial pos (degree)
-# ort_trgt - orientation of target (degrees)
-# max_dist - ratio of ecc that is max possible flk-trgt distance 
-# min_dist - ratio of ecc that is min possible flk-trgt distance
-# step_stair - step size for the staircase 
-# Down_factor - number of correct responses needed to increase difficulty
- 
-
 # fixation cross info
 fixpos = (0,0) #center position
 fixlineSize = ang2pix(params['fixlineSize_deg'],params['screenHeight'],params['screenDis'],params['vRes'])
@@ -177,10 +165,10 @@ target_vf_all = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array to
 win = visual.Window(size= (params['hRes'], params['vRes']),colorSpace='rgb255', color = params['backCol'], units='pix',fullscr  = True, screen = 0,allowStencil=True)   
 
 ## start tracker, define filename (saved in cwd)
-#tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
+tracker = PL.eyeLink(win, fileName = 'eyedata_crowding_pp_'+pp+'.EDF', fileDest=output_dir)
 #
 ## calibrate
-#tracker.calibrate()
+tracker.calibrate()
    
 #pause
 core.wait(2.0)
@@ -241,7 +229,6 @@ for j in range(params['blk_crw']):
     if j == 0:
         text = 'Practice block' 
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
-        #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
         
         num_trl_blk = num_trl/2#define number of trials in this block (training block = half length)
         
@@ -249,11 +236,10 @@ for j in range(params['blk_crw']):
     else:
         
         ## calibrate between blocks, gives participant time to have break
-#        tracker.calibrate()
+        tracker.calibrate()
         
         text = 'Block %i out of %i' %(j, params['blk_crw']-1)
         BlockText = visual.TextStim(win, text=text, colorSpace='rgb255', color = params['textCol'], pos = (0,140),height=50)
-        #trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',ori=ort_blk,sf=gab_sf,size=siz_gab,pos=(0,0))
         
         num_trl_blk = num_trl#define number of trials in this block 
     
@@ -263,7 +249,7 @@ for j in range(params['blk_crw']):
     
     BlockText.draw()
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-    #trgt.draw()
+    trgt.draw()
     PressText2.draw()
     
     win.flip()
@@ -278,12 +264,13 @@ for j in range(params['blk_crw']):
 # =============================================================================
 #         
 #        # Start recording eye movements
-#        tracker.startTrial()
+        tracker.startTrial()
 #         
 # =============================================================================
         
-#        if k == 0: tracker.logVar('block_Nr', j) # save block start
-#        tracker.logVar('trial_Nr', k) # save trial number
+        if k == 0: 
+		tracker.logVar('block_Nr', j) # save block start
+        tracker.logVar('trial_Nr', k) # save trial number
         
         if flank_lbl[k]=='flankers': # doing this to guarantee balanced ecc for no flank and flank conditions
             trls_idx = trls_idx_fl[fl_counter]
@@ -308,7 +295,7 @@ for j in range(params['blk_crw']):
         target_ecc_all[j][k] = trgt_ecc[trls_idx] # save all target ecc
         target_vf_all[j][k] = trgt_vf[trls_idx] # save all target vf 
         
-#        tracker.logVar('VF', trgt_vf[trls_idx]) # log VF 
+        tracker.logVar('VF', trgt_vf[trls_idx]) # log VF 
         
         #Draw flankers, depending on eccentricity
         if flank_lbl[k] == 'flankers':
@@ -329,8 +316,8 @@ for j in range(params['blk_crw']):
             
             if len(key)>0:
                 if key[0] == 's': #stop key
-#                    tracker.stopTrial()
-#                    tracker.cleanUp()
+                    tracker.stopTrial()
+                    tracker.cleanUp()
                     
                     # save relevant variables in panda dataframe
                     for d in range(params['blk_crw']):    
@@ -348,7 +335,7 @@ for j in range(params['blk_crw']):
                 
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
-#                tracker.logVar('RT', RT_trl[j][k])
+                tracker.logVar('RT', RT_trl[j][k])
                 break
             
             if core.getTime() >= params['display_time']: #return to fixation display after 250ms
@@ -357,29 +344,29 @@ for j in range(params['blk_crw']):
         print'key is:',key_trl[j][k]  
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
-#            tracker.logVar('response', 'correct')
+            tracker.logVar('response', 'correct')
         # needs to include condition for misses, doesn't work
         elif (key_trl[j][k] == 'left' and ort_lbl[k] == 'right') or (key_trl[j][k] == 'right' and ort_lbl[k] == 'left'):
             response = 0
         
         else:
             response = 2
-#            tracker.logVar('response', 'incorrect')
+            tracker.logVar('response', 'incorrect')
         
         if flank_lbl[k] == 'flankers':
             trgt_fl_dist[ecc_index],counters[ecc_index] = staircase_1upDdown(params['Down_factor'],response,params['step_stair'],params['max_dist'],params['min_dist'],curr_dist=trgt_fl_dist[ecc_index],counter=counters[ecc_index])
         
         print 'response is %d, distance is %.2f, ecc is %f, flank-condition is %s and index is %i' % (response, trgt_fl_dist[ecc_index],trgt_ecc[trls_idx],flank_lbl[k],trls_idx)
 
-#        tracker.logVar('distance', trgt_fl_dist[ecc_index])
-#        tracker.logVar('ecc', trgt_ecc[trls_idx])
-#        tracker.logVar('flank-condition', flank_lbl[k])
+        tracker.logVar('distance', trgt_fl_dist[ecc_index])
+        tracker.logVar('ecc', trgt_ecc[trls_idx])
+        tracker.logVar('flank-condition', flank_lbl[k])
 
         distances[j][k] = trgt_fl_dist[ecc_index]
         
 # =============================================================================
 #        # stop tracking the trial
-#        tracker.stopTrial()
+        tracker.stopTrial()
 #         
 # =============================================================================
 
@@ -403,7 +390,7 @@ df.to_csv(output_dir+'data_crowding_pp_'+pp+'.csv', sep='\t')
 
     
 #cleanup
-#tracker.cleanUp()
+tracker.cleanUp()
 win.close() #close display
 core.quit()
 
