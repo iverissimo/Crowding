@@ -45,6 +45,10 @@ plot_dir = os.path.join(output_crwd,'plots')
 if not os.path.exists(plot_dir):
      os.makedirs(plot_dir)
 
+display_dir = os.path.join(plot_dir,'gaze_display',sj)
+if not os.path.exists(display_dir):
+     os.makedirs(display_dir)
+
 
 vRes = analysis_params['vRes']
 hRes = analysis_params['hRes']
@@ -113,7 +117,7 @@ plt.ylabel('Time (ms)',fontsize=18)
 plt.axhline(y=np.median(all_trial_dur), color='r', linestyle='--')
 plt.title('Trial duration (median trial duration is %.2f ms)'%np.median(all_trial_dur))
 
-fig.savefig(os.path.join(plot_dir,'all_trials_duration_sub-{sj}.svg'.format(sj=str(sj).zfill(2))), dpi=100)
+fig.savefig(os.path.join(plot_dir,'all_trials_duration_sub-{sj}.png'.format(sj=str(sj).zfill(2))), dpi=100)
 
 
 # I think trials with durations of less than 180 ms do not make sense - confirm with Chris
@@ -146,8 +150,16 @@ for _,index in enumerate(good_trl_indx):
     # messy coding leads to messys fixes... lesson for the future
     if edfdata[index]['events']['msg'][3][-1][4:6] == 'VF': 
         timemarker = edfdata[index]['events']['msg'][3][0]
+        # save VF location for plots
+        VF = 'right' if edfdata[index]['events']['msg'][3][-1][7:11] in 'right'else 'left'
+        
     elif edfdata[index]['events']['msg'][3][-1][4:6] == 'RT': #trials that doen't correspond to beginning of block 
         timemarker = edfdata[index]['events']['msg'][2][0]
+        # save VF location for plots
+        VF = 'right' if edfdata[index]['events']['msg'][2][-1][7:11] in 'right'else 'left'
+    
+    # and ecc
+    ECC = [x for x in analysis_params['ecc'] if str(x) in edfdata[index]['events']['msg'][-2][-1][-3:-1]]
 
     # now select the relevant gaze points   
     display_start_ind = np.where(edfdata[index]['trackertime']==timemarker)
@@ -172,6 +184,29 @@ for _,index in enumerate(good_trl_indx):
     else:
         excluded_fix_radius.append(np.sqrt((median_gaze[0]-(hRes/2))**2 + (median_gaze[1] - (vRes/2))**2))
         #print('not fixating')
+        # save plot of where gaze was for excluded trials
+        # set figure and main axis
+        fig, ax = plt.subplots()
+        # change default range 
+        ax.set_xlim((0, hRes))
+        ax.set_ylim((0, vRes))
+
+        # add target as red circle
+        for ind in range(len(display_gaze)):
+
+            circle = plt.Circle((display_gaze[0][ind], display_gaze[1][ind]), 10, color='b')
+            ax.add_artist(circle)
+
+        pos_deg = ECC[0] if VF=='right' else -ECC[0]
+
+        target_ecc = ang2pix(pos_deg,analysis_params['screenHeight'],analysis_params['screenDis'],analysis_params['vRes'])
+        circle_trgt = plt.Circle(((hRes/2)-target_ecc, vRes/2), 10, color='r')
+        ax.add_artist(circle_trgt)
+
+        plt.plot(hRes/2, vRes/2, marker='+', markersize=5, color="black")
+        #plt.show()
+        fig.savefig(os.path.join(display_dir,'display_exclgaze_trial-{trl}_sub-{sj}.png'.format(trl=str(index).zfill(3),sj=str(sj).zfill(2))), dpi=100)
+
 
 
 # Calculate % of trials when they were not fixating properly
@@ -198,9 +233,9 @@ plt.ylabel('eccentricity (pixel)',fontsize=18)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
 plt.legend(['exclusion line','4deg','8deg','12deg'], fontsize=10)
-plt.show()
+#plt.show()
 
-fig.savefig(os.path.join(plot_dir,'excluded_fixations_sub-{sj}.svg'.format(sj=str(sj).zfill(2))), dpi=100)
+fig.savefig(os.path.join(plot_dir,'excluded_fixations_sub-{sj}.png'.format(sj=str(sj).zfill(2))), dpi=100)
 
 
 
