@@ -17,7 +17,7 @@ from matplotlib.axes import Axes
 #%matplotlib inline
 
 import json
-
+from utils import *
 
 # paths
 base_dir =os.getcwd(); base_dir = os.path.join(base_dir,'Data2convert','Data7deg')
@@ -53,50 +53,6 @@ if not os.path.exists(display_dir):
 vRes = analysis_params['vRes']
 hRes = analysis_params['hRes']
 
-
-# functions SHOULD SAVE IN DIFFERENT SCRIPT BUT OK FOR NOW #########
-
-# convert edf file to asc file
-def convert2asc(sj,taskname,outVS,outCRWD):
-    
-    import os, glob, shutil
-    from pygazeanalyser.edfreader import read_edf
-    
-    if type(sj) == int: #if sub num integer
-        sj = str(sj).zfill(2) #turn to string
-    
-    #list of absolute paths to all edf files in that session for that subject
-    #single hdf5 file that contains all eye data for the runs of that session
-    if taskname=='vs':
-        edf_file = glob.glob(os.path.join(outVS, 'eyedata_visualsearch_pp_%s.edf' %sj))[0]
-        asc_dir = outVS+'/pp-{sj}/'.format(sj=sj)
-    elif taskname=='crowding':
-        edf_file = glob.glob(os.path.join(outCRWD, 'eyedata_crowding_pp_%s.edf' %sj))[0]
-        asc_dir = outCRWD+'/pp-{sj}/'.format(sj=sj)
-           
-    if not os.path.exists(asc_dir): # check if path to save hdf5 files exists
-        os.makedirs(asc_dir)     # if not create it
-    
-    os.system("edf2asc %s" % edf_file)
-    
-    asc_file = os.path.split(edf_file)[1].replace('.edf','.asc')
-    shutil.move(os.path.join(os.path.split(edf_file)[0],asc_file),asc_dir+asc_file)
-    
-    asc_filename = asc_dir+asc_file
-    edfdata = read_edf(asc_filename, 'start_trial', stop='stop_trial', debug=False)
-    
-    return asc_filename, edfdata #name of asccii, actual gaze data
-
-# turn visual angle in degrees
-def ang2pix(dist_in_deg,h,d,r): 
-    import math 
-    
-    deg_per_px = math.degrees(math.atan2(0.5*h,d))/(0.5*r)
-    dist_in_px = dist_in_deg/deg_per_px
-    return dist_in_px 
-
-
-###########################
 
 # get eyetracking data
 filename,edfdata = convert2asc(sj,'crowding',output_vs,output_crwd)
@@ -210,32 +166,32 @@ for _,index in enumerate(good_trl_indx):
 
 
 # Calculate % of trials when they were not fixating properly
-
-total_trials = 576
-exclud_trial_per = len(excluded_fix_radius)/total_trials * 100
-print('%.2f %% of trials were excluded for subject %s'%(exclud_trial_per,sj))
-
-# plot scatter of excluded fixations and include lines where 
-# target eccentricities are and exclusion criteria too
-ecc_trgt_pix = [ang2pix(ecc,analysis_params['screenHeight'],analysis_params['screenDis'],analysis_params['vRes']) 
-                for _,ecc in enumerate(analysis_params['ecc'])]
-
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-
-plt.scatter(range(len(excluded_fix_radius)),excluded_fix_radius)
-plt.axhline(y=exclusion_radius_pix, color='black', linestyle='-')
-plt.axhline(y=ecc_trgt_pix[0], color='r', linestyle='--')
-plt.axhline(y=ecc_trgt_pix[1], color='m', linestyle='--')
-plt.axhline(y=ecc_trgt_pix[2], color='g', linestyle='--')
-
-plt.xlabel('excluded trials',fontsize=18)
-plt.ylabel('eccentricity (pixel)',fontsize=18)
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
-plt.legend(['exclusion line','4deg','8deg','12deg'], fontsize=10)
-#plt.show()
-
-fig.savefig(os.path.join(plot_dir,'excluded_fixations_sub-{sj}.png'.format(sj=str(sj).zfill(2))), dpi=100)
+#
+#total_trials = 576
+#exclud_trial_per = len(excluded_fix_radius)/total_trials * 100
+#print('%.2f %% of trials were excluded for subject %s'%(exclud_trial_per,sj))
+#
+## plot scatter of excluded fixations and include lines where 
+## target eccentricities are and exclusion criteria too
+#ecc_trgt_pix = [ang2pix(ecc,analysis_params['screenHeight'],analysis_params['screenDis'],analysis_params['vRes']) 
+#                for _,ecc in enumerate(analysis_params['ecc'])]
+#
+#fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+#
+#plt.scatter(range(len(excluded_fix_radius)),excluded_fix_radius)
+#plt.axhline(y=exclusion_radius_pix, color='black', linestyle='-')
+#plt.axhline(y=ecc_trgt_pix[0], color='r', linestyle='--')
+#plt.axhline(y=ecc_trgt_pix[1], color='m', linestyle='--')
+#plt.axhline(y=ecc_trgt_pix[2], color='g', linestyle='--')
+#
+#plt.xlabel('excluded trials',fontsize=18)
+#plt.ylabel('eccentricity (pixel)',fontsize=18)
+#plt.xticks(fontsize=14)
+#plt.yticks(fontsize=14)
+#plt.legend(['exclusion line','4deg','8deg','12deg'], fontsize=10)
+##plt.show()
+#
+#fig.savefig(os.path.join(plot_dir,'excluded_fixations_sub-{sj}.png'.format(sj=str(sj).zfill(2))), dpi=100)
 
 
 
