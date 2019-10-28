@@ -276,7 +276,7 @@ for j in range(params['blk_crw']):
             trls_idx = trls_idx_fl[fl_counter]
             fl_counter += 1
         else : 
-            trls_idx = trls_idx_fl[nofl_counter]
+            trls_idx = trls_idx_nofl[nofl_counter]
             nofl_counter += 1
   
         
