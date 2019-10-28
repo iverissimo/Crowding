@@ -33,26 +33,26 @@ def ang2pix(dist_in_deg,h,d,r):
 
 # paths
 #base_dir =os.getcwd(); base_dir = os.path.join(base_dir,'Data2convert','Data7deg')
-#base_dir 5degree
-#base_dir = r'C:\Users\Steffi\Desktop\Peripheral Vision Project\Data_pilot'
-#base_dir 7degree
-base_dir = r'C:\Users\Steffi\Desktop\Peripheral Vision Project\Data'
+
+data = '5deg'
+
+if data == '5deg':
+    base_dir = r'C:\Users\Steffi\Desktop\Peripheral Vision Project\Data_pilot'
+    subjects = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','16','17','18','19','20','21','21','22','23','24','25','26','27','28','29','30','31','32','33','34']
+
+elif data == '7deg':
+    base_dir = r'C:\Users\Steffi\Desktop\Peripheral Vision Project\Data'
+    subjects = ['17','18','20','21','22','23','24','25','26','27']
+
 
 output_vs = os.path.join(base_dir,'output_VS')
 output_crwd = os.path.join(base_dir,'output_crowding')
-
-# define participant number and open json parameter file
-#Subjects 5degree
-#subjects = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','16','17','18','19','20','21','21','22','23','24','25','26','27','28','29','30','31','32','33','34']
-#subjects = ['01','02','03','04','05','06']
-
-#Subjects 7degree
-subjects = ['17','18','20','21','22','23','24','25','26','27']
 
 #Dictionary to save exclusion data
 dict_exclusion = {}
 exclusion_reasons = {}
 
+# open json parameter file
 with open(os.path.join(os.getcwd(),'lab_parameters.json'),'r') as json_file:	
             analysis_params = json.load(json_file)	
 
