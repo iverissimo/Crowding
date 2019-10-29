@@ -312,8 +312,8 @@ for j in range(params['blk_crw']):
         win.flip() # flip the screen
         
         t0 = core.getTime() #get the time (seconds)
-        key = [] # reset key to nothing 
-           
+        key = [] # reset key to nothing
+        
         while core.getTime() - t0 < params['stim_time']: # while current time < stimulus presentation time (seconds)
             
             curSamp = tracker.getCurSamp() # get gaze position (x,y) should update every ms @ 1000Hz
@@ -379,19 +379,20 @@ for j in range(params['blk_crw']):
 
         distances[j][k] = trgt_fl_dist[ecc_index]
         
-# =============================================================================
-#        # stop tracking the trial
-        tracker.stopTrial()
-#         
-# =============================================================================
-
         #Pause for ITI
         #core.wait(params['iti']) #pause
         curSamp = tracker.getCurSamp() # get gaze position (x,y) should update every ms @ 1000Hz
         while np.sqrt(curSamp[0]**2 + curSamp[1]**2)>excl_radius:
             curSamp = tracker.getCurSamp()
+            print('gaze position is %s out of radius'%str(curSamp)) 
             fixation = draw_fixation(fixpos,fixlineSize,'red',linewidth) #draw red fixation indicating that not fixating
             win.flip() # flip the screen
+            
+# =============================================================================
+#        # stop tracking the trial
+        tracker.stopTrial()
+#         
+# =============================================================================
         #Pause for ITI
         core.wait(params['iti']) #pause
         fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw red fixation indicating that not fixating
