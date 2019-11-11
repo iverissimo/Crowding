@@ -14,7 +14,7 @@ varying distance between target and flankers with staircase method
 
 from psychopy import visual, core, event 
 import numpy as np
-#import random 
+import random 
 import math
 import time
 #import itertools
@@ -137,6 +137,7 @@ siz_gab = ang2pix(params['siz_gab_deg'],params['screenHeight'],params['screenDis
 gab_sf = params['gab_sf_deg']/ang2pix(1,params['screenHeight'],params['screenDis'],params['vRes']) #sf cycles per pixel = sf_CyclesDeg / pixelsPerDegree
 sd_gab = ang2pix(params['sd_gab_deg'],params['screenHeight'],params['screenDis'],params['vRes']) #standard deviation of gaussian
 dist_fl = 360/params['num_fl'] #distance between stim (degrees)
+max_jitter = ang2pix(params['max_jitter'],params['screenHeight'],params['screenDis'],params['vRes']) 
 
 pos_fl = np.arange(params['initpos_fl'],params['initpos_fl']+360,dist_fl) #position of distractors (degrees), equally spaced
 ort_fl = np.repeat(0,params['num_fl']) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
@@ -249,7 +250,7 @@ for j in range(params['blk_crw']):
     
     BlockText.draw()
     draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-    trgt.draw()
+    #trgt.draw()
     PressText2.draw()
     
     win.flip()
@@ -276,7 +277,7 @@ for j in range(params['blk_crw']):
             trls_idx = trls_idx_fl[fl_counter]
             fl_counter += 1
         else : 
-            trls_idx = trls_idx_nofl[nofl_counter]
+            trls_idx = trls_idx_fl[nofl_counter]
             nofl_counter += 1
   
         
@@ -301,8 +302,9 @@ for j in range(params['blk_crw']):
         if flank_lbl[k] == 'flankers':
             for i in range(len(pos_fl)):
                 xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
-                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt+random.uniform(max_jitter*(-1),max_jitter),ypos_fl),units=None)
                 flank.draw()
+                
                 
         draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
         win.flip() # flip the screen
@@ -338,7 +340,9 @@ for j in range(params['blk_crw']):
                 tracker.logVar('RT', RT_trl[j][k])
                 break
             
-            if core.getTime() >= params['display_time']: #return to fixation display after 250ms
+            #if core.getTime() >= params['display_time']:#return to fixation display after 250ms
+            if core.getTime() - t0 >= params['display_time']:
+                print('time is',core.getTime()-t0)
                 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
                 win.flip()
         print'key is:',key_trl[j][k]  

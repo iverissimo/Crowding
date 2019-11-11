@@ -2,7 +2,7 @@
     "ecc": [4,8,12],
     "stim_time": 2,
 	"iti": 0.5,
-	"display_time":0.350,
+	"display_time":0.200,
 	
 	"hRes": 1680, 
 	"vRes": 1050, 
@@ -20,14 +20,15 @@
 	"linewidth_deg": 0.1,
 
 	"num_fl": 2,
+	"max_jitter":0.5,
 	"initpos_fl": 90,
-	"ort_trgt": [5,355],
+	"ort_trgt": [7,353],
 	"max_dist": 0.8,
 	"min_dist": 0.2, 
 	"step_stair": 0.05,
 	"Down_factor": 3, 
 
-	"set_size": [5,15,60],
+	"set_size": [5,15,30],
 
 	"blk_vs": 4,
 	"rep_vs": 20,
