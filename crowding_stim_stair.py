@@ -277,7 +277,7 @@ for j in range(params['blk_crw']):
             trls_idx = trls_idx_fl[fl_counter]
             fl_counter += 1
         else : 
-            trls_idx = trls_idx_fl[nofl_counter]
+            trls_idx = trls_idx_nofl[nofl_counter]
             nofl_counter += 1
   
         
@@ -342,7 +342,7 @@ for j in range(params['blk_crw']):
             
             #if core.getTime() >= params['display_time']:#return to fixation display after 250ms
             if core.getTime() - t0 >= params['display_time']:
-                print('time is',core.getTime()-t0)
+                #print('time is',core.getTime()-t0)
                 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
                 win.flip()
         print'key is:',key_trl[j][k]  
