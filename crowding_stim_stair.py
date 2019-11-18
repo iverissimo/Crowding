@@ -193,11 +193,11 @@ trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_ga
 trgt.draw()
 draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
 
-xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[0])
-flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+ypos_fl = ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes'])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,ypos_fl),units=None)
 flank.draw()
-xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[1])
-flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[1],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+ypos_fl = -ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes'])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[1],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,ypos_fl),units=None)
 flank.draw()
 
 win.flip() # flip the screen
@@ -301,8 +301,8 @@ for j in range(params['blk_crw']):
         #Draw flankers, depending on eccentricity
         if flank_lbl[k] == 'flankers':
             for i in range(len(pos_fl)):
-                xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
-                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt+random.uniform(max_jitter*(-1),max_jitter),ypos_fl),units=None)
+                ypos_fl = ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']) if i==0 else - ypos_fl
+                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_trgt+random.uniform(max_jitter*(-1),max_jitter),ypos_fl),units=None)
                 flank.draw()
                 
                 
