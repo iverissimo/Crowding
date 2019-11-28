@@ -2,7 +2,7 @@
     "ecc": [4,8,12],
     "stim_time": 2,
 	"iti": 0.5,
-	"display_time":0.200,
+	"display_time":0.050,
 	
 	"hRes": 1680, 
 	"vRes": 1050, 
