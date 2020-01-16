@@ -483,7 +483,7 @@ for i in range(len(np.array(test_all_cs).T)):
     ax.set(ylabel='CS [dva]', xlabel='RT [s]')
     ax = plt.gca()
     ax.set_title('CS vs RT at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
-    plt.savefig(os.path.join(plot_dir,'CSvsRT_%d-ecc_%d-subs.svg'%(ecc[i]len(test_subs))), dpi=100,bbox_inches = 'tight') 
+    plt.savefig(os.path.join(plot_dir,'CSvsRT_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
 
 
 # correlation for critical distance mean across ecc and mean inverse efficiency in VS across ecc
@@ -509,7 +509,7 @@ for i in range(len(np.array(test_all_cs).T)):
     ax.set(ylabel='CS [dva]', xlabel='inverse efficacy [a.u.]')
     ax = plt.gca()
     ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
-    plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i]len(test_subs))), dpi=100,bbox_inches = 'tight') 
+    plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
 
 
 
