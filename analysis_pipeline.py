@@ -329,7 +329,7 @@ fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-weighted_boxplot_%d-subs.
 # the population median of all of the groups are equal. It is a non-parametric version of ANOVA.
 
 pkruskal = kruskal(np.array(test_all_cs)[...,0], np.array(test_all_cs)[...,1], np.array(test_all_cs)[...,2])[-1]
-if pkruskal<0.01:
+if pkruskal<0.05:
     print('CS between ecc is different, kruskal-wallis with p-value = %.6f'%pkruskal)
 else:
     print('CS between ecc is the same')
@@ -342,7 +342,7 @@ for d in range(len(ecc_compare)):
     pval_wilcox = wilcoxon(np.array(test_all_cs)[...,np.where(np.array(ecc)==ecc_compare[d][0])[0][0]], 
                            np.array(test_all_cs)[...,np.where(np.array(ecc)==ecc_compare[d][1])[0][0]])[-1]
     
-    if pval_wilcox<(0.01/3): # bonferroni correction of p-value, right?
+    if pval_wilcox<(0.05/3): # bonferroni correction of p-value, right?
         print('SIGNIFICANT difference (p-val %.6f) in CS of ecc pair%s'%(pval_wilcox,str(ecc_compare[d])))
 
 
@@ -470,10 +470,21 @@ if pval_cor_CSmean_RT<0.05:
 # now per ecc
 for i in range(len(np.array(test_all_cs).T)):
     cor_CSecc_RT, pval_cor_CSecc_RT = spearmanr(np.array(test_all_cs).T[i],np.array(test_rt_ecc_vs).T[i])
-    print('\ncomparing critical distance mean and mean RT in VS for ecc %d\n'%ecc[i])
+    print('\ncomparing critical distance and mean RT in VS for ecc %d\n'%ecc[i])
     print('%s'%str(spearmanr(np.array(test_all_cs).T[i],np.array(test_rt_ecc_vs).T[i])))
     if pval_cor_CSecc_RT<0.05:
         print('SIGNIFICANT CORRELATION')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+    cs_rt_4plot = pd.DataFrame([])
+    cs_rt_4plot = rt_ecc_vs4plot.append(pd.DataFrame({'RT': np.array(test_rt_ecc_vs).T[i],
+                                                        'CS':np.array(test_all_cs).T[i]}),sort=False)
+    ax = sns.lmplot(x='RT', y='CS',data=cs_rt_4plot)
+    ax.set(ylabel='CS [dva]', xlabel='RT [s]')
+    ax = plt.gca()
+    ax.set_title('CS vs RT at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
+    plt.savefig(os.path.join(plot_dir,'CSvsRT_%d-ecc_%d-subs.svg'%(ecc[i]len(test_subs))), dpi=100,bbox_inches = 'tight') 
+
 
 # correlation for critical distance mean across ecc and mean inverse efficiency in VS across ecc
 cor_CSmean_inveff, pval_cor_CSmean_inveff = spearmanr(np.mean(test_all_cs,axis=-1),np.mean(inv_eff,axis=-1))
@@ -482,7 +493,6 @@ print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),np.mean(inv_eff,axis=-1)))
 if pval_cor_CSmean_inveff<0.05:
     print('SIGNIFICANT CORRELATION')
 
-
 # now per ecc
 for i in range(len(np.array(test_all_cs).T)):
     cor_CSecc_inveff, pval_cor_CSecc_inveff = spearmanr(np.array(test_all_cs).T[i],np.array(inv_eff).T[i])
@@ -490,6 +500,17 @@ for i in range(len(np.array(test_all_cs).T)):
     print('%s'%str(spearmanr(np.array(test_all_cs).T[i],np.array(inv_eff).T[i])))
     if pval_cor_CSecc_inveff<0.05:
         print('SIGNIFICANT CORRELATION')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+    cs_inveff_4plot = pd.DataFrame([])
+    cs_inveff_4plot = cs_inveff_4plot.append(pd.DataFrame({'invEffic': np.array(inv_eff).T[i],
+                                                        'CS':np.array(test_all_cs).T[i]}),sort=False)
+    ax = sns.lmplot(x='invEffic', y='CS',data=cs_rt_4plot)
+    ax.set(ylabel='CS [dva]', xlabel='inverse efficacy [a.u.]')
+    ax = plt.gca()
+    ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
+    plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i]len(test_subs))), dpi=100,bbox_inches = 'tight') 
+
 
 
 # gather slope values and try those correlations
