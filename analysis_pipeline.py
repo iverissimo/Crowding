@@ -505,10 +505,10 @@ for i in range(len(np.array(test_all_cs).T)):
     cs_inveff_4plot = pd.DataFrame([])
     cs_inveff_4plot = cs_inveff_4plot.append(pd.DataFrame({'invEffic': np.array(inv_eff).T[i],
                                                         'CS':np.array(test_all_cs).T[i]}),sort=False)
-    ax = sns.lmplot(x='invEffic', y='CS',data=cs_rt_4plot)
+    ax = sns.lmplot(x='invEffic', y='CS',data=cs_inveff_4plot)
     ax.set(ylabel='CS [dva]', xlabel='inverse efficacy [a.u.]')
     ax = plt.gca()
-    ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
+    ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_inveff,pval_cor_CSecc_inveff))
     plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
 
 
