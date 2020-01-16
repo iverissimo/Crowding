@@ -23,7 +23,7 @@ import json
 
 from utils import *
 
-from scipy.stats import wilcoxon, kstest, spearmanr, linregress #pearsonr, spearmanr,  
+from scipy.stats import wilcoxon, kstest, spearmanr, linregress, kruskal #pearsonr, spearmanr,  
 from statsmodels.stats import weightstats
 import seaborn as sns
 
@@ -232,7 +232,7 @@ fig.savefig(os.path.join(plot_dir,'crowding_accuracy_hist_%d-subs.svg'%len(test_
 # wilcoxon test
 # non-parametric statistical hypothesis test used to compare two matched samples
 # to assess whether their population mean ranks differ
-pval_acc_crwd = wilcoxon(np.mean(np.array(acc_fl),axis=-1), np.mean(np.array(acc_nofl),axis=-1))[-1]
+pval_acc_crwd = wilcoxon(np.mean(np.array(test_acc_fl),axis=-1), np.mean(np.array(test_acc_nofl),axis=-1))[-1]
 
 #diff_acc = np.mean(np.array(acc_nofl),axis=-1)-np.mean(np.array(acc_fl),axis=-1)
 #wilcoxon(diff_acc)
@@ -250,7 +250,30 @@ plt.plot([0, 0, 1, 1], [y, y+h, y+h, y], lw=1.5, c=col)
 plt.text(.5, y+h+.01, 'p-val = %.3f'%pval_acc_crwd, ha='center', va='bottom', color=col)
 plt.ylim(0.5, 1.1)
 
-fig.savefig(os.path.join(plot_dir,'crowding_accuracy_boxplot_wilcoxtest_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_mean_accuracy_boxplot_wilcoxtest_%d-subs.svg'%len(test_subs)), dpi=100)
+
+# do same but now per ecc
+
+for g,_ in enumerate(ecc):
+    pval_acc_crwd = wilcoxon(np.array(test_acc_fl)[...,g], np.array(test_acc_nofl)[...,g])[-1]
+    print('p-value is %0.10f'%pval_acc_crwd)
+    #diff_acc = np.mean(np.array(acc_nofl),axis=-1)-np.mean(np.array(acc_fl),axis=-1)
+    #wilcoxon(diff_acc)
+
+    crwd_acc4plot = pd.DataFrame(data=np.array([np.array(test_acc_fl)[...,g],
+                                    np.array(test_acc_nofl)[...,g]]).T, 
+                                 columns = ['mean_acc_fl','mean_acc_nofl'])
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+    sns.boxplot(x='variable',y='value', data=pd.melt(crwd_acc4plot))
+
+    y, h, col = 1, .025, 'k'
+    plt.plot([0, 0, 1, 1], [y, y+h, y+h, y], lw=1.5, c=col)
+    plt.text(.5, y+h+.01, 'p-val = %.6f'%pval_acc_crwd, ha='center', va='bottom', color=col)
+    plt.ylim(0.5, 1.1)
+    plt.title('%d ecc accuracy crowding (with and without flankers)'%ecc[g])
+    fig.savefig(os.path.join(plot_dir,'crowding_%decc_accuracy_boxplot_wilcoxtest_%d-subs.svg'%(ecc[g],len(test_subs))), dpi=100)
 
 
 # plot distribution of critical spacing values for crowding
@@ -301,6 +324,27 @@ sns.boxplot(x='ecc', y='cs', data=crwd_df4plot)
 sns.swarmplot(x='ecc', y='cs', data=crwd_df4plot,color=".25")
 fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-weighted_boxplot_%d-subs.svg'%len(test_subs)), dpi=100)
 
+# do kruskal wallis to see if averages are different 
+# The Kruskal-Wallis H-test tests the null hypothesis that 
+# the population median of all of the groups are equal. It is a non-parametric version of ANOVA.
+
+pkruskal = kruskal(np.array(test_all_cs)[...,0], np.array(test_all_cs)[...,1], np.array(test_all_cs)[...,2])[-1]
+if pkruskal<0.01:
+    print('CS between ecc is different, kruskal-wallis with p-value = %.6f'%pkruskal)
+else:
+    print('CS between ecc is the same')
+
+# do post hoc wilcoxon to test differences between groups
+# pairs to compare
+ecc_compare = np.array(([4,8],[8,12],[4,12]))
+
+for d in range(len(ecc_compare)):
+    pval_wilcox = wilcoxon(np.array(test_all_cs)[...,np.where(np.array(ecc)==ecc_compare[d][0])[0][0]], 
+                           np.array(test_all_cs)[...,np.where(np.array(ecc)==ecc_compare[d][1])[0][0]])[-1]
+    
+    if pval_wilcox<(0.01/3): # bonferroni correction of p-value, right?
+        print('SIGNIFICANT difference (p-val %.6f) in CS of ecc pair%s'%(pval_wilcox,str(ecc_compare[d])))
+
 
 # kolmogorov smir test to see if sample of mean cs (across ecc)
 # follows normal distribution - if p<0.05 not normally distributed
@@ -342,7 +386,7 @@ for k in range(len(ecc)):
 ax = sns.lmplot(x='ecc', y='RT',data=rt_ecc_vs4plot)
 ax.set(xlabel='eccentricity [dva]', ylabel='RT [s]')
 ax = plt.gca()
-ax.set_title('ecc vs RT plot, all subs')
+ax.set_title('ecc vs RT %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_ecc_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
  
 
@@ -357,7 +401,7 @@ for k in range(len(analysis_params['set_size'])):
 ax = sns.lmplot(x='set', y='RT',data=rt_set_vs4plot)
 ax.set(xlabel='set size', ylabel='RT [s]')
 ax = plt.gca()
-ax.set_title('set size vs RT plot, all subs')
+ax.set_title('set size vs RT plot, %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
  
 
