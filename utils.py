@@ -448,7 +448,7 @@ def mean_RT_setsize(data,setsize):
     return RT_all
            
     
-def meanfix_ecc(data,eyedata,ecc):
+def meanfix_ecc(data,eyedata,ecc,hRes=1680,vRes=1050,screenHeight=30,screenDis=57,size_gab=2.2):
     # function to check mean number of fixations as function of ecc for visual search
     #
     # INPUTS #
@@ -465,6 +465,14 @@ def meanfix_ecc(data,eyedata,ecc):
     target_or = data['target_orientation'].values
     # list of strings with orientation indicated by key press
     key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    r_gabor = ang2pix(size_gab/2,screenHeight,
+                       screenDis,
+                       vRes)
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
     
     fix_all = [] # RT for all ecc
     
@@ -473,16 +481,40 @@ def meanfix_ecc(data,eyedata,ecc):
         fix_ecc = []
         
         for i in range(len(data)): # for all actual trials 
-
+            
             if key_or[i]==target_or[i] and int(target_ecc[i])==j: # if key press = target orientation and correct ecc
-                fix_ecc.append(len(eyedata[i]['events']['Efix'])) #append RT value
+                
+                # index for moment when display was shown
+                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                # eye tracker sample time of display
+                smp_display = eyedata[i]['events']['msg'][idx_display][0]
+
+                # get target positions as strings in list
+                target_pos = data['target_position'][i].replace(']','').replace('[','').split(' ')
+                # convert to list of floats
+                target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+                
+                num_fix = 0
+                for k,fix in enumerate(eyedata[i]['events']['Efix']):
+                    
+                    # if fixations between 150ms after display and key press time
+                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+                        
+                        #if fixation not on target (not within target radius)
+                        fix_x = fix[-2] - hRes/2
+                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                        if np.sqrt((fix_x-target_pos[0])**2+(fix_x-target_pos[1])**2) > r_gabor:
+                            num_fix += 1
+   
+                fix_ecc.append(num_fix) #append number of fixations for that trial value
         
-        fix_all.append(np.mean(fix_ecc))
+        fix_all.append(np.mean(fix_ecc)) # append mean number of fixations per ecc
     
     return fix_all
     
 
-def meanfix_setsize(data,eyedata,setsize):
+def meanfix_setsize(data,eyedata,setsize,hRes=1680,vRes=1050,screenHeight=30,screenDis=57,size_gab=2.2):
     # function to check mean number of fixations as function of set size for visual search
     #
     # INPUTS #
@@ -491,7 +523,7 @@ def meanfix_setsize(data,eyedata,setsize):
     # setsize - list with set sizes used in task
     #
     # OUTPUTS #
-    # fix_all - mean fix for all ecc
+    # fix_all - mean fix for all set sizes
 
     # list of values with target set size
     target_set = data['set_size'].values
@@ -499,8 +531,16 @@ def meanfix_setsize(data,eyedata,setsize):
     target_or = data['target_orientation'].values
     # list of strings with orientation indicated by key press
     key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    r_gabor = ang2pix(size_gab/2,screenHeight,
+                       screenDis,
+                       vRes)
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
     
-    fix_all = [] # RT for all ecc
+    fix_all = [] # fications for all set sizes
     
     for _,j in enumerate(setsize):
         
@@ -508,10 +548,35 @@ def meanfix_setsize(data,eyedata,setsize):
         
         for i in range(len(data)): # for all actual trials 
 
-            if key_or[i]==target_or[i] and int(target_set[i])==j: # if key press = target orientation and correct ecc
-                fix_set.append(len(eyedata[i]['events']['Efix'])) #append RT value
+            if key_or[i]==target_or[i] and int(target_set[i])==j: # if key press = target orientation and correct set size
+                
+                # index for moment when display was shown
+                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                # eye tracker sample time of display
+                smp_display = eyedata[i]['events']['msg'][idx_display][0]
+
+                # get target positions as strings in list
+                target_pos = data['target_position'][i].replace(']','').replace('[','').split(' ')
+                # convert to list of floats
+                target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+                
+                num_fix = 0
+                for k,fix in enumerate(eyedata[i]['events']['Efix']):
+                    
+                    # if fixations between 150ms after display and key press time
+                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+                        
+                        #if fixation not on target (not within target radius)
+                        fix_x = fix[-2] - hRes/2
+                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                        if np.sqrt((fix_x-target_pos[0])**2+(fix_x-target_pos[1])**2) > r_gabor:
+                            num_fix += 1
+                
+            
+                fix_set.append(num_fix) #append number of fixations for that trial value
         
-        fix_all.append(np.mean(fix_set))
+        fix_all.append(np.mean(fix_set)) # append mean number of fixations per ecc
     
     return fix_all
     

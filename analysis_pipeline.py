@@ -23,7 +23,7 @@ import json
 
 from utils import *
 
-from scipy.stats import wilcoxon, kstest, spearmanr, linregress, kruskal #pearsonr, spearmanr,  
+from scipy.stats import wilcoxon, kstest, spearmanr, linregress, friedmanchisquare,kruskal #pearsonr,  
 from statsmodels.stats import weightstats
 import seaborn as sns
 
@@ -321,9 +321,16 @@ fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k
 with sns.color_palette("pastel", len(test_subs)):
     sns.catplot(x="ecc", y="cs", hue="sub", kind="point", data=crwd_df4plot)
 plt.title('Critical Spacing, per ecc')
-#fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_individual_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_individual_%d-subs.svg'%len(test_subs)), dpi=100)
 
-#sns.lineplot(x='ecc', y='cs', data=crwd_df4plot)
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+sns.lineplot(x='ecc', y='cs', data=crwd_df4plot,estimator='mean')
+sns.lineplot(x='ecc', y='cs', data=crwd_df4plot,
+                   units='sub', estimator=None, lw=1,color='grey',alpha=0.2)
+
+plt.title('Critical Spacing, per ecc')
+fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_all_%d-subs.svg'%len(test_subs)), dpi=100)
 
 # BOXPLOTS WITH CS PER ECC
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
