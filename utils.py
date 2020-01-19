@@ -19,6 +19,7 @@ from matplotlib.axes import Axes
 #%matplotlib inline
 
 import json
+from pygazeanalyser.gazeplotter import parse_fixations
 
 # functions
 
@@ -61,120 +62,180 @@ def ang2pix(dist_in_deg,h,d,r):
     dist_in_px = dist_in_deg/deg_per_px
     return dist_in_px 
 
-# function to draw all gaze points in trial on top of display
-def draw_rawdata_display(sj,trial,filename,target,distr,gazedata,hRes,vRes,radius):
-        
-    import matplotlib.pyplot as plt
-    import os
-    COLS ={"aluminium": ['#eeeeec',
-                    '#d3d7cf',
-                    '#babdb6',
-                    '#888a85',
-                    '#555753',
-                    '#2e3436'],
-            }
-
-    # set figure and main axis
-    fig, ax = plt.subplots()
-    # change default range 
-    ax.set_xlim((0, hRes))
-    ax.set_ylim((0, vRes))
+def draw_rawdata_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
+                          rad_gab=1.1,fix_line=0.25,screenHeight=30,screenDis=57,
+                         vRes = 1050,hRes=1680):
     
-    # add target as red circle
-    trg_circle = plt.Circle((target[0], target[1]), radius, color='r')
-    ax.add_artist(trg_circle)
+    # function to draw raw gaze for a specific trial
+    # will draw display (target and distractor position)
+    # and x-y gaze throughout time
+    #
+    #### INPUTS #####
+    # sj - subject number (str)
+    # trial - trial number (int)
+    # df_vs - absolute path dataframe with behaviour data
+    # eyedata_vs - absolute path eye data for visual search
+    
+    behvfile = [x for _,x in enumerate(os.listdir(df_vs_dir)) if x.endswith('.csv') and sj in x]
+    eyefile = [x for _,x in enumerate(os.listdir(eyedata_vs_dir)) if x.endswith('.EDF') and sj in x]
+    # load csv for sub
+    df_vs = pd.read_csv(os.path.join(df_vs_dir,behvfile[0]), sep='\t')
+    # load eye data
+    _, eyedata_vs = convert2asc(sj,'vs',eyedata_vs_dir,eyedata_vs_dir)
+    
+    # NOTE - all positions in pixels
+    
+    # get target and distractor positions as strings in list
+    target_pos = df_vs['target_position'][trial].replace(']','').replace('[','').split(' ')
+    distr_pos = df_vs['distractor_position'][trial].replace(']','').replace('[','').replace(',','').split(' ')
 
-    # add distractors as blue circles
-    for i in range(len(distr)):
-        distr_circle = plt.Circle((distr[i][0], distr[i][1]), radius, color='b')
-        ax.add_artist(distr_circle)
+    # convert to list of floats
+    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+    distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
 
-    # add new axis that can be inverted, for gaze data
-    # invert y axis, as (0,0) is top left on a display
-    ax1 = ax.twinx()
-    ax1.set_xlim((0, hRes))
-    ax1.set_ylim((0, vRes))
-    ax1.invert_yaxis()
-    ax1.get_yaxis().set_visible(False) #but don't show it
-    ax1.get_xaxis().set_visible(False)
+    # save distractor positions in pairs (x,y)
+    alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+    
+    f, s = plt.subplots(1, 1, figsize=(8,8))
 
+    # set radius of circles
+    r_gabor = ang2pix(rad_gab,screenHeight,
+                       screenDis,vRes)
+    r_fix = ang2pix(fix_line,screenHeight,
+                       screenDis,vRes)
+    
+    # add target
+    s.add_artist(plt.Circle((target_pos[0], target_pos[1]), radius=r_gabor, color='r', fill=True))
+    s.set_xlim([-hRes/2,hRes/2])
+    s.set_ylim([-vRes/2,vRes/2])
+    s.set_aspect('equal') # to not make circles elipses
+    
+    # add disctractors
+    for w in range(len(alldistr_pos)):
+        s.add_artist(plt.Circle((alldistr_pos[w][0], alldistr_pos[w][1]), radius=r_gabor, color='b', fill=True))
+
+    # add fixation cross
+    s.add_artist(plt.Circle((0, 0), radius=r_fix, color='k', fill=True))
+
+    # add circle of contingency 
+    s.add_artist(plt.Circle((0, 0),radius=ang2pix(1,screenHeight,screenDis,vRes), color='k', fill=False))
+    
     # plot raw data points
-    x = gaze[0]
-    y = gaze[1] # did this to invert y axis, as (0,0) is top left on a display (#ax.invert_yaxis() will do whole thing, dont want that)
+    x = eyedata_vs[trial]['x'] - hRes/2
+    y = eyedata_vs[trial]['y'] - vRes/2 
+    y = -y # have to invert y, because eyelink considers 0 to be upper corner
 
-    ax1.plot(gazedata[0], gazedata[1], 'o', color=COLS['aluminium'][0], markeredgecolor=COLS['aluminium'][5])
+    s.plot(x, y, 'o', color='#eeeeec', markeredgecolor='#2e3436',alpha=0.5)
 
-    plt.show()
+    f.savefig(os.path.join(outdir,'rawgaze_pp-%s_trial-%s.png' % (sj,str(trial).zfill(3))), dpi=1000)
     
-    absfile = os.path.join(os.path.split(filename)[0], "rawdata_pp-%s_trial-%s.png" % (sj,str(trial).zfill(3)))
-    if not os.path.exists(absfile): # if file not in dir, save
-        fig.savefig(absfile, dpi=1000)
+    fig, ax = plt.subplots(1, 1, figsize=(8,8))
+    
+    ax.plot(np.linspace(0,df_vs['RT'][trial],num=len(x)),x,color='k',label='x')
+    ax.plot(np.linspace(0,df_vs['RT'][trial],num=len(y)),y,color='orange',label='y')
+    
+    plt.title('raw gaze trial %d sub %s'%(trial,sj))
+    ax.set(ylabel='position [pixels]', xlabel='time [s]')
+    plt.legend(loc='upper left')
+    
+    fig.savefig(os.path.join(outdir,'rawgaze_xy_pp-%s_trial-%s.png' % (sj,str(trial).zfill(3))), dpi=1000)
+    
 
     
-# function to draw fixation locations and saccade path in trial on top of display   
-def draw_scanpath_display(sj,trial,filename,target,distr,fixation,saccades,hRes,vRes,radius):
-    
-    import matplotlib.pyplot as plt
-    import os
-    COLS ={"aluminium": ['#eeeeec',
-                    '#d3d7cf',
-                    '#babdb6',
-                    '#888a85',
-                    '#555753',
-                    '#2e3436'],
-            "chameleon": ['#8ae234',
-                '#73d216',
-                '#4e9a06']
-            }
-    
-    # set figure and main axis
-    fig, ax = plt.subplots()
-    # change default range 
-    ax.set_xlim((0, hRes))
-    ax.set_ylim((0, vRes))
-    
-    # add target as red circle
-    trg_circle = plt.Circle((target[0], target[1]), radius, color='r')
-    ax.add_artist(trg_circle)
+def draw_scanpath_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
+                          rad_gab=1.1,fix_line=0.25,screenHeight=30,screenDis=57,
+                         vRes = 1050,hRes=1680):
+    # function to draw scanpath for a specific trial
+    # will draw display (target and distractor position)
+    # fixation positions and saccade path
+    #
+    #### INPUTS #####
+    # sj - subject number (str)
+    # trial - trial number (int)
+    # df_vs - absolute path dataframe with behaviour data
+    # eyedata_vs - absolute path eye data for visual search
 
-    # add distractors as blue circles
-    for i in range(len(distr)):
-        distr_circle = plt.Circle((distr[i][0], distr[i][1]), radius, color='b')
-        ax.add_artist(distr_circle)
-
-
-    # ADD DISPLAY
-    # add new axis with different orientation of gaze data
-    ax1 = ax.twinx()
-    ax1.set_xlim((0, hRes))
-    ax1.set_ylim((0, vRes))
-    ax1.get_yaxis().set_visible(False) #but don't show it
-    ax1.get_xaxis().set_visible(False)
-    # invert the y axis, as (0,0) is top left on a display
-    ax1.invert_yaxis()
-
-    alpha = 0.5 # alpha level for scanpath drawings
     
+    behvfile = [x for _,x in enumerate(os.listdir(df_vs_dir)) if x.endswith('.csv') and sj in x]
+    eyefile = [x for _,x in enumerate(os.listdir(eyedata_vs_dir)) if x.endswith('.EDF') and sj in x]
+    # load csv for sub
+    df_vs = pd.read_csv(os.path.join(df_vs_dir,behvfile[0]), sep='\t')
+    # load eye data
+    _, eyedata_vs = convert2asc(sj,'vs',eyedata_vs_dir,eyedata_vs_dir)
+    
+    # NOTE - all positions in pixels
+    
+    # get target and distractor positions as strings in list
+    target_pos = df_vs['target_position'][trial].replace(']','').replace('[','').split(' ')
+    distr_pos = df_vs['distractor_position'][trial].replace(']','').replace('[','').replace(',','').split(' ')
+
+    # convert to list of floats
+    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+    distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+
+    # save distractor positions in pairs (x,y)
+    alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+    
+    f, s = plt.subplots(1, 1, figsize=(8,8))
+
+    # set radius of circles
+    r_gabor = ang2pix(rad_gab,screenHeight,
+                       screenDis,vRes)
+    r_fix = ang2pix(fix_line,screenHeight,
+                       screenDis,vRes)
+    
+    # add target
+    s.add_artist(plt.Circle((target_pos[0], target_pos[1]), radius=r_gabor, color='r', fill=True))
+    s.set_xlim([-hRes/2,hRes/2])
+    s.set_ylim([-vRes/2,vRes/2])
+    s.set_aspect('equal') # to not make circles elipses
+    
+    # add disctractors
+    for w in range(len(alldistr_pos)):
+        s.add_artist(plt.Circle((alldistr_pos[w][0], alldistr_pos[w][1]), radius=r_gabor, color='b', fill=True))
+
+    # add fixation cross
+    s.add_artist(plt.Circle((0, 0), radius=r_fix, color='k', fill=True))
+
+    # add circle of contingency 
+    s.add_artist(plt.Circle((0, 0),radius=ang2pix(1,screenHeight,screenDis,vRes), color='k', fill=False))
+
+
     # FIXATIONS
     # parse fixations
-    from pygazeanalyser.gazeplotter import parse_fixations
-    fix = parse_fixations(fixations)
-    # draw fixations, size of dot depends on duration
-    ax1.scatter(fix['x'],fix['y'], s=fix['dur'], c=COLS['chameleon'][2], marker='o', cmap='jet', alpha=alpha, edgecolors='none')
-    # draw annotations (fixation numbers)
-    for i in range(len(fixations)):
-        ax1.annotate(str(i+1), (fix['x'][i],fix['y'][i]), color=COLS['aluminium'][5], alpha=1, horizontalalignment='center', verticalalignment='center', multialignment='center')
+    # fix is dictionary with list of x,y, and duration of fixations for trial
+    fix = parse_fixations(eyedata_vs[trial]['events']['Efix'])
 
     # SACCADES
-    if saccades:
+    if eyedata_vs[trial]['events']['Esac']:
         # loop through all saccades
-        for st, et, dur, sx, sy, ex, ey in saccades:
+        for st, et, dur, sx, sy, ex, ey in eyedata_vs[trial]['events']['Esac']:
+
+            # make positions compatible with display
+            sx = sx - hRes/2 # start x pos
+            ex = ex - hRes/2 # end x pos
+            sy = sy - vRes/2; sy = -sy #start y pos
+            ey = ey - vRes/2; ey = -ey #end y pos
+
             # draw an arrow between every saccade start and ending
-            ax1.arrow(sx, sy, ex-sx, ey-sy, alpha=alpha, fc=COLS['aluminium'][0], ec=COLS['aluminium'][5], fill=True, shape='full', width=10, head_width=20, head_starts_at_zero=False, overhang=0)
+            s.arrow(sx, sy, ex-sx, ey-sy, alpha=0.5, fc='k', 
+                    fill=True, shape='full', width=10, head_width=20, head_starts_at_zero=False, overhang=0)
+
+    # make positions compatible with display
+    fix['x'] = fix['x'] - hRes/2
+    fix['y'] = fix['y'] - vRes/2; fix['y'] = -fix['y']
+
+    # draw fixations, size of dot depends on duration
+    s.scatter(fix['x'],fix['y'], s=fix['dur'], c='grey', marker='o', cmap='jet', alpha=0.5, edgecolors='none')
+
+    # draw annotations (fixation numbers)
+    for z in range(len(fix['x'])):
+        s.annotate(str(z+1), (fix['x'][z],fix['y'][z]), 
+                   color='w', alpha=1, horizontalalignment='center', verticalalignment='center', multialignment='center')
     
-    absfile = os.path.join(os.path.split(filename)[0], "scanpath_pp-%s_trial-%s.png" % (sj,str(trial).zfill(3)))
-    if not os.path.exists(absfile): # if file not in dir, save
-        fig.savefig(absfile, dpi=1000)
+    f.savefig(os.path.join(outdir,'scanpath_pp-%s_trial-%s.png' % (sj,str(trial).zfill(3))), dpi=1000)
+
+
 
 
 
