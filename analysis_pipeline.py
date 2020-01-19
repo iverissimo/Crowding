@@ -577,16 +577,10 @@ for i in range(len(np.array(test_all_cs).T)):
     plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
 
 
-##### Things to add later ######
 
-# Need to add on object fixation analysis
-# also check if should exclude on object fixation from latter plots
-# also make some scanpath plots? anoying in terms of memory, because several trials
-# should check if everything ok
+# COMPUTE SLOPE VALUES
 
-####################
-
-# gather slope values and try those correlations
+## check later, slope values seem a bit low... ##
 
 slope_RT_ecc = []
 slope_RT_set = []
@@ -594,48 +588,167 @@ slope_RT_set = []
 slope_fix_ecc = []
 slope_fix_set = []
 
+slope_onobj_ecc = []
+slope_onobj_set = []
+
 for k in range(len(test_subs)):
     # RT/ecc slope
-    slope_RT_ecc.append(linregress(ecc,y=np.array(test_rt_ecc_vs)[k])[0])
+    slope_RT_ecc.append(linregress(ecc,np.array(test_rt_ecc_vs)[k])[0])
     # RT/set slope
-    slope_RT_set.append(linregress(analysis_params['set_size'],y=np.array(test_rt_set_vs)[k])[0])
-    # fix/ecc slope
-    slope_fix_ecc.append(linregress(ecc,y=np.array(test_fix_ecc_vs)[k])[0])
-    # fix/set slope
-    slope_fix_set.append(linregress(analysis_params['set_size'],y=np.array(test_fix_set_vs)[k])[0])
+    slope_RT_set.append(linregress(analysis_params['set_size'],np.array(test_rt_set_vs)[k])[0])
+    # fixation/ecc slope
+    slope_fix_ecc.append(linregress(ecc,np.array(test_fix_ecc_vs)[k])[0])
+    # fixation/set slope
+    slope_fix_set.append(linregress(analysis_params['set_size'],np.array(test_fix_set_vs)[k])[0])
+    # on-object fixation/ecc slope
+    slope_onobj_ecc.append(linregress(ecc,np.array(test_onobjfix_ecc_vs)[k])[0])
+    # on-object fixation/set slope
+    slope_onobj_set.append(linregress(analysis_params['set_size'],np.array(test_onobjfix_set_vs)[k])[0])
 
-
-#Correlation of critical distance mean across ecc and mean RT/ecc slope
-cor_CSmean_RTecc, pval_cor_CSmean_RTecc = spearmanr(np.mean(test_all_cs,axis=-1),slope_RT_ecc)
+  
+# CS vs RT/ECC SLOPE
+cor_CSmean_RTecc_slope, pval_cor_CSmean_RTecc_slope = spearmanr(slope_RT_ecc,np.mean(test_all_cs,axis=-1))
 print('\ncomparing critical distance mean across ecc and mean RT/ecc slope \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),slope_RT_ecc)))
-if pval_cor_CSmean_RTecc<0.05:
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_RTecc_slope,pval_cor_CSmean_RTecc_slope))
+
+if pval_cor_CSmean_RTecc_slope<p_value:
     print('SIGNIFICANT CORRELATION')
 
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-#Correlation of critical distance mean across ecc and mean RT/set size slope
-cor_CSmean_RTset, pval_cor_CSmean_RTset = spearmanr(np.mean(test_all_cs,axis=-1),slope_RT_set)
-print('\ncomparing critical distance mean across ecc and mean RT/set size slope \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),slope_RT_set)))
-if pval_cor_CSmean_RTset<0.05:
+CS_RTECC_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'RT/ECC': slope_RT_ecc})
+
+ax = sns.lmplot(x='RT/ECC', y='CS',data=CS_RTECC_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='RT/ECC [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs RT/ECC (rho=%.2f,pval=%.3f)'%(cor_CSmean_RTecc_slope,pval_cor_CSmean_RTecc_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsRT_ECC_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+    
+
+# CS vs RT/SET SLOPE
+cor_CSmean_RTset_slope, pval_cor_CSmean_RTset_slope = spearmanr(slope_RT_set,np.mean(test_all_cs,axis=-1))
+print('\ncomparing critical distance mean across set and mean RT/set slope \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_RTset_slope,pval_cor_CSmean_RTset_slope))
+
+if pval_cor_CSmean_RTset_slope<p_value:
     print('SIGNIFICANT CORRELATION')
 
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-#Correlation of critical distance mean across ecc and mean fix/ecc slope
-cor_CSmean_fixecc, pval_cor_CSmean_fixecc = spearmanr(np.mean(test_all_cs,axis=-1),slope_fix_ecc)
+CS_RTset_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'RT/set': slope_RT_set})
+
+ax = sns.lmplot(x='RT/set', y='CS',data=CS_RTset_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='RT/set [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs RT/set (rho=%.2f,pval=%.3f)'%(cor_CSmean_RTset_slope,pval_cor_CSmean_RTset_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsRT_set_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+    
+
+# CS vs FIX/ECC SLOPE
+cor_CSmean_fixecc_slope, pval_cor_CSmean_fixecc_slope = spearmanr(slope_fix_ecc,np.mean(test_all_cs,axis=-1))
 print('\ncomparing critical distance mean across ecc and mean fix/ecc slope \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),slope_fix_ecc)))
-if pval_cor_CSmean_fixecc<0.05:
-    print('SIGNIFICANT CORRELATION') 
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_fixecc_slope,pval_cor_CSmean_fixecc_slope))
 
-
-#Correlation of critical distance mean across ecc and mean fix/set size slope
-cor_CSmean_fixset, pval_cor_CSmean_fixset = spearmanr(np.mean(test_all_cs,axis=-1),slope_fix_set)
-print('\ncomparing critical distance mean across ecc and mean fix/set size slope \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),slope_fix_set)))
-if pval_cor_CSmean_fixset<0.05:
+if pval_cor_CSmean_fixecc_slope<p_value:
     print('SIGNIFICANT CORRELATION')
 
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_fixECC_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'fix/ECC': slope_fix_ecc})
+
+ax = sns.lmplot(x='fix/ECC', y='CS',data=CS_fixECC_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='fix/ECC [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs fix/ECC (rho=%.2f,pval=%.3f)'%(cor_CSmean_fixecc_slope,pval_cor_CSmean_fixecc_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsfix_ECC_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+  
+
+# CS vs fix/SET SLOPE
+cor_CSmean_fixset_slope, pval_cor_CSmean_fixset_slope = spearmanr(slope_fix_set,np.mean(test_all_cs,axis=-1))
+print('\ncomparing critical distance mean across set and mean fix/set slope \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_fixset_slope,pval_cor_CSmean_fixset_slope))
+
+if pval_cor_CSmean_fixset_slope<p_value:
+    print('SIGNIFICANT CORRELATION')
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_fixset_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'fix/set': slope_fix_set})
+
+ax = sns.lmplot(x='fix/set', y='CS',data=CS_fixset_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='fix/set [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs fix/set (rho=%.2f,pval=%.3f)'%(cor_CSmean_fixset_slope,pval_cor_CSmean_fixset_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsfix_set_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+  
+
+# CS vs on-object/ECC SLOPE
+cor_CSmean_onobjecc_slope, pval_cor_CSmean_onobjecc_slope = spearmanr(slope_onobj_ecc,np.mean(test_all_cs,axis=-1))
+print('\ncomparing critical distance mean across ecc and mean onobj/ecc slope \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_onobjecc_slope,pval_cor_CSmean_onobjecc_slope))
+
+if pval_cor_CSmean_onobjecc_slope<p_value:
+    print('SIGNIFICANT CORRELATION')
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_onobjECC_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'onobj/ECC': slope_onobj_ecc})
+
+ax = sns.lmplot(x='onobj/ECC', y='CS',data=CS_onobjECC_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='onobj/ECC [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs onobj/ECC (rho=%.2f,pval=%.3f)'%(cor_CSmean_onobjecc_slope,pval_cor_CSmean_onobjecc_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsonobj_ECC_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+   
+# CS vs on-object/SET SLOPE
+cor_CSmean_onobjset_slope, pval_cor_CSmean_onobjset_slope = spearmanr(slope_onobj_set,np.mean(test_all_cs,axis=-1))
+print('\ncomparing critical distance mean across set and mean onobj/set slope \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_onobjset_slope,pval_cor_CSmean_onobjset_slope))
+
+if pval_cor_CSmean_onobjset_slope<p_value:
+    print('SIGNIFICANT CORRELATION')
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_onobjset_slope_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'onobj/set': slope_onobj_set})
+
+ax = sns.lmplot(x='onobj/set', y='CS',data=CS_onobjset_slope_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='onobj/set [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs onobj/set (rho=%.2f,pval=%.3f)'%(cor_CSmean_onobjset_slope,pval_cor_CSmean_onobjset_slope))
+plt.savefig(os.path.join(plot_dir,'CSvsonobj_set_slope_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+    
+
+
+##### Things to add later ######
+
+# also make some scanpath plots? anoying in terms of memory, because several trials
+# should check if everything ok
+
+# think of the density, how to calculate? define ROI and count amout of distractors? 
+# Calculate area of ROI that has distractors? 
+
+####################
+
+
+##### 
+# IF NEEDED, CAN CHOOSE A SUBJECT AND TRIAL TO PLOT THE SCANPATH OR RAW GAZE DATA ##
+#
+#
+## dir to save scanpath plots
+#scanpath_dir = os.path.join(plot_dir,'scanpaths')
+#if not os.path.exists(scanpath_dir):
+#     os.makedirs(scanpath_dir)
+        
+#draw_scanpath_display('86',400,output_vs,output_vs,scanpath_dir)
+
+#draw_rawdata_display('86',400,output_vs,output_vs,scanpath_dir)
 
 
 
