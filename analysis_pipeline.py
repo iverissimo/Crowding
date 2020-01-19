@@ -487,11 +487,95 @@ for k in range(len(analysis_params['set_size'])):
     onobj_set_vs4plot = onobj_set_vs4plot.append(pd.DataFrame({'onobj': np.array(test_onobjfix_set_vs).T[k],
                                                      'set':np.tile(analysis_params['set_size'][k],len(test_subs))}))
 ax = sns.lmplot(x='set', y='onobj',data=onobj_set_vs4plot)
-ax.set(xlabel='set size', ylabel='number fixations')
+ax.set(xlabel='set size', ylabel='On object fixation [%]')
 ax = plt.gca()
 ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
  
+
+# Correlations between tasks
+
+#The Spearman correlation is a nonparametric measure of the monotonicity of the relationship between two datasets. 
+#Unlike the Pearson correlation, the Spearman correlation does not assume that both datasets are normally distributed.
+
+# CS VS RT ACROSS ECC
+cor_CSmean_RT, pval_cor_CSmean_RT = spearmanr(np.mean(test_all_cs,axis=-1),np.mean(test_rt_ecc_vs,axis=-1))
+print('\ncomparing critical distance mean across ecc and mean RT in VS across ecc \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_RT,pval_cor_CSmean_RT))
+if pval_cor_CSmean_RT<p_value:
+    print('SIGNIFICANT CORRELATION')
+    
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_RT_mean_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'RT': np.mean(test_rt_ecc_vs,axis=-1)})
+
+ax = sns.lmplot(x='RT', y='CS',data=CS_RT_mean_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='RT [s]')
+ax = plt.gca()
+ax.set_title('CS vs RT (rho=%.2f,pval=%.3f)'%(cor_CSmean_RT,pval_cor_CSmean_RT))
+plt.savefig(os.path.join(plot_dir,'CSvsRT_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+
+
+# CS VS RT PER ECC
+for i in range(len(np.array(test_all_cs).T)):
+    cor_CSecc_RT, pval_cor_CSecc_RT = spearmanr(np.array(test_all_cs).T[i],np.array(test_rt_ecc_vs).T[i])
+    print('\ncomparing critical distance and mean RT in VS for ecc %d\n'%ecc[i])
+    print('correlation = %.6f, p-value = %.6f'%(cor_CSecc_RT,pval_cor_CSecc_RT))
+
+    if pval_cor_CSecc_RT<p_value:
+        print('SIGNIFICANT CORRELATION')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+    cs_rt_4plot = pd.DataFrame({'RT': np.array(test_rt_ecc_vs).T[i],
+                                'CS':np.array(test_all_cs).T[i]})
+    
+    ax = sns.lmplot(x='RT', y='CS',data=cs_rt_4plot)
+    ax.set(ylabel='CS [dva]', xlabel='RT [s]')
+    ax = plt.gca()
+    ax.set_title('CS vs RT at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
+    plt.savefig(os.path.join(plot_dir,'CSvsRT_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
+
+
+# CS VS INVERSE EFFICACY ACROSS ECC
+cor_CSmean_inveff, pval_cor_CSmean_inveff = spearmanr(np.mean(test_all_cs,axis=-1),np.mean(inv_eff,axis=-1))
+print('\ncomparing critical distance mean across ecc and mean inverse efficiency in VS across ecc \n')
+print('correlation = %.6f, p-value = %.6f'%(cor_CSmean_inveff,pval_cor_CSmean_inveff))
+
+if pval_cor_CSmean_inveff<p_value:
+    print('SIGNIFICANT CORRELATION')
+    
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+CS_RT_mean_df4plot = pd.DataFrame({'CS': np.mean(test_all_cs,axis=-1),
+            'invEffic': np.mean(inv_eff,axis=-1)})
+
+ax = sns.lmplot(x='invEffic', y='CS',data=CS_RT_mean_df4plot)
+ax.set(ylabel='CS [dva]', xlabel='invEffic [a.u.]')
+ax = plt.gca()
+ax.set_title('CS vs RT (rho=%.2f,pval=%.3f)'%(cor_CSmean_inveff,pval_cor_CSmean_inveff))
+plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_across-ecc_%d-subs.svg'%(len(test_subs))), dpi=100,bbox_inches = 'tight')
+    
+
+# CS VS INVERSE EFFICACY PER ECC
+for i in range(len(np.array(test_all_cs).T)):
+    cor_CSecc_inveff, pval_cor_CSecc_inveff = spearmanr(np.array(test_all_cs).T[i],np.array(inv_eff).T[i])
+    print('\ncomparing critical distance mean and mean inverse efficiency in VS for ecc %d\n'%ecc[i])
+    print('correlation = %.6f, p-value = %.6f'%(cor_CSecc_inveff,pval_cor_CSecc_inveff))
+    
+    if pval_cor_CSecc_inveff<p_value:
+        print('SIGNIFICANT CORRELATION')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+    cs_inveff_4plot = pd.DataFrame({'invEffic': np.array(inv_eff).T[i],
+                                    'CS':np.array(test_all_cs).T[i]})
+    
+    ax = sns.lmplot(x='invEffic', y='CS',data=cs_inveff_4plot)
+    ax.set(ylabel='CS [dva]', xlabel='inverse efficacy [a.u.]')
+    ax = plt.gca()
+    ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_inveff,pval_cor_CSecc_inveff))
+    plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
+
 
 ##### Things to add later ######
 
@@ -501,65 +585,6 @@ plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression_%d-subs
 # should check if everything ok
 
 ####################
-
-
-# Correlations between tasks
-
-#The Spearman correlation is a nonparametric measure of the monotonicity of the relationship between two datasets. 
-#Unlike the Pearson correlation, the Spearman correlation does not assume that both datasets are normally distributed.
-
-#Correlation of critical distance mean across ecc and mean RT in VS across ecc
-cor_CSmean_RT, pval_cor_CSmean_RT = spearmanr(np.mean(test_all_cs,axis=-1),np.mean(test_rt_ecc_vs,axis=-1))
-print('\ncomparing critical distance mean across ecc and mean RT in VS across ecc \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),np.mean(test_rt_ecc_vs,axis=-1))))
-if pval_cor_CSmean_RT<0.05:
-    print('SIGNIFICANT CORRELATION')
-
-# now per ecc
-for i in range(len(np.array(test_all_cs).T)):
-    cor_CSecc_RT, pval_cor_CSecc_RT = spearmanr(np.array(test_all_cs).T[i],np.array(test_rt_ecc_vs).T[i])
-    print('\ncomparing critical distance and mean RT in VS for ecc %d\n'%ecc[i])
-    print('%s'%str(spearmanr(np.array(test_all_cs).T[i],np.array(test_rt_ecc_vs).T[i])))
-    if pval_cor_CSecc_RT<0.05:
-        print('SIGNIFICANT CORRELATION')
-
-    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-    cs_rt_4plot = pd.DataFrame([])
-    cs_rt_4plot = rt_ecc_vs4plot.append(pd.DataFrame({'RT': np.array(test_rt_ecc_vs).T[i],
-                                                        'CS':np.array(test_all_cs).T[i]}),sort=False)
-    ax = sns.lmplot(x='RT', y='CS',data=cs_rt_4plot)
-    ax.set(ylabel='CS [dva]', xlabel='RT [s]')
-    ax = plt.gca()
-    ax.set_title('CS vs RT at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_RT,pval_cor_CSecc_RT))
-    plt.savefig(os.path.join(plot_dir,'CSvsRT_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
-
-
-# correlation for critical distance mean across ecc and mean inverse efficiency in VS across ecc
-cor_CSmean_inveff, pval_cor_CSmean_inveff = spearmanr(np.mean(test_all_cs,axis=-1),np.mean(inv_eff,axis=-1))
-print('\ncomparing critical distance mean across ecc and mean inverse efficiency in VS across ecc \n')
-print('%s'%str(spearmanr(np.mean(test_all_cs,axis=-1),np.mean(inv_eff,axis=-1))))
-if pval_cor_CSmean_inveff<0.05:
-    print('SIGNIFICANT CORRELATION')
-
-# now per ecc
-for i in range(len(np.array(test_all_cs).T)):
-    cor_CSecc_inveff, pval_cor_CSecc_inveff = spearmanr(np.array(test_all_cs).T[i],np.array(inv_eff).T[i])
-    print('\ncomparing critical distance mean and mean inverse efficiency in VS for ecc %d\n'%ecc[i])
-    print('%s'%str(spearmanr(np.array(test_all_cs).T[i],np.array(inv_eff).T[i])))
-    if pval_cor_CSecc_inveff<0.05:
-        print('SIGNIFICANT CORRELATION')
-
-    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-    cs_inveff_4plot = pd.DataFrame([])
-    cs_inveff_4plot = cs_inveff_4plot.append(pd.DataFrame({'invEffic': np.array(inv_eff).T[i],
-                                                        'CS':np.array(test_all_cs).T[i]}),sort=False)
-    ax = sns.lmplot(x='invEffic', y='CS',data=cs_inveff_4plot)
-    ax.set(ylabel='CS [dva]', xlabel='inverse efficacy [a.u.]')
-    ax = plt.gca()
-    ax.set_title('CS vs invEffic at %d ecc (rho=%.2f,pval=%.3f)'%(ecc[i],cor_CSecc_inveff,pval_cor_CSecc_inveff))
-    plt.savefig(os.path.join(plot_dir,'CSvsinvEffic_%d-ecc_%d-subs.svg'%(ecc[i],len(test_subs))), dpi=100,bbox_inches = 'tight') 
-
-
 
 # gather slope values and try those correlations
 
