@@ -504,7 +504,7 @@ def meanfix_ecc(data,eyedata,ecc,hRes=1680,vRes=1050,screenHeight=30,screenDis=5
                         fix_x = fix[-2] - hRes/2
                         fix_y = fix[-1] - vRes/2; fix_y = - fix_y
 
-                        if np.sqrt((fix_x-target_pos[0])**2+(fix_x-target_pos[1])**2) > r_gabor:
+                        if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
                             num_fix += 1
    
                 fix_ecc.append(num_fix) #append number of fixations for that trial value
@@ -570,7 +570,7 @@ def meanfix_setsize(data,eyedata,setsize,hRes=1680,vRes=1050,screenHeight=30,scr
                         fix_x = fix[-2] - hRes/2
                         fix_y = fix[-1] - vRes/2; fix_y = - fix_y
 
-                        if np.sqrt((fix_x-target_pos[0])**2+(fix_x-target_pos[1])**2) > r_gabor:
+                        if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
                             num_fix += 1
                 
             
@@ -581,3 +581,156 @@ def meanfix_setsize(data,eyedata,setsize,hRes=1680,vRes=1050,screenHeight=30,scr
     return fix_all
     
     
+def on_objectfix_ecc(data,eyedata,ecc,radius,hRes=1680,vRes=1050,screenHeight=30,screenDis=57):
+    # function to check percentage of on object fixations as function of ecc size for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # eyedata - eyetracking data
+    # ecc - list with eccs used in task
+    #
+    # OUTPUTS #
+    # fix_all - mean fix for all ecc
+    
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    radius_pix = ang2pix(radius,screenHeight,
+                       screenDis,
+                       vRes)
+        
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+    
+    fix_all = [] # fix for all ecc
+    
+    for _,j in enumerate(ecc):
+        
+        fix_ecc = []
+        
+        for i in range(len(data)): # for all actual trials 
+            
+            if key_or[i]==target_or[i] and int(target_ecc[i])==j: # if key press = target orientation and correct ecc
+                
+                # index for moment when display was shown
+                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                # eye tracker sample time of display
+                smp_display = eyedata[i]['events']['msg'][idx_display][0]
+                
+                num_fix = 0
+                for k,fix in enumerate(eyedata[i]['events']['Efix']):
+                    
+                    # if fixations between 150ms after display and key press time
+                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+                        
+                        #if fixation not on target (not within target radius)
+                        fix_x = fix[-2] - hRes/2
+                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+                        
+                        # get distractor positions as strings in list
+                        distr_pos = df_vs['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
+                        # convert to list of floats
+                        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+                        # save distractor positions in pairs (x,y)
+                        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+
+                        # if fixation within radius of any of the distractors
+                        for n in range(len(alldistr_pos)): 
+                            if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
+                                num_fix += 1 # save fixation
+                
+                if len(eye_data[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
+                    on_obj_per = 0
+                else:
+                    on_obj_per = num_fix/len(eye_data[i]['events']['Efix'])
+
+                fix_ecc.append(on_obj_per) #append percentage of on object fixations of trial
+
+        fix_all.append(np.mean(fix_ecc)) # append mean percentage of on object fixations per ecc
+    
+    return fix_all
+
+
+
+def on_objectfix_set(data,eyedata,setsize,radius,hRes=1680,vRes=1050,screenHeight=30,screenDis=57):
+    # function to check percentage of on object fixations as function of set size for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # eyedata - eyetracking data
+    # ecc - list with eccs used in task
+    #
+    # OUTPUTS #
+    # fix_all - mean fix for all ecc
+    
+    # list of values with target set size
+    target_set = data['set_size'].values
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    radius_pix = ang2pix(radius,screenHeight,
+                       screenDis,
+                       vRes)
+        
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+    
+    fix_all = [] # fix for all ecc
+    
+    for _,j in enumerate(setsize):
+        
+        fix_set = []
+        
+        for i in range(len(data)): # for all actual trials 
+            
+            if key_or[i]==target_or[i] and int(target_set[i])==j: # if key press = target orientation and correct set size
+                
+                # index for moment when display was shown
+                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                # eye tracker sample time of display
+                smp_display = eyedata[i]['events']['msg'][idx_display][0]
+                
+                num_fix = 0
+                for k,fix in enumerate(eyedata[i]['events']['Efix']):
+                    
+                    # if fixations between 150ms after display and key press time
+                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+                        
+                        #if fixation not on target (not within target radius)
+                        fix_x = fix[-2] - hRes/2
+                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+                        
+                        # get distractor positions as strings in list
+                        distr_pos = df_vs['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
+                        # convert to list of floats
+                        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+                        # save distractor positions in pairs (x,y)
+                        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+
+                        # if fixation within radius of any of the distractors
+                        for n in range(len(alldistr_pos)): 
+                            if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
+                                num_fix += 1 # save fixation
+                
+                if len(eye_data[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
+                    on_obj_per = 0
+                else:
+                    on_obj_per = num_fix/len(eye_data[i]['events']['Efix'])
+
+                fix_set.append(on_obj_per) #append percentage of on object fixations of trial
+
+        fix_all.append(np.mean(fix_set)) # append mean percentage of on object fixations per set size
+    
+    return fix_all
+
+

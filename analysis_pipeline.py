@@ -188,6 +188,8 @@ test_rt_ecc_vs = []
 test_rt_set_vs = []
 test_fix_ecc_vs = []
 test_fix_set_vs = []
+test_onobjfix_ecc_vs = []
+test_onobjfix_set_vs = []
 
 for j in range(len(all_subs)):
     
@@ -212,6 +214,9 @@ for j in range(len(all_subs)):
         
         test_fix_ecc_vs.append(meanfix_ecc(df_vs,eye_data,ecc))
         test_fix_set_vs.append(meanfix_setsize(df_vs,eye_data,analysis_params['set_size']))
+
+        test_onobjfix_ecc_vs.append(on_objectfix_ecc(df_vs,eye_data,ecc,analysis_params['siz_gab_deg']/2*1.5))
+        test_onobjfix_set_vs.append(on_objectfix_set(df_vs,eye_data,analysis_params['set_size'],analysis_params['siz_gab_deg']/2*1.5))
 
 # PLOTS
 
@@ -444,7 +449,7 @@ ax.axes.set_ylim(0,)
 plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
  
 
-# plot mean Reaction times as a function of eccentricity
+# NUMBER OF FIXATIONS VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
 fix_set_vs4plot = pd.DataFrame([])
@@ -457,6 +462,35 @@ ax.set(xlabel='set size', ylabel='number fixations')
 ax = plt.gca()
 ax.set_title('set size vs number fixations %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+
+# PERCENTAGE OF ON OBJECT FIXATIONS VS ECC
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+onobj_ecc_vs4plot = pd.DataFrame([])
+
+for k in range(len(ecc)):
+    onobj_ecc_vs4plot = onobj_ecc_vs4plot.append(pd.DataFrame({'onobj': np.array(test_onobjfix_ecc_vs).T[k],
+                                                     'ecc':np.tile(ecc[k],len(test_subs))}))
+ax = sns.lmplot(x='ecc', y='onobj',data=onobj_ecc_vs4plot)
+ax.set(xlabel='eccentricity [dva]', ylabel='On object fixation [%]')
+ax = plt.gca()
+ax.set_title('ecc vs on-object fixations %d subs'%len(test_subs))
+ax.axes.set_ylim(0,)
+plt.savefig(os.path.join(plot_dir,'search_ecc_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+
+# PERCENTAGE OF ON OBJECT FIXATIONS VS SET SIZE
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+onobj_set_vs4plot = pd.DataFrame([])
+
+for k in range(len(analysis_params['set_size'])):
+    onobj_set_vs4plot = onobj_set_vs4plot.append(pd.DataFrame({'onobj': np.array(test_onobjfix_set_vs).T[k],
+                                                     'set':np.tile(analysis_params['set_size'][k],len(test_subs))}))
+ax = sns.lmplot(x='set', y='onobj',data=onobj_set_vs4plot)
+ax.set(xlabel='set size', ylabel='number fixations')
+ax = plt.gca()
+ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
+plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
  
 
 ##### Things to add later ######
