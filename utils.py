@@ -634,7 +634,7 @@ def on_objectfix_ecc(data,eyedata,ecc,radius,hRes=1680,vRes=1050,screenHeight=30
                         fix_y = fix[-1] - vRes/2; fix_y = - fix_y
                         
                         # get distractor positions as strings in list
-                        distr_pos = df_vs['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
+                        distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
                         # convert to list of floats
                         distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
                         # save distractor positions in pairs (x,y)
@@ -645,10 +645,10 @@ def on_objectfix_ecc(data,eyedata,ecc,radius,hRes=1680,vRes=1050,screenHeight=30
                             if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
                                 num_fix += 1 # save fixation
                 
-                if len(eye_data[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
+                if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
                     on_obj_per = 0
                 else:
-                    on_obj_per = num_fix/len(eye_data[i]['events']['Efix'])
+                    on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
 
                 fix_ecc.append(on_obj_per) #append percentage of on object fixations of trial
 
@@ -711,7 +711,7 @@ def on_objectfix_set(data,eyedata,setsize,radius,hRes=1680,vRes=1050,screenHeigh
                         fix_y = fix[-1] - vRes/2; fix_y = - fix_y
                         
                         # get distractor positions as strings in list
-                        distr_pos = df_vs['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
+                        distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
                         # convert to list of floats
                         distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
                         # save distractor positions in pairs (x,y)
@@ -722,10 +722,10 @@ def on_objectfix_set(data,eyedata,setsize,radius,hRes=1680,vRes=1050,screenHeigh
                             if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
                                 num_fix += 1 # save fixation
                 
-                if len(eye_data[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
+                if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
                     on_obj_per = 0
                 else:
-                    on_obj_per = num_fix/len(eye_data[i]['events']['Efix'])
+                    on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
 
                 fix_set.append(on_obj_per) #append percentage of on object fixations of trial
 
