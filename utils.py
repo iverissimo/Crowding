@@ -20,6 +20,8 @@ from matplotlib.axes import Axes
 
 import json
 from pygazeanalyser.gazeplotter import parse_fixations
+from scipy.stats import spearmanr
+import seaborn as sns
 
 # functions
 
@@ -794,4 +796,22 @@ def on_objectfix_set(data,eyedata,setsize,radius,hRes=1680,vRes=1050,screenHeigh
     
     return fix_all
 
+def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05):
+    
+    corr, pval = spearmanr(arr_x,arr_y)
+
+    print('correlation = %.6f, p-value = %.6f'%(corr,pval))
+    if pval<p_value:
+        print('SIGNIFICANT CORRELATION')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+    df4plot = pd.DataFrame({'xx': arr_x,
+                            'yy': arr_y})
+
+    ax = sns.lmplot(x='xx', y='yy',data=df4plot)
+    ax.set(ylabel = label_y, xlabel = label_x)
+    ax = plt.gca()
+    ax.set_title(plt_title+' (rho=%.2f,pval=%.3f)'%(corr,pval))
+    plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
 
