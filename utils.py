@@ -948,7 +948,7 @@ def density_mean_RT(data,density_arr,type_trial='ecc',density='high',threshold=0
                     RT_per_group.append(RT[i]) #append RT value
         
         RT_all.append(np.mean(RT_per_group))
-        #print('number of trials for group %d is %d'%(j,len(RT_per_group)))
+        print('number of trials for group %d is %d'%(j,len(RT_per_group)))
     
     return RT_all
     

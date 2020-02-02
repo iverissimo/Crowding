@@ -20,6 +20,8 @@ import json
 
 from utils import *
 
+from scipy.stats import linregress
+
 # paths
 base_dir =os.getcwd(); base_dir = os.path.join(base_dir,'Data_50ms_7deg')
 output_vs = os.path.join(base_dir,'output_VS')
