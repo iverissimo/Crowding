@@ -1125,4 +1125,35 @@ def density_on_objectfix(data,eyedata,density_arr,type_trial='ecc',density='high
     return fix_all
 
 
+def density_plot_correlation(arr_x_LOW,arr_x_HIGH,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05):
+    
+    corr1, pval1 = spearmanr(arr_x_LOW,arr_y)
 
+    print('correlation = %.6f, p-value = %.6f'%(corr1,pval1))
+    if pval1<p_value:
+        print('SIGNIFICANT CORRELATION for LOW density')
+        
+    corr2, pval2 = spearmanr(arr_x_HIGH,arr_y)
+
+    print('correlation = %.6f, p-value = %.6f'%(corr2,pval2))
+    if pval2<p_value:
+        print('SIGNIFICANT CORRELATION for HIGH density')
+
+    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+    df4plot = pd.DataFrame({'xx_LOW': arr_x_LOW,
+                            'xx_HIGH': arr_x_HIGH,
+                            'yy': arr_y})
+
+
+    sns.regplot(x=df4plot['xx_LOW'],y=df4plot['yy'],color='blue', marker='.',label='LOW')
+    sns.regplot(x=df4plot['xx_HIGH'],y=df4plot['yy'],color='red', marker='+',label='HIGH')    
+
+    ax = plt.gca()
+    ax.set(ylabel = label_y, xlabel = label_x)
+    ax.set_title(plt_title+' LOW - (rho=%.2f,pval=%.3f) HIGH - (rho=%.2f,pval=%.3f)'%(corr1,pval1,corr2,pval2))
+    ax.legend()
+    plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
+
+
+    
