@@ -236,7 +236,7 @@ plt.title('Accuracy without flankers')
 plt.legend(['4°','8°','12°'])
 plt.xlim(0.5,1)
 
-fig.savefig(os.path.join(plot_dir,'crowding_accuracy_hist_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_accuracy_hist.svg'), dpi=100)
 
 
 # SAME BUT WITH BOXPLOTS, AND TESTING DISTRIBUTION DIFFERENCE
@@ -265,7 +265,7 @@ plt.title('Accuracy crowding (with and without flankers)')
 if pval_acc_crwd<p_value:
     print('Significant difference in accuracy distribution \nbetween flanker and no flanker \nacross ecc (p-val = %.6f)'%pval_acc_crwd)
 
-fig.savefig(os.path.join(plot_dir,'crowding_mean_accuracy_boxplot_wilcoxtest_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_mean_accuracy_boxplot_wilcoxtest.svg'), dpi=100)
 
 
 # SAME BUT PER ECC
@@ -292,7 +292,7 @@ for g,_ in enumerate(ecc):
     if pval_acc_crwd<p_value:
         print('Significant difference in accuracy distribution \nbetween flanker and no flanker \nfor %d ecc (p-val = %.6f)'%(ecc[g],pval_acc_crwd))
     
-    fig.savefig(os.path.join(plot_dir,'crowding_%decc_accuracy_boxplot_wilcoxtest_%d-subs.svg'%(ecc[g],len(test_subs))), dpi=100)
+    fig.savefig(os.path.join(plot_dir,'crowding_%decc_accuracy_boxplot_wilcoxtest.svg'%(ecc[g])), dpi=100)
 
 
 # MEAN CRITICAL SPACING, WEIGHTED BY ACCURACY, PER ECC
@@ -318,7 +318,7 @@ plt.errorbar(ecc, weighted_cs_mean, yerr=weighted_cs_std)
 plt.ylabel('Critical spacing',fontsize=18)
 plt.xlabel('ecc',fontsize=18)
 plt.title('Mean critical spacing, weighted by accuracy',fontsize=18)
-fig.savefig(os.path.join(plot_dir,'crowding_meanCS-weighted_errorbar_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_meanCS-weighted_errorbar.svg'), dpi=100)
 
 # SHOW INDIVIDUAL SUB CS DISTRIBITUION PER ECC
 fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
@@ -326,7 +326,7 @@ fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='
 with sns.color_palette("pastel", len(test_subs)):
     sns.catplot(x="ecc", y="cs", hue="sub", kind="point", data=crwd_df4plot)
 plt.title('Critical Spacing, per ecc')
-plt.savefig(os.path.join(plot_dir,'crowding_CS_ecc_individual_%d-subs.svg'%len(test_subs)), dpi=100)
+plt.savefig(os.path.join(plot_dir,'crowding_CS_ecc_individual.svg'), dpi=100)
 
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
@@ -335,13 +335,13 @@ sns.lineplot(x='ecc', y='cs', data=crwd_df4plot,
                    units='sub', estimator=None, lw=1,color='grey',alpha=0.2)
 
 plt.title('Critical Spacing, per ecc')
-fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_all_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_all.svg'), dpi=100)
 
 # BOXPLOTS WITH CS PER ECC
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 sns.boxplot(x='ecc', y='cs', data=crwd_df4plot)
 sns.swarmplot(x='ecc', y='cs', data=crwd_df4plot,color=".25")
-fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-weighted_boxplot_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-weighted_boxplot.svg'), dpi=100)
 
 # do Friedman to see if averages are different 
 # The Friedman test tests the null hypothesis that repeated measurements of the same individuals have the same distribution. 
@@ -392,7 +392,7 @@ plt.title('Reaction times visual search')
 plt.legend(['4°','8°','12°'])
 #plt.xlim(0.2,0.8)
 
-fig.savefig(os.path.join(plot_dir,'search_accuracy_RT_hist_%d-subs.svg'%len(test_subs)), dpi=100)
+fig.savefig(os.path.join(plot_dir,'search_accuracy_RT_hist.svg'), dpi=100)
 
 
 # RT VS ECC
@@ -407,7 +407,7 @@ ax = sns.lmplot(x='ecc', y='RT',data=rt_ecc_vs4plot)
 ax.set(xlabel='eccentricity [dva]', ylabel='RT [s]')
 ax = plt.gca()
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
-plt.savefig(os.path.join(plot_dir,'search_ecc_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_ecc_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # RT VS SET SIZE
@@ -422,7 +422,7 @@ ax = sns.lmplot(x='set', y='RT',data=rt_set_vs4plot)
 ax.set(xlabel='set size', ylabel='RT [s]')
 ax = plt.gca()
 ax.set_title('set size vs RT %d subs'%len(test_subs))
-plt.savefig(os.path.join(plot_dir,'search_setsize_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_setsize_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # INVERSE EFFICIENCY SCORE
@@ -449,7 +449,7 @@ ax.set(xlabel='eccentricity [dva]', ylabel='# fixations')
 ax = plt.gca()
 ax.set_title('ecc vs number of fixations %d subs'%len(test_subs))
 ax.axes.set_ylim(0,)
-plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # NUMBER OF FIXATIONS VS SET SIZE
@@ -464,7 +464,7 @@ ax = sns.lmplot(x='set', y='fix',data=fix_set_vs4plot)
 ax.set(xlabel='set size', ylabel='# fixations')
 ax = plt.gca()
 ax.set_title('set size vs number fixations %d subs'%len(test_subs))
-plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
 # PERCENTAGE OF ON OBJECT FIXATIONS VS ECC
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
@@ -479,7 +479,7 @@ ax.set(xlabel='eccentricity [dva]', ylabel='On object fixation [%]')
 ax = plt.gca()
 ax.set_title('ecc vs on-object fixations %d subs'%len(test_subs))
 ax.axes.set_ylim(0,)
-plt.savefig(os.path.join(plot_dir,'search_ecc_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_ecc_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
 # PERCENTAGE OF ON OBJECT FIXATIONS VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
@@ -493,7 +493,7 @@ ax = sns.lmplot(x='set', y='onobj',data=onobj_set_vs4plot)
 ax.set(xlabel='set size', ylabel='On object fixation [%]')
 ax = plt.gca()
 ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
-plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # Correlations between tasks
@@ -675,19 +675,6 @@ plot_correlation(slope_onobj_set,np.mean(test_all_cs,axis=-1),
                 'on-object/set','CS','CS vs on-object/set',
                  os.path.join(plot_dir,'CSvsOnobj_set_slope_across-set.svg'))
 
-
-
-
-
-##### Things to add later ######
-
-# also make some scanpath plots? anoying in terms of memory, because several trials
-# should check if everything ok
-
-# think of the density, how to calculate? define ROI and count amout of distractors? 
-# Calculate area of ROI that has distractors? 
-
-####################
 
 
 ##### 
