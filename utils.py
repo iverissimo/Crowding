@@ -815,3 +815,314 @@ def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05)
     ax.set_title(plt_title+' (rho=%.2f,pval=%.3f)'%(corr,pval))
     plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
 
+
+def surface_density(df_vs_dir,rad_roi,
+                    rad_gab=1.1,screenHeight=30,screenDis=57,
+                    vRes = 1050,hRes=1680):
+    
+    # function to calculate surface density values for all trials of visual search for subject
+    #### INPUTS #####
+    # df_vs - absolute path dataframe with behaviour data
+    # rad_roi - radius around target, will be the ROI
+    
+    # returns
+    # surf_density for all trials
+    
+    df_vs = pd.read_csv(df_vs_dir, sep='\t')
+    
+    # set radius around target to compute density (ROI)
+    radius_roi = ang2pix(rad_roi,screenHeight,
+                       screenDis,vRes)
+    # radius of each gabor
+    radius_gabor = ang2pix(rad_gab,screenHeight,
+                       screenDis,vRes)
+
+    # area of ROI to analyse
+    roi_area = np.pi*(radius_roi)**2 - np.pi*(radius_gabor)**2 # subtract area of target 
+    
+    surf_density = []
+    
+    for trial in range(len(df_vs)): # for all trials
+        
+        # NOTE - all positions in pixels
+    
+        # get target and distractor positions as strings in list
+        target_pos = df_vs['target_position'][trial].replace(']','').replace('[','').split(' ')
+        distr_pos = df_vs['distractor_position'][trial].replace(']','').replace('[','').replace(',','').split(' ')
+
+        # convert to list of floats
+        target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+
+        # save distractor positions in pairs (x,y)
+        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+        
+        # convert positions to make everything positive and hence my life easier
+        # (changing coordinate axis to have center position in bottom left of display 
+        # instead of center position in center of screen)
+
+        new_target_pos = target_pos + [hRes/2,vRes/2]
+        new_alldistr_pos = alldistr_pos + [hRes/2,vRes/2]
+        
+        # compute total distractor area within ROI
+        intersect_area = []
+
+        for i in range(len(new_alldistr_pos)): # for all distractors
+            # calculate distance between center of target and center of distractor
+            distance = np.sqrt((new_target_pos[0]-new_alldistr_pos[i][0])**2+(new_target_pos[1]-new_alldistr_pos[i][1])**2)
+
+            if distance >= radius_roi+radius_gabor: # circles not intersecting
+                inters = 0
+
+            elif distance + radius_gabor <= radius_roi: # distractor fully within ROI
+                inters = np.pi*(radius_gabor)**2
+
+            else: # distractor partially intersecting ROI
+                # whole description of formula in https://diego.assencio.com/?index=8d6ca3d82151bad815f78addf9b5c1c6
+                d1 = ((radius_roi)**2-(radius_gabor)**2+distance**2)/(2*distance)
+                d2 = ((radius_gabor)**2-(radius_roi)**2+distance**2)/(2*distance)
+
+                A1 = ((radius_roi)**2)*np.arccos(d1/radius_roi) - d1*np.sqrt((radius_roi)**2-d1**2)
+                A2 = ((radius_gabor)**2)*np.arccos(d2/radius_gabor) - d2*np.sqrt((radius_gabor)**2-d2**2)
+
+                inters = A1+A2
+
+            intersect_area.append(inters)
+
+        # sum of distractor areas
+        dist_area = sum(intersect_area)
+
+        if dist_area>roi_area: # if sum of distractor area bigger than ROI throw error, something is off
+            raise ValueError('sum of disctractor area bigger than ROI for trial %d!'%trial)
+
+        # surface density for trial    
+        surf_density.append(dist_area/roi_area)
+
+    return np.array(surf_density)
+
+
+def density_mean_RT(data,density_arr,type_trial='ecc',density='high',threshold=0.03, ecc=[4,8,12],set_size=[5,15,30]):
+    # function to check RT as function of ecc or set size for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # density_arr - surface density array for all trials
+    # type_trial - get RT values in function of 'ecc' or 'set'
+    # density - select high or low density trials
+    # threshold - threshold density value
+    #
+    # OUTPUTS #
+    # RT_all - mean RT for all groups
+        
+        
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list RT
+    RT = data['RT'].values
+    
+    if type_trial=='ecc':
+        # list of values with target ecc
+        target_type = data['target_ecc'].values
+        val = ecc # values to loop over
+    elif type_trial=='set':
+        # list of values with target set size
+        target_type = data['set_size'].values
+        val = set_size # values to loop over
+    
+    RT_all = [] # RT for all ecc
+    
+    for _,j in enumerate(val):
+        
+        RT_per_group = []
+        
+        for i in range(len(data)): # for all actual trials 
+
+            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
+                
+                # save depending on density of trial
+                if density=='high' and density_arr[i]>=threshold:
+                    RT_per_group.append(RT[i]) #append RT value
+                elif density=='low' and density_arr[i]<threshold:
+                    RT_per_group.append(RT[i]) #append RT value
+        
+        RT_all.append(np.mean(RT_per_group))
+        #print('number of trials for group %d is %d'%(j,len(RT_per_group)))
+    
+    return RT_all
+    
+def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
+                    threshold=0.03, ecc=[4,8,12],set_size=[5,15,30],
+                    hRes=1680,vRes=1050,screenHeight=30,screenDis=57,size_gab=2.2):
+    
+    # function to check mean number of fixations as function of ecc or set size for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # eyedata - eyetracking data
+    # ecc - list with eccs used in task
+    #
+    # OUTPUTS #
+    # fix_all - mean fix for all ecc
+    
+
+    
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    r_gabor = ang2pix(size_gab/2,screenHeight,
+                       screenDis,
+                       vRes)
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+    
+    if type_trial=='ecc':
+        # list of values with target ecc
+        target_type = data['target_ecc'].values
+        val = ecc # values to loop over
+    elif type_trial=='set':
+        # list of values with target set size
+        target_type = data['set_size'].values
+        val = set_size # values to loop over
+    
+    fix_all = [] # RT for all ecc
+    
+    for _,j in enumerate(val):
+        
+        fix_per_group = []
+        
+        for i in range(len(data)): # for all actual trials 
+            
+            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
+                
+                # save depending on density of trial
+                if (density=='high' and density_arr[i]>=threshold) or (density=='low' and density_arr[i]<threshold):
+                
+                    # index for moment when display was shown
+                    idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                    # eye tracker sample time of display
+                    smp_display = eyedata[i]['events']['msg'][idx_display][0]
+
+                    # get target positions as strings in list
+                    target_pos = data['target_position'][i].replace(']','').replace('[','').split(' ')
+                    # convert to list of floats
+                    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+
+                    num_fix = 0
+                    for k,fix in enumerate(eyedata[i]['events']['Efix']):
+
+                        # if fixations between 150ms after display and key press time
+                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+
+                            #if fixation not on target (not within target radius)
+                            fix_x = fix[-2] - hRes/2
+                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                            if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
+                                num_fix += 1
+
+                    fix_per_group.append(num_fix) #append number of fixations for that trial value
+
+        fix_all.append(np.mean(fix_per_group)) # append mean number of fixations per ecc
+        #print('number of trials for group %d is %d'%(j,len(fix_per_group)))
+    
+    return fix_all   
+
+
+
+def density_on_objectfix(data,eyedata,density_arr,type_trial='ecc',density='high',
+                    threshold=0.03, ecc=[4,8,12],set_size=[5,15,30],
+                    hRes=1680,vRes=1050,screenHeight=30,screenDis=57,radius=1.1):
+    
+    # function to check percentage of on object fixations as function of ecc or set size for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # eyedata - eyetracking data
+    # ecc - list with eccs used in task
+    #
+    # OUTPUTS #
+    # fix_all - mean fix for all ecc
+    
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list of values of RT
+    RT = data['RT'].values
+    # radius of gabor in pixels
+    radius_pix = ang2pix(radius,screenHeight,
+                       screenDis,
+                       vRes)
+        
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+    
+    if type_trial=='ecc':
+        # list of values with target ecc
+        target_type = data['target_ecc'].values
+        val = ecc # values to loop over
+    elif type_trial=='set':
+        # list of values with target set size
+        target_type = data['set_size'].values
+        val = set_size # values to loop over
+    
+    fix_all = [] # fix for all ecc
+    
+    for _,j in enumerate(val):
+        
+        fix_per_group = []
+        
+        for i in range(len(data)): # for all actual trials 
+            
+            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
+                
+                # save depending on density of trial
+                if (density=='high' and density_arr[i]>=threshold) or (density=='low' and density_arr[i]<threshold):
+                
+                    # index for moment when display was shown
+                    idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                    # eye tracker sample time of display
+                    smp_display = eyedata[i]['events']['msg'][idx_display][0]
+
+                    num_fix = 0
+                    for k,fix in enumerate(eyedata[i]['events']['Efix']):
+
+                        # if fixations between 150ms after display and key press time
+                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
+
+                            #if fixation not on target (not within target radius)
+                            fix_x = fix[-2] - hRes/2
+                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                            # get distractor positions as strings in list
+                            distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
+                            # convert to list of floats
+                            distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+                            # save distractor positions in pairs (x,y)
+                            alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+
+                            # if fixation within radius of any of the distractors
+                            for n in range(len(alldistr_pos)): 
+                                if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
+                                    num_fix += 1 # save fixation
+
+                    if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
+                        on_obj_per = 0
+                    else:
+                        on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
+
+                    fix_per_group.append(on_obj_per) #append percentage of on object fixations of trial
+
+        fix_all.append(np.mean(fix_per_group)) # append mean percentage of on object fixations per ecc
+        #print('number of trials for group %d is %d'%(j,len(fix_per_group)))
+    
+    return fix_all
+
+
+
