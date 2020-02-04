@@ -85,7 +85,7 @@ for ind,behfile in enumerate(crwd_csv):
     
     EXCLUDE = []
     
-    all_subs.append(os.path.splitext(behfile)[0][-2::]) 
+    all_subs.append(os.path.splitext(behfile)[0][-3::]) 
     print('analysing pp-%s'%all_subs[ind])
     
     # load csv for sub
@@ -112,6 +112,10 @@ for ind,behfile in enumerate(crwd_csv):
     EXCLUDE.append(cs['exclude'])
     
     # plot staircase just to see what's going on
+    out_dir = os.path.join(plot_dir,'staircases')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
     fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
     plt.plot(np.array(all_tfr[ind]).T)
@@ -119,7 +123,8 @@ for ind,behfile in enumerate(crwd_csv):
     plt.xlabel("# Trial",fontsize=18)
     plt.title("Target-Flanker ratio per ecc",fontsize=18)
     plt.legend(analysis_params['ecc'])
-    fig.savefig(os.path.join(plot_dir,'crowding_TFR_per_ecc_sub-{sj}.svg'.format(sj=all_subs[ind])), dpi=100)
+
+    fig.savefig(os.path.join(out_dir,'crowding_TFR_per_ecc_sub-{sj}.svg'.format(sj=all_subs[ind])), dpi=100)
     
     fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
@@ -131,8 +136,8 @@ for ind,behfile in enumerate(crwd_csv):
     plt.xlabel("# Trial",fontsize=18)
     plt.title("Target-Flanker ratio all trials",fontsize=18)
     #plt.show()
-    fig.savefig(os.path.join(plot_dir,'crowding_TFR_all_sub-{sj}.svg'.format(sj=all_subs[ind])), dpi=100)
 
+    fig.savefig(os.path.join(out_dir,'crowding_TFR_all_sub-{sj}.svg'.format(sj=all_subs[ind])), dpi=100)
 
     # visual search
     
@@ -166,8 +171,12 @@ for ind,behfile in enumerate(crwd_csv):
                                 'accuracy_vs_mean_pct':acc_vs_all[ind]*100,
                                 'exclude':ex_sub
                               })
+    
+    out_dir = os.path.join(plot_dir,'summary')
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
-    summary_df.to_csv(os.path.join(plot_dir,'summary_pp_'+all_subs[ind]+'.csv'), sep='\t')
+    summary_df.to_csv(os.path.join(out_dir,'summary_pp_'+all_subs[ind]+'.csv'), sep='\t')
    
     
 
