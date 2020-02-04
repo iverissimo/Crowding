@@ -81,7 +81,7 @@ for ind,behfile in enumerate(crwd_csv):
     
     EXCLUDE = []
     
-    all_subs.append(os.path.splitext(behfile)[0][-2::]) 
+    all_subs.append(os.path.splitext(behfile)[0][-3::]) 
     print('analysing pp-%s'%all_subs[ind])
     
     # load csv for sub
@@ -183,6 +183,9 @@ for j in range(len(all_subs)):
         median_density = np.nanquantile(surf_dens_all, quantile)
 
         # make figure to have a look
+        out_dir = os.path.join(plot_dir,'density_hist')
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
         fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
 
         sns.distplot(surf_dens_all,bins=10,color='r')
@@ -191,7 +194,7 @@ for j in range(len(all_subs)):
         axis.axvline(x=median_density,c='k',linestyle='--')
 
         axis.set_title('Histogram of surface density values sub-%s, median density = %0.2f'%(all_subs[j],median_density))
-        fig.savefig(os.path.join(plot_dir,'distribution_surface_density_sub-%s'%all_subs[j]), dpi=100)
+        fig.savefig(os.path.join(out_dir,'distribution_surface_density_sub-%s'%all_subs[j]), dpi=100)
 
         # append density threshold
         test_density_thresh.append(median_density)
@@ -260,7 +263,7 @@ ax = plt.gca()
 ax.set(xlabel='eccentricity [dva]', ylabel='RT [s]')
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_ecc_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_ecc_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # RT VS SET SIZE
@@ -281,7 +284,7 @@ ax = plt.gca()
 ax.set(xlabel='set size', ylabel='RT [s]')
 ax.set_title('set size vs RT %d subs'%len(test_subs))
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_setsize_RT_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_setsize_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 # EYETRACKING FOR VISUAL SEARCH
 
@@ -303,7 +306,7 @@ ax.set_title('ecc vs number of fixations %d subs'%len(test_subs))
 ax.set(xlabel='eccentricity [dva]', ylabel='# fixations')
 ax.axes.set_ylim(0,)
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_ecc_numfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_ecc_numfix_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # NUMBER OF FIXATIONS VS SET SIZE
@@ -326,7 +329,7 @@ ax.set(xlabel='set size', ylabel='# fixations')
 ax.set_title('set size vs number fixations %d subs'%len(test_subs))
 ax.axes.set_ylim(0,)
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_setsize_fix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_setsize_fix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
 
 # PERCENTAGE OF ON OBJECT FIXATIONS VS ECC
@@ -347,7 +350,7 @@ ax.set_title('ecc vs on-object fixations %d subs'%len(test_subs))
 ax.set(xlabel='eccentricity [dva]', ylabel='On object fixation [%]')
 ax.axes.set_ylim(0,)
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_ecc_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_ecc_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
 
 # PERCENTAGE OF ON OBJECT FIXATIONS VS SET SIZE
@@ -368,7 +371,7 @@ ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
 ax.set(xlabel='set size', ylabel='On object fixation [%]')
 ax.axes.set_ylim(0,)
 ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_setsize_onobjectfix_regression_%d-subs.svg'%len(test_subs)), dpi=100,bbox_inches = 'tight')
+plt.savefig(os.path.join(plot_dir,'density_search_setsize_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # Correlations between tasks
