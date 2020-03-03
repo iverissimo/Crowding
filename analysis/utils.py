@@ -24,38 +24,35 @@ from pygazeanalyser.gazeplotter import parse_fixations
 from scipy.stats import spearmanr
 import seaborn as sns
 
-# functions
+from pygazeanalyser.edfreader import read_edf
 
-# convert edf file to asc file
-def convert2asc(sj,taskname,outVS,outCRWD):
+
+def convert2asc(sj,taskname,data_dir):
     
-    import os, glob, shutil
-    from pygazeanalyser.edfreader import read_edf
+    # convert edf file to asc file
     
     if type(sj) == int: #if sub num integer
-        sj = str(sj).zfill(2) #turn to string
+        sj = str(sj).zfill(3) #turn to string
     
-    #list of absolute paths to all edf files in that session for that subject
-    #single hdf5 file that contains all eye data for the runs of that session
-    if taskname=='vs':
-        edf_file = glob.glob(os.path.join(outVS, 'eyedata_visualsearch_pp_%s.edf' %sj))[0]
-        asc_dir = outVS+'/pp-{sj}/'.format(sj=sj)
-    elif taskname=='crowding':
-        edf_file = glob.glob(os.path.join(outCRWD, 'eyedata_crowding_pp_%s.edf' %sj))[0]
-        asc_dir = outCRWD+'/pp-{sj}/'.format(sj=sj)
-           
-    if not os.path.exists(asc_dir): # check if path to save hdf5 files exists
-        os.makedirs(asc_dir)     # if not create it
+    # define edf file absolute name
+    if taskname == 'search': # visual search task
+        edf_file = os.path.join(data_dir,'eyedata_visualsearch_pp_%s.edf'%sj)
+    elif taskname == 'crowding':
+        edf_file = os.path.join(data_dir,'eyedata_crowding_pp_%s.edf'%sj)
+    else:
+        raise NameError('Task not recognized, please indicate if search or crowding')
+
+    # define ascii file absolute name
+    asc_file = edf_file.replace('.edf','.asc')
+
+    # if ascii doesn't exist create it
+    if not os.path.isfile(asc_file):
+        print('converting edf to asccii')
+        os.system("edf2asc %s" % edf_file)
+
     
-    os.system("edf2asc %s" % edf_file)
-    
-    asc_file = os.path.split(edf_file)[1].replace('.edf','.asc')
-    shutil.move(os.path.join(os.path.split(edf_file)[0],asc_file),asc_dir+asc_file)
-    
-    asc_filename = asc_dir+asc_file
-    edfdata = read_edf(asc_filename, 'start_trial', stop='stop_trial', debug=False)
-    
-    return asc_filename, edfdata #name of asccii, actual gaze data
+    return asc_file #name of asccii
+
 
 # turn visual angle in degrees
 def ang2pix(dist_in_deg,h,d,r): 
@@ -65,7 +62,7 @@ def ang2pix(dist_in_deg,h,d,r):
     dist_in_px = dist_in_deg/deg_per_px
     return dist_in_px 
 
-def draw_rawdata_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
+def draw_rawdata_display(sj,trial,data_dir,outdir,
                           rad_gab=1.1,fix_line=0.25,screenHeight=30,screenDis=57,
                          vRes = 1050,hRes=1680):
     
@@ -79,12 +76,15 @@ def draw_rawdata_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
     # df_vs - absolute path dataframe with behaviour data
     # eyedata_vs - absolute path eye data for visual search
     
-    behvfile = [x for _,x in enumerate(os.listdir(df_vs_dir)) if x.endswith('.csv') and sj in x]
-    eyefile = [x for _,x in enumerate(os.listdir(eyedata_vs_dir)) if x.endswith('.EDF') and sj in x]
+    behvfile = [x for _,x in enumerate(os.listdir(data_dir)) if x.endswith('.csv') and sj in x]
+    eyefile = [x for _,x in enumerate(os.listdir(data_dir)) if x.endswith('.EDF') and sj in x]
     # load csv for sub
-    df_vs = pd.read_csv(os.path.join(df_vs_dir,behvfile[0]), sep='\t')
+    df_vs = pd.read_csv(os.path.join(data_dir,behvfile[0]), sep='\t')
+
     # load eye data
-    _, eyedata_vs = convert2asc(sj,'vs',eyedata_vs_dir,eyedata_vs_dir)
+    asccii_name = convert2asc(sj,'search',data_dir)
+    print('loading edf data')
+    eyedata_vs = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
     
     # NOTE - all positions in pixels
     
@@ -145,7 +145,7 @@ def draw_rawdata_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
     
 
     
-def draw_scanpath_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
+def draw_scanpath_display(sj,trial,data_dir,outdir,
                           rad_gab=1.1,fix_line=0.25,screenHeight=30,screenDis=57,
                          vRes = 1050,hRes=1680):
     # function to draw scanpath for a specific trial
@@ -159,12 +159,15 @@ def draw_scanpath_display(sj,trial,df_vs_dir,eyedata_vs_dir,outdir,
     # eyedata_vs - absolute path eye data for visual search
 
     
-    behvfile = [x for _,x in enumerate(os.listdir(df_vs_dir)) if x.endswith('.csv') and sj in x]
-    eyefile = [x for _,x in enumerate(os.listdir(eyedata_vs_dir)) if x.endswith('.EDF') and sj in x]
+    behvfile = [x for _,x in enumerate(os.listdir(data_dir)) if x.endswith('.csv') and sj in x]
+    eyefile = [x for _,x in enumerate(os.listdir(data_dir)) if x.endswith('.EDF') and sj in x]
     # load csv for sub
-    df_vs = pd.read_csv(os.path.join(df_vs_dir,behvfile[0]), sep='\t')
+    df_vs = pd.read_csv(os.path.join(data_dir,behvfile[0]), sep='\t')
+    
     # load eye data
-    _, eyedata_vs = convert2asc(sj,'vs',eyedata_vs_dir,eyedata_vs_dir)
+    asccii_name = convert2asc(sj,'search',data_dir)
+    print('loading edf data')
+    eyedata_vs = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
     
     # NOTE - all positions in pixels
     
