@@ -3,7 +3,24 @@
 	"datadir_vs": "/Users/verissimo/Documents/Projects/PSR_2019/Crowding/Data_Final/output_VS",
 	"datadir_crwd": "/Users/verissimo/Documents/Projects/PSR_2019/Crowding/Data_Final/output_crowding",
 
+    "num_trials_crwd": 720,
+    "num_blocks_crwd": 5,
+    "num_cs_trials":96,
+
     "ecc": [4,8,12],
+    "set_size": [5,15,30],
+    "siz_gab_deg": 2.2,
+
+    "cut_off_acc_crwd": 0.6,
+    "cut_off_miss_trials_crwd": 0.25,
+    "cut_off_acc_vs" : 0.85,
+    "cut_off_acc_ecc_vs" : 0.75,
+
+
+    "p_val_crwd": 0.01,
+
+
+
     "stim_time": 2,
 	"iti": 0.5,
 	"display_time":0.050,
@@ -15,7 +32,7 @@
 	"backCol": [128,128,128],
 	"textCol": [255,255,255],
 
-	"siz_gab_deg": 2.2,
+	
 	"gab_sf_deg": 4,
 	"sd_gab_deg": 0.12,
 
@@ -32,11 +49,10 @@
 	"step_stair": 0.05,
 	"Down_factor": 3, 
 
-	"set_size": [5,15,30],
+	
 
 	"blk_vs": 4,
 	"rep_vs": 20,
-	"blk_crw": 5,
 	"rep_fl_crw":20,
 	"rep_nofl_crw":4,
 

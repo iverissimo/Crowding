@@ -1160,4 +1160,128 @@ def density_plot_correlation(arr_x_LOW,arr_x_HIGH,arr_y,label_x,label_y,plt_titl
     plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
 
 
+def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_cut_off_crwd=0.6,ecc=[4,8,12],
+                                        num_cs_trials=96,cut_off_acc_vs=0.85,cut_off_acc_ecc_vs=0.75):
+    # function to load all behavior and eyetracking data and 
+    # check if subject should be excluded
+    # giving back summary file and structure with relevant measure for
+    # further analysis/plotting
+    
+    ### INPUTS ########
+    # crwd_csv - list of absolute paths to crowding csv files
+    # vs_csv - list of absolute paths to search csv files
+    # out_dir - path to save outputs
+    
+    
+    # loop over subjects
+    
+    all_subs = [] # list with all subject number
+    missed_trials = [] # list with percentage of missed trials (crowding)
+    acc_fl = [] # accuracy crowding flankers
+    acc_nofl = [] # accuracy crowding no flankers
+    acc_comb = [] # accuracy crowding combined
+
+    all_tfr = [] # target-flanker ratios
+    all_cs = [] # critical spacings
+    mean_cs = [] # mean CS
+
+    acc_vs_ecc = [] # accuraccy visual search per ecc
+    acc_vs_all = [] # accuracy visual search all
+
+    rt_vs = [] # RT visual search 
+
+    excluded_sub = [] # excluded subjects
+    
+    
+    for ind,behfile in enumerate(crwd_csv):
+    
+        EXCLUDE = []
+        
+        all_subs.append(os.path.splitext(behfile)[0][-3::]) 
+        print('analysing pp-%s'%all_subs[ind])
+        
+        # CROWDING
+
+        # load crowding csv for sub
+        data_sub = pd.read_csv(behfile, sep='\t')
+        # choose only actual pratice block (first block (first 144) where used to save training, doesn't count)
+        data_sub = data_sub.loc[int(trials_block)::]
+
+        # check for missed trials
+        missed_trials.append(check_nan_trials(data_sub,exclusion_thresh=miss_trials)[0])
+        EXCLUDE.append(check_nan_trials(data_sub,exclusion_thresh=miss_trials)[1])
+
+        # check for accuracy with and without flankers and combined
+        # so actually see if crowding manipulation worked
+        accur_crowding = accuracy_crowding(data_sub,ecc,exclusion_thresh=acc_cut_off_crwd)
+        
+        acc_fl.append(accur_crowding['acc_ecc_flank'])
+        acc_nofl.append(accur_crowding['acc_ecc_noflank'])
+        acc_comb.append(accur_crowding['overall_acc'])
+        EXCLUDE.append(accur_crowding['exclude'])
+
+        cs = critical_spacing(data_sub,ecc,num_trl=num_cs_trials)
+        all_tfr.append(cs['all_tfr'])
+        all_cs.append(cs['all_crit_dis'])
+        mean_cs.append(cs['mean_CS'])
+        EXCLUDE.append(cs['exclude'])
+        
+        
+        # SEARCH
+        
+        # load csv for sub
+        df_vs = pd.read_csv(vs_csv[ind], sep='\t')
+
+        # check accuracy
+        vs_acc = accuracy_search(df_vs,ecc,exclusion_all_thresh=cut_off_acc_vs,exclusion_ecc_thresh=cut_off_acc_ecc_vs)
+
+        acc_vs_ecc.append(vs_acc['acc_ecc'])
+        acc_vs_all.append(vs_acc['overall_acc'])
+
+        EXCLUDE.append(vs_acc['exclude'])
+        
+        
+        
+        # check exclusion and save pp number
+        if any(EXCLUDE)==True:
+            print('need to exclude subject %s'%all_subs[ind])
+            excluded_sub.append(all_subs[ind])
+            ex_sub = 'True'
+        else:
+            ex_sub = 'False'
+
+        # save relevant variables from above in descriptive tsv
+        summary_df = pd.DataFrame({'sub':all_subs[ind],
+                                    'nan_trials_pct': missed_trials[ind],
+                                    'accuracy_flankers_pct':acc_fl[ind]*100,
+                                    'accuracy_noflankers_pct':acc_nofl[ind]*100,
+                                    'crit_spacing_all':all_cs[ind],
+                                    'crit_spacing_mean':mean_cs[ind],
+                                    'accuracy_vs_all_pct':acc_vs_ecc[ind]*100,
+                                    'accuracy_vs_mean_pct':acc_vs_all[ind]*100,
+                                    'exclude':ex_sub
+                                  })
+
+        sum_dir = os.path.join(out_dir,'summary')
+        if not os.path.exists(sum_dir):
+            os.makedirs(sum_dir)
+
+        summary_df.to_csv(os.path.join(sum_dir,'summary_pp_'+all_subs[ind]+'.csv'), sep='\t')
+
+    
+    out_file = os.path.join(sum_dir,'sum_measures.npz')
+    np.savez(out_file,
+             all_subs = all_subs,
+             excluded_sub = excluded_sub,
+             all_tfr = all_tfr,
+             mean_cs = mean_cs,
+             acc_fl = acc_fl,
+             acc_nofl = acc_nofl,
+             all_cs = all_cs,
+             acc_vs_ecc = acc_vs_ecc
+             )
+    
+    return out_file
+    
+
     
