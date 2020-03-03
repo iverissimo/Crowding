@@ -14,7 +14,7 @@ varying distance between target and flankers with staircase method
 
 from psychopy import visual, core, event 
 import numpy as np
-#import random 
+import random 
 import math
 import time
 #import itertools
@@ -25,70 +25,10 @@ import sys
 import os
 
 # append path to Psycholink folder, cloned from https://github.com/jonathanvanleeuwen/psychoLink.git
-sys.path.append(os.getcwd()+'/psychoLink/PsychoLink')
+sys.path.append(os.path.join(os.path.split(os.getcwd())[0],'psychoLink','PsychoLink'))
 import psychoLink as PL
 
-
-
-############# functions #################
-
-# draw fixation cross function
-def draw_fixation(posit,lineSize,linecolor,linewidth): 
-    
-    t = lineSize/2.0
-    fixation = visual.ShapeStim(win, 
-        vertices=((posit[0], posit[1]-t), (posit[0], posit[1]+t), posit, (posit[0]-t,posit[1]), (posit[1]+t, posit[1])),
-        lineWidth=linewidth,
-        closeShape=False,
-        lineColor=linecolor)
-    
-    fixation.draw()
-
-# transform polar coordinates to cartesian
-    
-def pol2cart(hyp, theta):  
-    x = hyp * np.cos(np.deg2rad(theta))
-    y = hyp * np.sin(np.deg2rad(theta))
-    return(x, y)
-
-# Calculate the number of degrees that correspond to a single pixel
-# and then calculate distance in pixels
-# dist_in_deg - distance in deg of visual angle
-#h - height of screen, d - distance from monitor, r - vertical resolution
-def ang2pix(dist_in_deg,h,d,r): 
-    deg_per_px = math.degrees(math.atan2(0.5*h,d))/(0.5*r)
-    dist_in_px = dist_in_deg/deg_per_px
-    return dist_in_px 
-
-#define unique trials,with balanced visual field and #ecc
-def uniq_trials(ecc):
-    trials = 2*len(ecc)
-    
-    trgt_ecc = np.tile(ecc,2)
-    trgt_vf = np.hstack((np.repeat(['right'],trials/2.0),np.repeat(['left'],trials/2.0)))
-    
-    return trials,trgt_ecc,trgt_vf
-
-# staircase function
-def staircase_1upDdown(D,response,step,max_val,min_val,curr_dist,counter):
-
-    if response == 0: #if incorrect response
-        if curr_dist < max_val: #and if the distance is not max value defined
-            curr_dist = curr_dist + step # increase the flanker target separation by step
-        counter = 1
-        
-    elif response == 1: #if correct response
-        if counter == D: #if counted necessary number of responses (i.e. too easy)
-            if curr_dist > min_val: #and if distance not minimal
-                curr_dist = curr_dist - step #reduce distance between flanker and target
-            counter = 0
-        
-        counter = counter + 1    
-        
-    return curr_dist,counter        
-            
-    
-#######################################
+from utils import *
     
 ## for labs will have to run with spyder/openSesame so just add input in console ########
         
@@ -119,7 +59,7 @@ if not os.path.exists(output_dir): #check if path to save output exists
 ########## Initial parameters #########
         
 # general info
-num_uniq_trl, trgt_ecc,trgt_vf = uniq_trials(params['ecc'])
+num_uniq_trl, trgt_ecc,trgt_vf = crwd_uniq_trials(params['ecc'])
 
 num_trl_fl = num_uniq_trl*params['rep_fl_crw'] #number of flanker present trials
 num_trl_nofl = num_uniq_trl*params['rep_nofl_crw'] #number of no flanker trials
@@ -137,6 +77,7 @@ siz_gab = ang2pix(params['siz_gab_deg'],params['screenHeight'],params['screenDis
 gab_sf = params['gab_sf_deg']/ang2pix(1,params['screenHeight'],params['screenDis'],params['vRes']) #sf cycles per pixel = sf_CyclesDeg / pixelsPerDegree
 sd_gab = ang2pix(params['sd_gab_deg'],params['screenHeight'],params['screenDis'],params['vRes']) #standard deviation of gaussian
 dist_fl = 360/params['num_fl'] #distance between stim (degrees)
+max_jitter = ang2pix(params['max_jitter'],params['screenHeight'],params['screenDis'],params['vRes']) 
 
 pos_fl = np.arange(params['initpos_fl'],params['initpos_fl']+360,dist_fl) #position of distractors (degrees), equally spaced
 ort_fl = np.repeat(0,params['num_fl']) # all flankers have same orientation (0 equals vertical, goes clockwise until 360deg)
@@ -159,10 +100,6 @@ flank_trl = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array for fl
 
 target_ecc_all = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array to save all target ecc
 target_vf_all = np.array(np.zeros((params['blk_crw'],num_trl)),object) #array to save all target vf
-
-# distance in pixels to delimit participant gaze (2 degrees max from fixation)
-excl_radius = ang2pix(2,params['screenHeight'],params['screenDis'],params['vRes'])
-
 
 # create a window
 #win = visual.Window(size=(hRes, vRes), color = backCol, units='pix',fullscr  = True, screen = 1,allowStencil=True)
@@ -194,13 +131,13 @@ PressText1.draw()
 xpos_trgt = ang2pix((8.0),params['screenHeight'],params['screenDis'],params['vRes'])
 trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=params['ort_trgt'][0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None) 
 trgt.draw()
-fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
 
-xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[0])
-flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+ypos_fl = ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes'])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,ypos_fl),units=None)
 flank.draw()
-xpos_fl,ypos_fl = pol2cart(ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[1])
-flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[1],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+ypos_fl = -ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes'])
+flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[1],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,ypos_fl),units=None)
 flank.draw()
 
 win.flip() # flip the screen
@@ -252,14 +189,14 @@ for j in range(params['blk_crw']):
         trgt_fl_dist = [params['max_dist'],params['max_dist'],params['max_dist']]#we start with max distance to make it easy
     
     BlockText.draw()
-    fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
-    trgt.draw()
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    #trgt.draw()
     PressText2.draw()
     
     win.flip()
     event.waitKeys(keyList = 'space')     
 
-    fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
@@ -304,25 +241,19 @@ for j in range(params['blk_crw']):
         #Draw flankers, depending on eccentricity
         if flank_lbl[k] == 'flankers':
             for i in range(len(pos_fl)):
-                xpos_fl,ypos_fl = pol2cart(ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']), pos_fl[i])
-                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_fl+xpos_trgt,ypos_fl),units=None)
+                ypos_fl = ang2pix(float(trgt_ecc[trls_idx])*float(trgt_fl_dist[ecc_index]),params['screenHeight'],params['screenDis'],params['vRes']) if i==0 else - ypos_fl
+                flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[i],sf=gab_sf,size=siz_gab,pos=(xpos_trgt+random.uniform(max_jitter*(-1),max_jitter),ypos_fl),units=None)
                 flank.draw()
                 
-        fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+                
+        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
         win.flip() # flip the screen
         
         t0 = core.getTime() #get the time (seconds)
-        key = [] # reset key to nothing
-        
+        key = [] # reset key to nothing 
+           
         while core.getTime() - t0 < params['stim_time']: # while current time < stimulus presentation time (seconds)
             
-            curSamp = tracker.getCurSamp() # get gaze position (x,y) should update every ms @ 1000Hz
-            if np.sqrt(curSamp[0]**2 + curSamp[1]**2)>excl_radius:
-                print('gaze position is %s out of radius'%str(curSamp)) 
-                fixation = draw_fixation(fixpos,fixlineSize,'red',linewidth) #draw red fixation indicating that not fixating
-                win.flip()
-                break
-
             key = event.getKeys(keyList = ['left','right','s'])
             
             if len(key)>0:
@@ -347,15 +278,13 @@ for j in range(params['blk_crw']):
                 RT_trl[j][k] = core.getTime() - t0 
                 key_trl[j][k] = key[0] 
                 tracker.logVar('RT', RT_trl[j][k])
-                fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
-                win.flip()
                 break
             
-            #if core.getTime() >= params['display_time']: #return to fixation display after 250ms
-            #    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
-            #    win.flip()
-
-
+            #if core.getTime() >= params['display_time']:#return to fixation display after 250ms
+            if core.getTime() - t0 >= params['display_time']:
+                #print('time is',core.getTime()-t0)
+                draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+                win.flip()
         print'key is:',key_trl[j][k]  
         if key_trl[j][k] == ort_lbl[k]:
             response = 1
@@ -379,24 +308,14 @@ for j in range(params['blk_crw']):
 
         distances[j][k] = trgt_fl_dist[ecc_index]
         
-        #Pause for ITI
-        #core.wait(params['iti']) #pause
-        curSamp = tracker.getCurSamp() # get gaze position (x,y) should update every ms @ 1000Hz
-        while np.sqrt(curSamp[0]**2 + curSamp[1]**2)>excl_radius:
-            curSamp = tracker.getCurSamp()
-            print('gaze position is %s out of radius'%str(curSamp)) 
-            fixation = draw_fixation(fixpos,fixlineSize,'red',linewidth) #draw red fixation indicating that not fixating
-            win.flip() # flip the screen
-            
 # =============================================================================
 #        # stop tracking the trial
         tracker.stopTrial()
 #         
 # =============================================================================
+
         #Pause for ITI
         core.wait(params['iti']) #pause
-        fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw red fixation indicating that not fixating
-        win.flip() # flip the screen
 
     trgt_ort_lbl[j][:] = ort_lbl
     flank_trl[j][:] = flank_lbl
