@@ -17,6 +17,9 @@
     "cut_off_acc_ecc_vs" : 0.75,
 
 
-    "p_val_crwd": 0.010
+    "p_val_crwd": 0.010,
+
+    "rad_ROI": 4,
+    "quantile": 0.5
 
 }

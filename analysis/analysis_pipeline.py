@@ -38,7 +38,7 @@ output_vs = params['datadir_vs']
 output_crwd = params['datadir_crwd']
 
 # define dir to save plots
-plot_dir = os.path.join(os.path.join(os.path.split(output_vs)[0],'plots'))
+plot_dir = os.path.join(os.path.split(output_vs)[0],'plots')
 if not os.path.exists(plot_dir):
      os.makedirs(plot_dir)
 
