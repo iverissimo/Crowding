@@ -380,7 +380,8 @@ def critical_spacing(data,ecc,num_trl=96):
         
         
     mean_CS = np.mean(np.array(all_crit_dis))
-    if np.round_(mean_CS,decimals=3) < 0.250 or np.round_(mean_CS,decimals=3) > 0.750:
+    #if np.round_(mean_CS,decimals=3) < 0.250 or np.round_(mean_CS,decimals=3) > 0.750:
+    if np.round_(mean_CS,decimals=2) == 0.20 or np.round_(mean_CS,decimals=2) == 0.80:
         print('Mean critical spacing is %.3f for subjectso bottom/ceiling effect\n EXCLUDE SUBJECT'%(mean_CS))
         exclude = True
     else:
