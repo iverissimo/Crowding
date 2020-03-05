@@ -131,7 +131,7 @@ PressText1.draw()
 xpos_trgt = ang2pix((8.0),params['screenHeight'],params['screenDis'],params['vRes'])
 trgt = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=params['ort_trgt'][0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,0),units=None) 
 trgt.draw()
-draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation 
 
 ypos_fl = ang2pix(8.0*float(params['max_dist']),params['screenHeight'],params['screenDis'],params['vRes'])
 flank = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=ort_fl[0],sf=gab_sf,size=siz_gab,pos=(xpos_trgt,ypos_fl),units=None)
@@ -189,14 +189,14 @@ for j in range(params['blk_crw']):
         trgt_fl_dist = [params['max_dist'],params['max_dist'],params['max_dist']]#we start with max distance to make it easy
     
     BlockText.draw()
-    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation 
     #trgt.draw()
     PressText2.draw()
     
     win.flip()
     event.waitKeys(keyList = 'space')     
 
-    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation 
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
@@ -246,7 +246,7 @@ for j in range(params['blk_crw']):
                 flank.draw()
                 
                 
-        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation
         win.flip() # flip the screen
         
         t0 = core.getTime() #get the time (seconds)
@@ -283,7 +283,7 @@ for j in range(params['blk_crw']):
             #if core.getTime() >= params['display_time']:#return to fixation display after 250ms
             if core.getTime() - t0 >= params['display_time']:
                 #print('time is',core.getTime()-t0)
-                draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+                draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation
                 win.flip()
         print'key is:',key_trl[j][k]  
         if key_trl[j][k] == ort_lbl[k]:

@@ -142,7 +142,7 @@ for j in range(params['blk_vs']):
     PressText = visual.TextStim(win, text=text2, color='white', height=30, pos = (0,-140))
     
     BlockText.draw()
-    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation 
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation 
     PressText.draw()
     win.flip()
     event.waitKeys(keyList = 'space') 
@@ -151,7 +151,7 @@ for j in range(params['blk_vs']):
     
     
 
-    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+    draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation
     win.flip() # flip the screen
     core.wait(2.0) #pause
     
@@ -205,7 +205,7 @@ for j in range(params['blk_vs']):
             distr = visual.GratingStim(win=win,tex='sin',mask='gauss',maskParams={'sd': sd_gab},ori=0,sf=gab_sf,size=siz_gab,pos=(distr_pos[i][0],distr_pos[i][1]),units=None)
             distr.draw()
                 
-        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+        draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation
         win.flip() # flip the screen
 #        tracker.logVar('display', True)
         
@@ -254,7 +254,7 @@ for j in range(params['blk_vs']):
 #         
 # =============================================================================
 
-        fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth) #draw fixation
+        fixation = draw_fixation(fixpos,fixlineSize,params['fixcolor'],linewidth,win) #draw fixation
         win.flip()
        
         if 'tracker' in locals(): # if tracker object defined

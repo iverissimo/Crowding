@@ -11,7 +11,7 @@ import math
 ########### functions #################
 
 # draw fixation cross function
-def draw_fixation(posit,lineSize,linecolor,linewidth): 
+def draw_fixation(posit,lineSize,linecolor,linewidth,win): 
     
     t = lineSize/2.0
     fixation = visual.ShapeStim(win, 
@@ -114,8 +114,8 @@ def ellipse_inpoints(pos,a,b):
 # poslist - list of positions 
 def count_set_size(poslist):
     a = []
-    for i in range(len(pos_list)):
-        a.append(len(pos_list[i]))
+    for i in range(len(poslist)):
+        a.append(len(poslist[i]))
     num_pos = sum(a)
 
     return num_pos
