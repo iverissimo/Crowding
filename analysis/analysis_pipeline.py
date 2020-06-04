@@ -84,8 +84,6 @@ if not os.path.isfile(sum_file):
 else:
     sum_measures = np.load(sum_file) # all relevant measures
   
-
-
 # plot staircases
 # just to see what's going on
 out_dir = os.path.join(plot_dir,'staircases') # save here
@@ -142,8 +140,11 @@ test_rt_ecc_vs = []
 test_rt_set_vs = []
 test_fix_ecc_vs = []
 test_fix_set_vs = []
-test_onobjfix_ecc_vs = []
-test_onobjfix_set_vs = []
+
+# data frames with interesting values divided
+test_df_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+test_df_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -154,28 +155,42 @@ for j in range(len(sum_measures['all_subs'])):
     else:
         # load behav data
         df_vs = pd.read_csv(vs_csv[j], sep='\t')
-        
+
         # load eye data
         asccii_name = convert2asc(sum_measures['all_subs'][j],'search',output_vs)
         print('loading edf for sub-%s data'%sum_measures['all_subs'][j])
         eye_data = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
-        
+
+        # save test sub identifier labels
         test_subs.append(sum_measures['all_subs'][j])
-        
+
+        #accuracy crowding
         test_acc_fl.append(sum_measures['acc_fl'][j])
         test_acc_nofl.append(sum_measures['acc_nofl'][j])
+        # critical spacing
         test_all_cs.append(sum_measures['all_cs'][j])
         test_mean_cs.append(sum_measures['mean_cs'][j])
-        
-        test_acc_vs_ecc.append(sum_measures['acc_vs_ecc'][j])
-        test_rt_ecc_vs.append(mean_RT(df_vs,ecc))
-        test_rt_set_vs.append(mean_RT_setsize(df_vs,params['set_size']))
-        
-        test_fix_ecc_vs.append(meanfix_ecc(df_vs,eye_data,ecc))
-        test_fix_set_vs.append(meanfix_setsize(df_vs,eye_data,params['set_size']))
 
-        test_onobjfix_ecc_vs.append(on_objectfix_ecc(df_vs,eye_data,ecc,params['siz_gab_deg']/2*1.5))
-        test_onobjfix_set_vs.append(on_objectfix_set(df_vs,eye_data,params['set_size'],params['siz_gab_deg']/2*1.5))
+        # accuracy search
+        test_acc_vs_ecc.append(sum_measures['acc_vs_ecc'][j])
+
+        ## reaction time search 
+        df_RT, _ = mean_RT_set_ecc_combo(df_vs,sum_measures['all_subs'][j])
+        # append matrix of combo 
+        test_df_RT = test_df_RT.append(df_RT,ignore_index=True)
+        # save values per ecc
+        test_rt_ecc_vs.append(np.array([np.mean(df_RT[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        # save values per set size
+        test_rt_set_vs.append(df_RT[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
+
+        ## number of fixations in search
+        df_fix, _ = mean_fix_set_ecc_combo(df_vs,eye_data,sum_measures['all_subs'][j])
+        # append matrix of combo 
+        test_df_fix = test_df_fix.append(df_fix,ignore_index=True)
+        # save values per ecc
+        test_fix_ecc_vs.append(np.array([np.mean(df_fix[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        # save values per set size
+        test_fix_set_vs.append(df_fix[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
 
 
 
@@ -374,6 +389,18 @@ ax = plt.gca()
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_ecc_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
 
+# dividing by set sizes
+df4plot_RT_set = test_df_RT.drop(columns=['sub'])
+df4plot_RT_set = pd.melt(df4plot_RT_set, 'set_size', var_name='Target eccentricity [dva]', value_name='RT [s]')
+
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+sns.boxplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_RT_set)
+
+ax = plt.gca()
+ax.set_title('ecc vs RT %d subs'%len(test_subs))
+plt.savefig(os.path.join(plot_dir,'search_ecc_RT_boxplots.svg'), dpi=100,bbox_inches = 'tight')
+
+
 # RT VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
@@ -424,6 +451,17 @@ ax = plt.gca()
 ax.set_title('ecc vs number of fixations %d subs'%len(test_subs))
 ax.axes.set_ylim(0,)
 plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_regression.svg'), dpi=100,bbox_inches = 'tight')
+
+# dividing by set sizes
+df4plot_fix_set = test_df_fix.drop(columns=['sub'])
+df4plot_fix_set = pd.melt(df4plot_fix_set, 'set_size', var_name='Target eccentricity [dva]', value_name='# fixations')
+
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+sns.boxplot(x='Target eccentricity [dva]', hue='set_size', y='# fixations', data=df4plot_fix_set)
+
+ax = plt.gca()
+ax.set_title('ecc vs #fixations %d subs'%len(test_subs))
+plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_boxplots.svg'), dpi=100,bbox_inches = 'tight')
  
 
 # NUMBER OF FIXATIONS VS SET SIZE
@@ -445,45 +483,7 @@ ax = plt.gca()
 ax.set_title('set size vs number fixations %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
-# PERCENTAGE OF ON OBJECT FIXATIONS VS ECC
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-onobj_ecc_vs4plot = pd.DataFrame([])
-
-for k in range(len(ecc)):
-    onobj_ecc_vs4plot = onobj_ecc_vs4plot.append(pd.DataFrame({'onobj': np.array(test_onobjfix_ecc_vs).T[k]*100,
-                                                     'ecc':np.tile(ecc[k],len(test_subs)),
-                                                     'sub':np.array(test_subs)}))
-
-sns.lineplot(x='ecc', y='onobj',data=onobj_ecc_vs4plot,
-                   units='sub', estimator=None, lw=1,color='grey',alpha=0.1)
-ax = sns.lineplot(x='ecc', y='onobj',data=onobj_ecc_vs4plot,estimator='mean')
-
-ax.set(xlabel='eccentricity [dva]', ylabel='On object fixation [%]')
-ax = plt.gca()
-ax.set_title('ecc vs on-object fixations %d subs'%len(test_subs))
-ax.axes.set_ylim(0,)
-plt.savefig(os.path.join(plot_dir,'search_ecc_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
-
-# PERCENTAGE OF ON OBJECT FIXATIONS VS SET SIZE
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-
-onobj_set_vs4plot = pd.DataFrame([])
-
-for k in range(len(params['set_size'])):
-    onobj_set_vs4plot = onobj_set_vs4plot.append(pd.DataFrame({'onobj': np.array(test_onobjfix_set_vs).T[k]*100,
-                                                     'set':np.tile(params['set_size'][k],len(test_subs)),
-                                                     'sub':np.array(test_subs)}))
-
-sns.lineplot(x='set', y='onobj',data=onobj_set_vs4plot,
-                   units='sub', estimator=None, lw=1,color='grey',alpha=0.1)
-ax = sns.lineplot(x='set', y='onobj',data=onobj_set_vs4plot,estimator='mean')
-
-ax.set(xlabel='set size', ylabel='On object fixation [%]')
-ax = plt.gca()
-ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
-plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
- 
 
 # Correlations between tasks
 
@@ -494,7 +494,7 @@ plt.savefig(os.path.join(plot_dir,'search_setsize_onobjectfix_regression.svg'), 
 
 # CS VS RT ACROSS ECC
 print('\ncomparing mean CS and mean RT in VS across ecc \n')
-plot_correlation(np.mean(test_rt_ecc_vs,axis=-1),np.mean(test_all_cs,axis=-1),
+plot_correlation(np.mean(test_rt_ecc_vs,axis=-1),test_mean_cs,
                 'RT [s]','CS','CS vs RT across ecc',
                  os.path.join(plot_dir,'CSvsRT_across-ecc.svg'),p_value=p_value)
 
@@ -502,29 +502,14 @@ plot_correlation(np.mean(test_rt_ecc_vs,axis=-1),np.mean(test_all_cs,axis=-1),
 # CS VS RT PER ECC
 for i in range(len(np.array(test_all_cs).T)):
     print('\ncomparing mean CS and mean RT in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(test_rt_ecc_vs).T[i],np.array(test_all_cs).T[i],
+    plot_correlation(np.array(test_rt_ecc_vs).T[i],test_mean_cs,
                     'RT [s]','CS','CS vs RT at %d ecc'%ecc[i],
                      os.path.join(plot_dir,'CSvsRT_%d-ecc.svg'%ecc[i]),p_value=p_value)
 
 
-# CS VS INVERSE EFFICACY ACROSS ECC
-print('\ncomparing mean CS and mean Inverse Efficiency in VS across ecc \n')
-plot_correlation(np.mean(inv_eff,axis=-1),np.mean(test_all_cs,axis=-1),
-                'invEffic [a.u.]','CS','CS vs invEffic across ecc',
-                 os.path.join(plot_dir,'CSvsInvEffic_across-ecc.svg'),p_value=p_value)
-
-
-# CS VS INVERSE EFFICACY PER ECC
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean Inverse Efficiency in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(inv_eff).T[i],np.array(test_all_cs).T[i],
-                    'invEffic [a.u.]','CS','CS vs invEffic at %d ecc'%ecc[i],
-                     os.path.join(plot_dir,'CSvsInvEffic_%d-ecc.svg'%ecc[i]),p_value=p_value)
-
-
 # CS VS NUMBER FIXATIONS ACROSS ECC
 print('\ncomparing mean CS and mean number Fixations in VS across ecc \n')
-plot_correlation(np.mean(test_fix_ecc_vs,axis=-1),np.mean(test_all_cs,axis=-1),
+plot_correlation(np.mean(test_fix_ecc_vs,axis=-1),test_mean_cs,
                 '# Fixations','CS','CS vs #Fix across ecc',
                  os.path.join(plot_dir,'CSvsFix_across-ecc.svg'),p_value=p_value)
 
@@ -532,31 +517,17 @@ plot_correlation(np.mean(test_fix_ecc_vs,axis=-1),np.mean(test_all_cs,axis=-1),
 # CS VS NUMBER FIXATIONS PER ECC
 for i in range(len(np.array(test_all_cs).T)):
     print('\ncomparing mean CS and mean Number Fixations in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(test_fix_ecc_vs).T[i],np.array(test_all_cs).T[i],
+    plot_correlation(np.array(test_fix_ecc_vs).T[i],test_mean_cs,
                     '# Fixations','CS','CS vs #Fix at %d ecc'%ecc[i],
                      os.path.join(plot_dir,'CSvsFix_%d-ecc.svg'%ecc[i]),p_value=p_value)
 
-
-# CS VS On-object FIXATIONS ACROSS ECC
-print('\ncomparing mean CS and mean percentage On-Object Fixations in VS across ecc \n')
-plot_correlation(np.mean(test_onobjfix_ecc_vs,axis=-1)*100,np.mean(test_all_cs,axis=-1),
-                'On-obj Fixations [%]','CS','CS vs percentage Onobj across ecc',
-                 os.path.join(plot_dir,'CSvsOnobjFix_across-ecc.svg'),p_value=p_value)
-
-
-# CS VS On-object FIXATIONS PER ECC
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean percentage On-Object Fixations in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(test_onobjfix_ecc_vs).T[i]*100,np.array(test_all_cs).T[i],
-                    'On-obj Fixations [%]','CS','CS vs percentage Onobj at %d ecc'%ecc[i],
-                     os.path.join(plot_dir,'CSvsOnobjFix_%d-ecc.svg'%ecc[i]),p_value=p_value)
 
 
 ###### CORRELATIONS RELATIVE TO SET SIZE #######
 
 # CS VS RT ACROSS SET SIZE
 print('\ncomparing mean CS and mean RT in VS across set size \n')
-plot_correlation(np.mean(test_rt_set_vs,axis=-1),np.mean(test_all_cs,axis=-1),
+plot_correlation(np.mean(test_rt_set_vs,axis=-1),test_mean_cs,
                 'RT [s]','CS','CS vs RT across set size',
                  os.path.join(plot_dir,'CSvsRT_across-set.svg'),p_value=p_value)
 
@@ -564,16 +535,14 @@ plot_correlation(np.mean(test_rt_set_vs,axis=-1),np.mean(test_all_cs,axis=-1),
 # CS VS RT PER SET SIZE
 for i in range(len(np.array(test_all_cs).T)):
     print('\ncomparing mean CS and mean RT in VS for set size %d\n'%params['set_size'][i])
-    plot_correlation(np.array(test_rt_set_vs).T[i],np.array(test_all_cs).T[i],
+    plot_correlation(np.array(test_rt_set_vs).T[i],test_mean_cs,
                     'RT [s]','CS','CS vs RT at %d set size'%params['set_size'][i],
                      os.path.join(plot_dir,'CSvsRT_%d-set.svg'%params['set_size'][i]),p_value=p_value)
 
-
-# DONT HAVE INVERSE EFFICACY FOR THE SET, COMPUTE LATER IF NEEDED    
     
 # CS VS NUMBER FIXATIONS ACROSS SET SIZE
 print('\ncomparing mean CS and mean number Fixations in VS across set size \n')
-plot_correlation(np.mean(test_fix_set_vs,axis=-1),np.mean(test_all_cs,axis=-1),
+plot_correlation(np.mean(test_fix_set_vs,axis=-1),test_mean_cs,
                 '# Fixations','CS','CS vs #Fix across set size',
                  os.path.join(plot_dir,'CSvsFix_across-set.svg'),p_value=p_value)
 
@@ -581,24 +550,152 @@ plot_correlation(np.mean(test_fix_set_vs,axis=-1),np.mean(test_all_cs,axis=-1),
 # CS VS NUMBER FIXATIONS PER SET SIZE
 for i in range(len(np.array(test_all_cs).T)):
     print('\ncomparing mean CS and mean Number Fixations in VS for set size %d\n'%params['set_size'][i])
-    plot_correlation(np.array(test_fix_set_vs).T[i],np.array(test_all_cs).T[i],
+    plot_correlation(np.array(test_fix_set_vs).T[i],test_mean_cs,
                     '# Fixations','CS','CS vs #Fix at %d set size'%params['set_size'][i],
                      os.path.join(plot_dir,'CSvsFix_%d-set.svg'%params['set_size'][i]),p_value=p_value)
 
 
-# CS VS On-object FIXATIONS ACROSS SET SIZE
-print('\ncomparing mean CS and mean percentage On-Object Fixations in VS across set size \n')
-plot_correlation(np.mean(test_onobjfix_set_vs,axis=-1)*100,np.mean(test_all_cs,axis=-1),
-                'On-obj Fixations [%]','CS','CS vs percentage Onobj across set size',
-                 os.path.join(plot_dir,'CSvsOnobjFix_across-set.svg'),p_value=p_value)
+# save correlation and respective p-values
+# per ecc and set
+# making a correlation 3x3 matrix
+# to see how this holds
+ 
+## FOR RT
+    
+corr_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+pval_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    df_trim = test_df_RT.loc[test_df_RT['set_size'] == s]
+    df_trim = df_trim.drop(columns=['set_size'])
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,test_mean_cs,
+                    'RT [s]','CS','CS vs RT for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(plot_dir,'CSvsRT_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value)
+        
+        # save correlation values         
+        corr_RT = corr_RT.append({str(e)+'_ecc': corr, 
+                                'set_size': s},ignore_index=True)
+        
+        # save p-values of said correlations          
+        pval_RT = pval_RT.append({str(e)+'_ecc': pval, 
+                                'set_size': s},ignore_index=True)
+
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+corr_RT = corr_RT.apply(lambda x: pd.Series(x.dropna().values))
+corr_RT = corr_RT.dropna()
+
+for i in corr_RT.index:
+    corr_RT.at[i, 'set_size'] = params['set_size'][i]
+    
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+pval_RT = pval_RT.apply(lambda x: pd.Series(x.dropna().values))
+pval_RT = pval_RT.dropna()
+
+for i in pval_RT.index:
+    pval_RT.at[i, 'set_size'] = params['set_size'][i]
 
 
-# CS VS On-object FIXATIONS PER SET SIZE
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean percentage On-Object Fixations in VS for set size %d\n'%params['set_size'][i])
-    plot_correlation(np.array(test_onobjfix_set_vs).T[i]*100,np.array(test_all_cs).T[i],
-                    'On-obj Fixations [%]','CS','CS vs percentage Onobj at %d set size'%params['set_size'][i],
-                     os.path.join(plot_dir,'CSvsOnobjFix_%d-set.svg'%params['set_size'][i]),p_value=p_value)
+##### MATRIX #######
+# plot values in color (heat) matrix
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+ax = sns.heatmap(corr_RT[['4_ecc','8_ecc','12_ecc']],cmap='OrRd',
+                 vmin = 0.25, vmax = 0.35, annot = True,
+                xticklabels=ecc, yticklabels=params['set_size'])
+
+ax.set_ylim([0,3]) # trick to make plot look decente, because matplotlib 3.1 broke seaborn heatmap
+ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
+plt.title('RT vs CS correlation matrix')
+plt.ylabel('Set Size')
+plt.xlabel('Eccentricity [dva]')
+plt.show()
+fig.savefig(os.path.join(plot_dir,'correlation_matrix_ALL_RT.svg'), dpi=100,bbox_inches = 'tight')
+
+# plot values in color (heat) matrix
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+ax = sns.heatmap(pval_RT[['4_ecc','8_ecc','12_ecc']],cmap='bwr_r',#'OrRd_r',
+                 vmin = 0.001, vmax = 0.1, center=0.05, annot = True,
+                xticklabels=ecc, yticklabels=params['set_size'])
+
+ax.set_ylim([0,3]) # trick to make plot look decente, because matplotlib 3.1 broke seaborn heatmap
+ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
+plt.title('RT vs CS correlation matrix - p-values')
+plt.ylabel('Set Size')
+plt.xlabel('Eccentricity [dva]')
+plt.show()
+fig.savefig(os.path.join(plot_dir,'correlation_matrix-pval_ALL_RT.svg'), dpi=100,bbox_inches = 'tight')
+
+
+## FOR FIXATIONS
+    
+corr_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+pval_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    df_trim = test_df_fix.loc[test_df_fix['set_size'] == s]
+    df_trim = df_trim.drop(columns=['set_size'])
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,test_mean_cs,
+                    '# Fixations','CS','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(plot_dir,'CSvsFix_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value)
+        
+        # save correlation values         
+        corr_fix = corr_fix.append({str(e)+'_ecc': corr, 
+                                'set_size': s},ignore_index=True)
+        
+        # save p-values of said correlations          
+        pval_fix = pval_fix.append({str(e)+'_ecc': pval, 
+                                'set_size': s},ignore_index=True)
+
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+corr_fix = corr_fix.apply(lambda x: pd.Series(x.dropna().values))
+corr_fix = corr_fix.dropna()
+
+for i in corr_fix.index:
+    corr_fix.at[i, 'set_size'] = params['set_size'][i]
+    
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+pval_fix = pval_fix.apply(lambda x: pd.Series(x.dropna().values))
+pval_fix = pval_fix.dropna()
+
+for i in pval_fix.index:
+    pval_fix.at[i, 'set_size'] = params['set_size'][i]
+
+
+##### MATRIX #######
+# plot values in color (heat) matrix
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+ax = sns.heatmap(corr_fix[['4_ecc','8_ecc','12_ecc']],cmap='OrRd',
+                 vmin = 0.25, vmax = 0.35, annot = True,
+                xticklabels=ecc, yticklabels=params['set_size'])
+
+ax.set_ylim([0,3]) # trick to make plot look decente, because matplotlib 3.1 broke seaborn heatmap
+ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
+plt.title('#Fix vs CS correlation matrix')
+plt.ylabel('Set Size')
+plt.xlabel('Eccentricity [dva]')
+plt.show()
+fig.savefig(os.path.join(plot_dir,'correlation_matrix_ALL_fixations.svg'), dpi=100,bbox_inches = 'tight')
+
+# plot values in color (heat) matrix
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+ax = sns.heatmap(pval_fix[['4_ecc','8_ecc','12_ecc']],cmap='bwr_r',#'OrRd_r',
+                 vmin = 0.001, vmax = 0.1, center=0.05, annot = True,
+                xticklabels=ecc, yticklabels=params['set_size'])
+
+ax.set_ylim([0,3]) # trick to make plot look decente, because matplotlib 3.1 broke seaborn heatmap
+ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
+plt.title('#Fix vs CS correlation matrix - p-values')
+plt.ylabel('Set Size')
+plt.xlabel('Eccentricity [dva]')
+plt.show()
+fig.savefig(os.path.join(plot_dir,'correlation_matrix-pval_ALL_fixations.svg'), dpi=100,bbox_inches = 'tight')
 
 
 
@@ -610,8 +707,6 @@ slope_RT_set = []
 slope_fix_ecc = []
 slope_fix_set = []
 
-slope_onobj_ecc = []
-slope_onobj_set = []
 
 for k in range(len(test_subs)):
     # RT/ecc slope
@@ -622,11 +717,7 @@ for k in range(len(test_subs)):
     slope_fix_ecc.append(linregress(ecc,np.array(test_fix_ecc_vs)[k])[0])
     # fixation/set slope
     slope_fix_set.append(linregress(params['set_size'],np.array(test_fix_set_vs)[k])[0])
-    # on-object fixation/ecc slope
-    slope_onobj_ecc.append(linregress(ecc,np.array(test_onobjfix_ecc_vs)[k])[0])
-    # on-object fixation/set slope
-    slope_onobj_set.append(linregress(params['set_size'],np.array(test_onobjfix_set_vs)[k])[0])
-
+    
   
 # CS vs RT/ECC SLOPE
 print('\ncomparing mean CS and mean RT/ecc slope in VS \n')
@@ -652,17 +743,6 @@ plot_correlation(slope_fix_set,np.mean(test_all_cs,axis=-1),
                 'Fix/set','CS','CS vs Fix/set',
                  os.path.join(plot_dir,'CSvsFix_set_slope.svg'),p_value=p_value)
 
-# CS vs on-object/ECC SLOPE
-print('\ncomparing mean CS and mean on-object/ecc slope in VS \n')
-plot_correlation(slope_onobj_ecc,np.mean(test_all_cs,axis=-1),
-                'on-object/ECC','CS','CS vs on-object/ECC',
-                 os.path.join(plot_dir,'CSvsOnobj_ECC_slope.svg'),p_value=p_value)
-
-# CS vs on-object/SET SLOPE
-print('\ncomparing mean CS and mean on-object/set slope in VS \n')
-plot_correlation(slope_onobj_set,np.mean(test_all_cs,axis=-1),
-                'on-object/set','CS','CS vs on-object/set',
-                 os.path.join(plot_dir,'CSvsOnobj_set_slope.svg'),p_value=p_value)
 
 
 
