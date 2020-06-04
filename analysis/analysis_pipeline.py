@@ -70,16 +70,21 @@ vs_edf = [os.path.join(output_vs,x) for _,x in enumerate(os.listdir(output_vs)) 
 
 
 # check if sub should be excluded
-sum_file = exclude_subs(crwd_csv,vs_csv,plot_dir,
-                             trials_block = trials_block,
-                             miss_trials = miss_exclusion_thresh,
-                             acc_cut_off_crwd = cut_off,
-                             ecc = ecc,
-                             num_cs_trials = last_trials,
-                             cut_off_acc_vs = vs_exclusion_acc_thresh,
-                             cut_off_acc_ecc_vs = vs_exclusion_acc_ecc_thresh)
+sum_file = os.path.join(os.path.split(output_vs)[0],'plots','summary','sum_measures.npz')
 
-sum_measures = np.load(sum_file) # all relevant measures
+if not os.path.isfile(sum_file):
+    sum_file = exclude_subs(crwd_csv,vs_csv,plot_dir,
+                                 trials_block = trials_block,
+                                 miss_trials = miss_exclusion_thresh,
+                                 acc_cut_off_crwd = cut_off,
+                                 ecc = ecc,
+                                 num_cs_trials = last_trials,
+                                 cut_off_acc_vs = vs_exclusion_acc_thresh,
+                                 cut_off_acc_ecc_vs = vs_exclusion_acc_ecc_thresh)
+else:
+    sum_measures = np.load(sum_file) # all relevant measures
+  
+
 
 # plot staircases
 # just to see what's going on
@@ -627,37 +632,37 @@ for k in range(len(test_subs)):
 print('\ncomparing mean CS and mean RT/ecc slope in VS \n')
 plot_correlation(slope_RT_ecc,np.mean(test_all_cs,axis=-1),
                 'RT/ECC','CS','CS vs RT/ECC',
-                 os.path.join(plot_dir,'CSvsRT_ECC_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsRT_ECC_slope.svg'),p_value=p_value)
 
 # CS vs RT/SET SLOPE
 print('\ncomparing mean CS and mean RT/set slope in VS \n')
 plot_correlation(slope_RT_set,np.mean(test_all_cs,axis=-1),
                 'RT/set','CS','CS vs RT/set',
-                 os.path.join(plot_dir,'CSvsRT_set_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsRT_set_slope.svg'),p_value=p_value)
 
 # CS vs FIX/ECC SLOPE
 print('\ncomparing mean CS and mean fix/ecc slope in VS \n')
 plot_correlation(slope_fix_ecc,np.mean(test_all_cs,axis=-1),
                 'Fix/ECC','CS','CS vs Fix/ECC',
-                 os.path.join(plot_dir,'CSvsFix_ECC_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsFix_ECC_slope.svg'),p_value=p_value)
 
 # CS vs Fix/SET SLOPE
 print('\ncomparing mean CS and mean fix/set slope in VS \n')
 plot_correlation(slope_fix_set,np.mean(test_all_cs,axis=-1),
                 'Fix/set','CS','CS vs Fix/set',
-                 os.path.join(plot_dir,'CSvsFix_set_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsFix_set_slope.svg'),p_value=p_value)
 
 # CS vs on-object/ECC SLOPE
 print('\ncomparing mean CS and mean on-object/ecc slope in VS \n')
 plot_correlation(slope_onobj_ecc,np.mean(test_all_cs,axis=-1),
                 'on-object/ECC','CS','CS vs on-object/ECC',
-                 os.path.join(plot_dir,'CSvsOnobj_ECC_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsOnobj_ECC_slope.svg'),p_value=p_value)
 
 # CS vs on-object/SET SLOPE
 print('\ncomparing mean CS and mean on-object/set slope in VS \n')
 plot_correlation(slope_onobj_set,np.mean(test_all_cs,axis=-1),
                 'on-object/set','CS','CS vs on-object/set',
-                 os.path.join(plot_dir,'CSvsOnobj_set_slope_across-set.svg'),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsOnobj_set_slope.svg'),p_value=p_value)
 
 
 
@@ -670,9 +675,9 @@ plot_correlation(slope_onobj_set,np.mean(test_all_cs,axis=-1),
 #if not os.path.exists(scanpath_dir):
 #     os.makedirs(scanpath_dir)
         
-#draw_scanpath_display('86',400,output_vs,output_vs,scanpath_dir)
+#draw_scanpath_display('86',400,output_vs,scanpath_dir)
 
-#draw_rawdata_display('86',400,output_vs,output_vs,scanpath_dir)
+#draw_rawdata_display('86',400,output_vs,scanpath_dir)
 
 
 

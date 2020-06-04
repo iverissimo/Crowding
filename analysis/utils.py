@@ -187,6 +187,7 @@ def draw_scanpath_display(sj,trial,data_dir,outdir,
     # set radius of circles
     r_gabor = ang2pix(rad_gab,screenHeight,
                        screenDis,vRes)
+    
     r_fix = ang2pix(fix_line,screenHeight,
                        screenDis,vRes)
     
@@ -906,7 +907,7 @@ def surface_density(df_vs_dir,rad_roi,
     return np.array(surf_density)
 
 
-def density_mean_RT(data,density_arr,type_trial='ecc',density='high',threshold=0.03, ecc=[4,8,12],set_size=[5,15,30]):
+def density_mean_RT(data,density_arr,type_trial='ecc',density='high', ecc=[4,8,12],set_size=[5,15,30]):
     # function to check RT as function of ecc or set size for visual search
     #
     # INPUTS #
@@ -947,9 +948,9 @@ def density_mean_RT(data,density_arr,type_trial='ecc',density='high',threshold=0
             if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
                 
                 # save depending on density of trial
-                if density=='high' and density_arr[i]>=threshold:
+                if density=='high' and density_arr[i]==True:
                     RT_per_group.append(RT[i]) #append RT value
-                elif density=='low' and density_arr[i]<threshold:
+                elif density=='low' and density_arr[i]==False:
                     RT_per_group.append(RT[i]) #append RT value
         
         RT_all.append(np.mean(RT_per_group))
@@ -958,7 +959,7 @@ def density_mean_RT(data,density_arr,type_trial='ecc',density='high',threshold=0
     return RT_all
     
 def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
-                    threshold=0.03, ecc=[4,8,12],set_size=[5,15,30],
+                    ecc=[4,8,12],set_size=[5,15,30],
                     hRes=1680,vRes=1050,screenHeight=30,screenDis=57,size_gab=2.2):
     
     # function to check mean number of fixations as function of ecc or set size for visual search
@@ -1006,7 +1007,7 @@ def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
             if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
                 
                 # save depending on density of trial
-                if (density=='high' and density_arr[i]>=threshold) or (density=='low' and density_arr[i]<threshold):
+                if (density=='high' and density_arr[i]==True) or (density=='low' and density_arr[i]==False):
                 
                     # index for moment when display was shown
                     idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
@@ -1041,7 +1042,7 @@ def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
 
 
 def density_on_objectfix(data,eyedata,density_arr,type_trial='ecc',density='high',
-                    threshold=0.03, ecc=[4,8,12],set_size=[5,15,30],
+                    ecc=[4,8,12],set_size=[5,15,30],
                     hRes=1680,vRes=1050,screenHeight=30,screenDis=57,radius=1.1):
     
     # function to check percentage of on object fixations as function of ecc or set size for visual search
@@ -1088,7 +1089,7 @@ def density_on_objectfix(data,eyedata,density_arr,type_trial='ecc',density='high
             if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
                 
                 # save depending on density of trial
-                if (density=='high' and density_arr[i]>=threshold) or (density=='low' and density_arr[i]<threshold):
+                if (density=='high' and density_arr[i]==True) or (density=='low' and density_arr[i]==False):
                 
                     # index for moment when display was shown
                     idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
@@ -1285,4 +1286,59 @@ def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_c
     return out_file
     
 
+def crowded_trials(df_vs,rad_gab=1.1,screenHeight=30,screenDis=57, vRes = 1050,hRes=1680):
     
+    # function to define if visual search trials are crowded or not
+    # output binary array of trial size indicating if crowded trial or not
+    
+    #### INPUTS #####
+    # df_vs - dataframe with behaviour data
+    
+    # output variable
+    is_crowded = []
+    
+    # radius of each gabor
+    radius_gabor = ang2pix(rad_gab,screenHeight,
+                       screenDis,vRes)
+    
+    for trial in range(len(df_vs)): # for all trials
+        
+        # NOTE - all positions in pixels
+        
+        # set radius around target to compute density (ROI), which is 0.5 of the ecc of the target
+        rad_roi = 0.5 * df_vs['target_ecc'].iloc[trial] 
+        
+        radius_roi = ang2pix(rad_roi,screenHeight,
+                       screenDis,vRes)
+        
+        # get target and distractor positions as strings in list
+        target_pos = df_vs['target_position'][trial].replace(']','').replace('[','').split(' ')
+        distr_pos = df_vs['distractor_position'][trial].replace(']','').replace('[','').replace(',','').split(' ')
+
+        # convert to list of floats
+        target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
+
+        # save distractor positions in pairs (x,y)
+        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
+        
+        # convert positions to make everything positive and hence my life easier
+        # (changing coordinate axis to have center position in bottom left of display 
+        # instead of center position in center of screen)
+
+        new_target_pos = target_pos + [hRes/2,vRes/2]
+        new_alldistr_pos = alldistr_pos + [hRes/2,vRes/2]
+        
+        append_trl = False
+        
+        for i in range(len(new_alldistr_pos)): # for all distractors
+            # calculate distance between center of target and center of distractor
+            distance = np.sqrt((new_target_pos[0]-new_alldistr_pos[i][0])**2+(new_target_pos[1]-new_alldistr_pos[i][1])**2)
+
+            if distance < (radius_roi):#+radius_gabor): # circles intersecting (at least partially)
+                append_trl = True # if at least one distractor is there, we label it as crowded
+                
+        is_crowded.append(append_trl)  
+         
+    return np.array(is_crowded)
+       

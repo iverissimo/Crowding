@@ -83,10 +83,6 @@ else:
 # then take out excluded participants and save relevant info in new arrays
 # for later analysis
 
-# density analysis params
-rad_roi = params['rad_ROI'] # radius around target 
-quantile = params['quantile'] # quantile to divide trials in high or low density
-
 # find index to take out from variables
 exclusion_ind = [np.where(np.array(sum_measures['all_subs'])==np.array(sum_measures['excluded_sub'][i]))[0][0] for i in range(len(sum_measures['excluded_sub']))] 
 
@@ -113,7 +109,7 @@ test_onobjfix_ecc_vs_HIGH = []
 test_onobjfix_set_vs_LOW = []
 test_onobjfix_set_vs_HIGH = []
 
-test_density_thresh = []
+test_iscrowded = []
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -130,29 +126,11 @@ for j in range(len(sum_measures['all_subs'])):
         print('loading edf for sub-%s data'%sum_measures['all_subs'][j])
         eye_data = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
         
-        # compute density for all trials of subject
-        surf_dens_all = surface_density(vs_csv[j],rad_roi)
-        
-        # plot distribution of display density and 
-        median_density = np.nanquantile(surf_dens_all, quantile)
+        # label trials as crowded or not
+        is_crowded = crowded_trials(df_vs)
 
-        # make figure to have a look
-        out_dir = os.path.join(plot_dir,'density_hist')
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
-
-        fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
-
-        sns.distplot(surf_dens_all,bins=10,color='r')
-        axis.set_xlabel('surface density',fontsize=14)
-        axis.set_xlim(0,)
-        axis.axvline(x=median_density,c='k',linestyle='--')
-
-        axis.set_title('Histogram of surface density values sub-%s, median density = %0.2f'%(sum_measures['all_subs'][j],median_density))
-        fig.savefig(os.path.join(out_dir,'distribution_surface_density_sub-%s'%sum_measures['all_subs'][j]), dpi=100)
-
-        # append density threshold
-        test_density_thresh.append(median_density)
+        # append percentage of crowded trials
+        test_iscrowded.append(np.sum(is_crowded==True)/len(is_crowded)*100)
         
         test_subs.append(sum_measures['all_subs'][j])
         
@@ -162,44 +140,53 @@ for j in range(len(sum_measures['all_subs'])):
         
         # THIS IS WHAT I NEED TO SAVE DIFFERENTLY, ACCORDING TO DENSITY ##########
         # RT per ECC or SET SIZE
-        test_rt_ecc_vs_LOW.append(density_mean_RT(df_vs,surf_dens_all,
-                                                  type_trial='ecc',density='low',threshold=median_density))
-        test_rt_ecc_vs_HIGH.append(density_mean_RT(df_vs,surf_dens_all,
-                                                   type_trial='ecc',density='high',threshold=median_density))
+        test_rt_ecc_vs_LOW.append(density_mean_RT(df_vs,is_crowded,
+                                                  type_trial='ecc',density='low'))
+        test_rt_ecc_vs_HIGH.append(density_mean_RT(df_vs,is_crowded,
+                                                   type_trial='ecc',density='high'))
 
-        test_rt_set_vs_LOW.append(density_mean_RT(df_vs,surf_dens_all,
-                                                  type_trial='set',density='low',threshold=median_density))
-        test_rt_set_vs_HIGH.append(density_mean_RT(df_vs,surf_dens_all,
-                                                   type_trial='set',density='high',threshold=median_density))
+        test_rt_set_vs_LOW.append(density_mean_RT(df_vs,is_crowded,
+                                                  type_trial='set',density='low'))
+        test_rt_set_vs_HIGH.append(density_mean_RT(df_vs,is_crowded,
+                                                   type_trial='set',density='high'))
         
         # FIXATIONS per ECC or SET SIZE
-        test_fix_ecc_vs_LOW.append(density_meanfix(df_vs,eye_data,surf_dens_all,
-                                                   type_trial='ecc',density='low',threshold=median_density))
-        test_fix_ecc_vs_HIGH.append(density_meanfix(df_vs,eye_data,surf_dens_all,
-                                                    type_trial='ecc',density='high',threshold=median_density))
+        test_fix_ecc_vs_LOW.append(density_meanfix(df_vs,eye_data,is_crowded,
+                                                   type_trial='ecc',density='low'))
+        test_fix_ecc_vs_HIGH.append(density_meanfix(df_vs,eye_data,is_crowded,
+                                                    type_trial='ecc',density='high'))
 
-        test_fix_set_vs_LOW.append(density_meanfix(df_vs,eye_data,surf_dens_all,
-                                                   type_trial='set',density='low',threshold=median_density))
-        test_fix_set_vs_HIGH.append(density_meanfix(df_vs,eye_data,surf_dens_all,
-                                                    type_trial='set',density='high',threshold=median_density))
+        test_fix_set_vs_LOW.append(density_meanfix(df_vs,eye_data,is_crowded,
+                                                   type_trial='set',density='low'))
+        test_fix_set_vs_HIGH.append(density_meanfix(df_vs,eye_data,is_crowded,
+                                                    type_trial='set',density='high'))
 
         # ON-OBJECT FIXATIONS per ECC or SET SIZE
-        test_onobjfix_ecc_vs_LOW.append(density_on_objectfix(df_vs,eye_data,surf_dens_all,
-                                                             type_trial='ecc',density='low',threshold=median_density,
+        test_onobjfix_ecc_vs_LOW.append(density_on_objectfix(df_vs,eye_data,is_crowded,
+                                                             type_trial='ecc',density='low',
                                                              radius=params['siz_gab_deg']/2*1.5))
-        test_onobjfix_ecc_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,surf_dens_all,
-                                                             type_trial='ecc',density='high',threshold=median_density,
+        test_onobjfix_ecc_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,is_crowded,
+                                                             type_trial='ecc',density='high',
                                                              radius=params['siz_gab_deg']/2*1.5))
 
-        test_onobjfix_set_vs_LOW.append(density_on_objectfix(df_vs,eye_data,surf_dens_all,
-                                                             type_trial='set',density='low',threshold=median_density,
+        test_onobjfix_set_vs_LOW.append(density_on_objectfix(df_vs,eye_data,is_crowded,
+                                                             type_trial='set',density='low',
                                                              radius=params['siz_gab_deg']/2*1.5))
-        test_onobjfix_set_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,surf_dens_all,
-                                                             type_trial='set',density='high',threshold=median_density,
+        test_onobjfix_set_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,is_crowded,
+                                                             type_trial='set',density='high',
                                                              radius=params['siz_gab_deg']/2*1.5))
 
 
 # PLOTS
+
+fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
+
+plt.hist(test_iscrowded,bins=10,color='pink')
+axis.set_xlabel('% of crowded trials',fontsize=14)
+
+axis.set_title('Histogram of percentage of crowded trials per participant')
+fig.savefig(os.path.join(plot_dir,'distribution_crowded_trials'), dpi=100)
+
 
 # RT VS ECC
 fig = plt.figure(figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
