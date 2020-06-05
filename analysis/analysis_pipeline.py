@@ -81,8 +81,8 @@ if not os.path.isfile(sum_file):
                                  num_cs_trials = last_trials,
                                  cut_off_acc_vs = vs_exclusion_acc_thresh,
                                  cut_off_acc_ecc_vs = vs_exclusion_acc_ecc_thresh)
-else:
-    sum_measures = np.load(sum_file) # all relevant measures
+
+sum_measures = np.load(sum_file) # all relevant measures
   
 # plot staircases
 # just to see what's going on
@@ -611,7 +611,7 @@ ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
 plt.title('RT vs CS correlation matrix')
 plt.ylabel('Set Size')
 plt.xlabel('Eccentricity [dva]')
-plt.show()
+#plt.show()
 fig.savefig(os.path.join(plot_dir,'correlation_matrix_ALL_RT.svg'), dpi=100,bbox_inches = 'tight')
 
 # plot values in color (heat) matrix
@@ -625,7 +625,7 @@ ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
 plt.title('RT vs CS correlation matrix - p-values')
 plt.ylabel('Set Size')
 plt.xlabel('Eccentricity [dva]')
-plt.show()
+#plt.show()
 fig.savefig(os.path.join(plot_dir,'correlation_matrix-pval_ALL_RT.svg'), dpi=100,bbox_inches = 'tight')
 
 
@@ -680,7 +680,7 @@ ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
 plt.title('#Fix vs CS correlation matrix')
 plt.ylabel('Set Size')
 plt.xlabel('Eccentricity [dva]')
-plt.show()
+#plt.show()
 fig.savefig(os.path.join(plot_dir,'correlation_matrix_ALL_fixations.svg'), dpi=100,bbox_inches = 'tight')
 
 # plot values in color (heat) matrix
@@ -694,7 +694,7 @@ ax.invert_yaxis() # so set size goes from smaller (top) to biggest (bottom)
 plt.title('#Fix vs CS correlation matrix - p-values')
 plt.ylabel('Set Size')
 plt.xlabel('Eccentricity [dva]')
-plt.show()
+#plt.show()
 fig.savefig(os.path.join(plot_dir,'correlation_matrix-pval_ALL_fixations.svg'), dpi=100,bbox_inches = 'tight')
 
 
