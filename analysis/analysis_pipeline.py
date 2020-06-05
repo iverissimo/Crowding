@@ -701,47 +701,161 @@ fig.savefig(os.path.join(plot_dir,'correlation_matrix-pval_ALL_fixations.svg'), 
 
 # COMPUTE SLOPE VALUES
 
-slope_RT_ecc = []
-slope_RT_set = []
+# to save all slope values of RT/ECC (rt in seconds, so slope in s/dva)
+# thus we can divide it per set or across sets
 
-slope_fix_ecc = []
-slope_fix_set = []
+df_slope_RT_ecc = pd.DataFrame(columns=params['set_size']+['all'])
+df_slope_Fix_ecc = pd.DataFrame(columns=params['set_size']+['all'])
 
 
-for k in range(len(test_subs)):
-    # RT/ecc slope
-    slope_RT_ecc.append(linregress(ecc,np.array(test_rt_ecc_vs)[k])[0])
-    # RT/set slope
-    slope_RT_set.append(linregress(params['set_size'],np.array(test_rt_set_vs)[k])[0])
-    # fixation/ecc slope
-    slope_fix_ecc.append(linregress(ecc,np.array(test_fix_ecc_vs)[k])[0])
-    # fixation/set slope
-    slope_fix_set.append(linregress(params['set_size'],np.array(test_fix_set_vs)[k])[0])
+for _,s in enumerate(params['set_size']): # loop over set size
     
+    df_trim = test_df_RT.loc[test_df_RT['set_size'] == s]
+    df_trim_fix = test_df_fix.loc[test_df_fix['set_size'] == s]
+    
+    for k in range(len(test_subs)): # loop over all subjects
+        
+        slope_1set = linregress(ecc,df_trim[['4_ecc','8_ecc','12_ecc']].values[k]).slope
+        slope_1set_fix = linregress(ecc,df_trim_fix[['4_ecc','8_ecc','12_ecc']].values[k]).slope
+        
+        if s==params['set_size'][0]:
+            slope_across_set = linregress(ecc,np.array(test_rt_ecc_vs)[k]).slope
+            slope_across_set_fix = linregress(ecc,np.array(test_fix_ecc_vs)[k]).slope
+        
+            # append values in matrix, including across       
+            df_slope_RT_ecc = df_slope_RT_ecc.append({s: slope_1set, 
+                                    'all': slope_across_set},ignore_index=True)
+            df_slope_Fix_ecc = df_slope_Fix_ecc.append({s: slope_1set_fix, 
+                                    'all': slope_across_set_fix},ignore_index=True)
+        else:
+            # append values in matrix, without across (to avoid duplicated values in DF)        
+            df_slope_RT_ecc = df_slope_RT_ecc.append({s: slope_1set},ignore_index=True)
+            df_slope_Fix_ecc = df_slope_Fix_ecc.append({s: slope_1set_fix},ignore_index=True)
+
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+df_slope_RT_ecc = df_slope_RT_ecc.apply(lambda x: pd.Series(x.dropna().values))
+df_slope_RT_ecc = df_slope_RT_ecc.dropna()
+
+df_slope_Fix_ecc = df_slope_Fix_ecc.apply(lambda x: pd.Series(x.dropna().values))
+df_slope_Fix_ecc = df_slope_Fix_ecc.dropna()
+
+
+## correlations for RT/ECC [s/dva]
+    
+corr_slope_RT_ecc = pd.DataFrame(columns=params['set_size']+['all'])
+pval_slope_RT_ecc = pd.DataFrame(columns=params['set_size']+['all'])
   
-# CS vs RT/ECC SLOPE
-print('\ncomparing mean CS and mean RT/ecc slope in VS \n')
-plot_correlation(slope_RT_ecc,np.mean(test_all_cs,axis=-1),
-                'RT/ECC','CS','CS vs RT/ECC',
-                 os.path.join(plot_dir,'CSvsRT_ECC_slope.svg'),p_value=p_value)
+for _,s in enumerate(params['set_size']+['all']): # loop over eccentricity
 
-# CS vs RT/SET SLOPE
-print('\ncomparing mean CS and mean RT/set slope in VS \n')
-plot_correlation(slope_RT_set,np.mean(test_all_cs,axis=-1),
-                'RT/set','CS','CS vs RT/set',
-                 os.path.join(plot_dir,'CSvsRT_set_slope.svg'),p_value=p_value)
+    corr,pval = plot_correlation(df_slope_RT_ecc[s].values,test_mean_cs,
+                'RT/ECC [s/dva]','CS','CS vs RT/ECC for %s items'%(str(s)),
+                 os.path.join(plot_dir,'CSvsRT_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value)
 
-# CS vs FIX/ECC SLOPE
-print('\ncomparing mean CS and mean fix/ecc slope in VS \n')
-plot_correlation(slope_fix_ecc,np.mean(test_all_cs,axis=-1),
-                'Fix/ECC','CS','CS vs Fix/ECC',
-                 os.path.join(plot_dir,'CSvsFix_ECC_slope.svg'),p_value=p_value)
+    # save correlation values         
+    corr_slope_RT_ecc = corr_slope_RT_ecc.append({s: corr},ignore_index=True)
 
-# CS vs Fix/SET SLOPE
-print('\ncomparing mean CS and mean fix/set slope in VS \n')
-plot_correlation(slope_fix_set,np.mean(test_all_cs,axis=-1),
-                'Fix/set','CS','CS vs Fix/set',
-                 os.path.join(plot_dir,'CSvsFix_set_slope.svg'),p_value=p_value)
+    # save p-values of said correlations          
+    pval_slope_RT_ecc = pval_slope_RT_ecc.append({s: pval},ignore_index=True)
+
+
+## correlations for Fix/ECC [fix/dva]
+    
+corr_slope_Fix_ecc = pd.DataFrame(columns=params['set_size']+['all'])
+pval_slope_Fix_ecc = pd.DataFrame(columns=params['set_size']+['all'])
+  
+for _,s in enumerate(params['set_size']+['all']): # loop over eccentricity
+
+    corr,pval = plot_correlation(df_slope_Fix_ecc[s].values,test_mean_cs,
+                'Fix/ECC [fix/dva]','CS','CS vs Fix/ECC for %s items'%(str(s)),
+                 os.path.join(plot_dir,'CSvsFix_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value)
+
+    # save correlation values         
+    corr_slope_Fix_ecc = corr_slope_Fix_ecc.append({s: corr},ignore_index=True)
+
+    # save p-values of said correlations          
+    pval_slope_Fix_ecc = pval_slope_Fix_ecc.append({s: pval},ignore_index=True)
+
+
+##### COMPUTE SLOPE VALUES # 
+
+
+# to save all slope values of RT/set (rt in seconds, so slope in s/set)
+# thus we can divide it per ecc or across ecc
+
+df_slope_RT_set = pd.DataFrame(columns=ecc+['all'])
+df_slope_Fix_set = pd.DataFrame(columns=ecc+['all'])
+
+
+for _,e in enumerate(ecc): # loop over eccentricity
+    
+    df_trim = test_df_RT[[str(e)+'_ecc']].values
+    df_trim_fix = test_df_fix[[str(e)+'_ecc']].values
+    
+    w = 0 # counter 
+    for k in range(len(test_subs)): # loop over all subjects
+        
+        slope_1set = linregress(params['set_size'],np.array([df_trim[w][0],df_trim[w+1][0],df_trim[w+2][0]])).slope
+        slope_1set_fix = linregress(params['set_size'],np.array([df_trim_fix[w][0],df_trim_fix[w+1][0],df_trim_fix[w+2][0]])).slope
+        
+        if e==ecc[0]:
+            slope_across_set = linregress(params['set_size'],np.array(test_rt_set_vs)[k]).slope
+            slope_across_set_fix = linregress(params['set_size'],np.array(test_fix_set_vs)[k]).slope
+        
+            # append values in matrix, including across       
+            df_slope_RT_set = df_slope_RT_set.append({e: slope_1set, 
+                                    'all': slope_across_set},ignore_index=True)
+            df_slope_Fix_set = df_slope_Fix_set.append({e: slope_1set_fix, 
+                                    'all': slope_across_set_fix},ignore_index=True)
+        else:
+            # append values in matrix, without across (to avoid duplicated values in DF)        
+            df_slope_RT_set = df_slope_RT_set.append({e: slope_1set},ignore_index=True)
+            df_slope_Fix_set = df_slope_Fix_set.append({e: slope_1set_fix},ignore_index=True)
+            
+        w+=3 # increment counter to move to vals of next subject (shitty coding, but works)
+
+# now reshape the dataframe (droping nans and making sure labels are ok)    
+df_slope_RT_set = df_slope_RT_set.apply(lambda x: pd.Series(x.dropna().values))
+df_slope_RT_set = df_slope_RT_set.dropna()
+
+df_slope_Fix_set = df_slope_Fix_set.apply(lambda x: pd.Series(x.dropna().values))
+df_slope_Fix_set = df_slope_Fix_set.dropna()
+
+
+## correlations for RT/set [s/item?]
+    
+corr_slope_RT_set = pd.DataFrame(columns=ecc+['all'])
+pval_slope_RT_set = pd.DataFrame(columns=ecc+['all'])
+  
+for _,e in enumerate(ecc+['all']): # loop over eccentricity
+
+    corr,pval = plot_correlation(df_slope_RT_set[e].values,test_mean_cs,
+                'RT/SET [s/item]','CS','CS vs RT/SET for %s ecc'%(str(e)),
+                 os.path.join(plot_dir,'CSvsRT_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value)
+
+    # save correlation values         
+    corr_slope_RT_set = corr_slope_RT_set.append({e: corr},ignore_index=True)
+
+    # save p-values of said correlations          
+    pval_slope_RT_set = pval_slope_RT_set.append({e: pval},ignore_index=True)
+
+
+## correlations for Fix/set [fix/item?]
+    
+corr_slope_Fix_set = pd.DataFrame(columns=ecc+['all'])
+pval_slope_Fix_set = pd.DataFrame(columns=ecc+['all'])
+  
+for _,e in enumerate(ecc+['all']): # loop over eccentricity
+
+    corr,pval = plot_correlation(df_slope_Fix_set[e].values,test_mean_cs,
+                'Fix/SET [fix/item]','CS','CS vs Fix/SET for %s ecc'%(str(e)),
+                 os.path.join(plot_dir,'CSvsFix_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value)
+
+    # save correlation values         
+    corr_slope_Fix_set = corr_slope_Fix_set.append({e: corr},ignore_index=True)
+
+    # save p-values of said correlations          
+    pval_slope_Fix_set = pval_slope_Fix_set.append({e: pval},ignore_index=True)
+
 
 
 
