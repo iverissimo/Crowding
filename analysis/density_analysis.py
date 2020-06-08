@@ -76,8 +76,8 @@ if not os.path.isfile(sum_file):
                                  num_cs_trials = last_trials,
                                  cut_off_acc_vs = vs_exclusion_acc_thresh,
                                  cut_off_acc_ecc_vs = vs_exclusion_acc_ecc_thresh)
-else:
-    sum_measures = np.load(sum_file) # all relevant measures
+
+sum_measures = np.load(sum_file) # all relevant measures
   
 
 # then take out excluded participants and save relevant info in new arrays
@@ -103,13 +103,18 @@ test_fix_ecc_vs_HIGH = []
 test_fix_set_vs_LOW = []
 test_fix_set_vs_HIGH = []
 
-test_onobjfix_ecc_vs_LOW = []
-test_onobjfix_ecc_vs_HIGH = []
-
-test_onobjfix_set_vs_LOW = []
-test_onobjfix_set_vs_HIGH = []
-
 test_iscrowded = []
+
+# data frames with interesting values divided
+test_df_RT_LOW = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+test_df_RT_HIGH = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+
+test_df_fix_LOW = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+test_df_fix_HIGH = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+
+test_df_trialnum_LOW = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+test_df_trialnum_HIGH = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -140,43 +145,43 @@ for j in range(len(sum_measures['all_subs'])):
         
         # THIS IS WHAT I NEED TO SAVE DIFFERENTLY, ACCORDING TO DENSITY ##########
         # RT per ECC or SET SIZE
-        test_rt_ecc_vs_LOW.append(density_mean_RT(df_vs,is_crowded,
-                                                  type_trial='ecc',density='low'))
-        test_rt_ecc_vs_HIGH.append(density_mean_RT(df_vs,is_crowded,
-                                                   type_trial='ecc',density='high'))
+        
+        ## reaction time search 
+        df_RT_LOW, df_trial_LOW = density_mean_RT(df_vs,is_crowded,
+                                       sum_measures['all_subs'][j],density='low')
+        df_RT_HIGH, df_trials_HIGH = density_mean_RT(df_vs,is_crowded,
+                                       sum_measures['all_subs'][j],density='high')
+        # append matrix of combo 
+        test_df_RT_LOW = test_df_RT_LOW.append(df_RT_LOW,ignore_index=True)
+        test_df_RT_HIGH = test_df_RT_HIGH.append(df_RT_HIGH,ignore_index=True)
+        
+        test_rt_ecc_vs_LOW.append(np.array([np.nanmean(df_RT_LOW[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        test_rt_ecc_vs_HIGH.append(np.array([np.nanmean(df_RT_HIGH[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
 
-        test_rt_set_vs_LOW.append(density_mean_RT(df_vs,is_crowded,
-                                                  type_trial='set',density='low'))
-        test_rt_set_vs_HIGH.append(density_mean_RT(df_vs,is_crowded,
-                                                   type_trial='set',density='high'))
+        test_rt_set_vs_LOW.append(df_RT_LOW[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
+        test_rt_set_vs_HIGH.append(df_RT_HIGH[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
         
         # FIXATIONS per ECC or SET SIZE
-        test_fix_ecc_vs_LOW.append(density_meanfix(df_vs,eye_data,is_crowded,
-                                                   type_trial='ecc',density='low'))
-        test_fix_ecc_vs_HIGH.append(density_meanfix(df_vs,eye_data,is_crowded,
-                                                    type_trial='ecc',density='high'))
+        ## fixation search 
+        df_FIX_LOW, _ = density_meanfix(df_vs,eye_data,is_crowded,
+                                        sum_measures['all_subs'][j],density='low')
+        df_FIX_HIGH, _ = density_meanfix(df_vs,eye_data,is_crowded,
+                                         sum_measures['all_subs'][j],density='high')
+        # append matrix of combo 
+        test_df_fix_LOW = test_df_fix_LOW.append(df_FIX_LOW,ignore_index=True)
+        test_df_fix_HIGH = test_df_fix_HIGH.append(df_FIX_HIGH,ignore_index=True)
+        
+        test_fix_ecc_vs_LOW.append(np.array([np.nanmean(df_FIX_LOW[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        test_fix_ecc_vs_HIGH.append(np.array([np.nanmean(df_FIX_HIGH[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
 
-        test_fix_set_vs_LOW.append(density_meanfix(df_vs,eye_data,is_crowded,
-                                                   type_trial='set',density='low'))
-        test_fix_set_vs_HIGH.append(density_meanfix(df_vs,eye_data,is_crowded,
-                                                    type_trial='set',density='high'))
-
-        # ON-OBJECT FIXATIONS per ECC or SET SIZE
-        test_onobjfix_ecc_vs_LOW.append(density_on_objectfix(df_vs,eye_data,is_crowded,
-                                                             type_trial='ecc',density='low',
-                                                             radius=params['siz_gab_deg']/2*1.5))
-        test_onobjfix_ecc_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,is_crowded,
-                                                             type_trial='ecc',density='high',
-                                                             radius=params['siz_gab_deg']/2*1.5))
-
-        test_onobjfix_set_vs_LOW.append(density_on_objectfix(df_vs,eye_data,is_crowded,
-                                                             type_trial='set',density='low',
-                                                             radius=params['siz_gab_deg']/2*1.5))
-        test_onobjfix_set_vs_HIGH.append(density_on_objectfix(df_vs,eye_data,is_crowded,
-                                                             type_trial='set',density='high',
-                                                             radius=params['siz_gab_deg']/2*1.5))
-
-
+        test_fix_set_vs_LOW.append(df_FIX_LOW[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
+        test_fix_set_vs_HIGH.append(df_FIX_HIGH[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
+        
+        # append number of trials for each, want to check for discrepencies between conditions
+        test_df_trialnum_LOW = test_df_trialnum_LOW.append(df_trial_LOW,ignore_index=True)
+        test_df_trialnum_HIGH = test_df_trialnum_HIGH.append(df_trials_HIGH,ignore_index=True)
+        
+        
 # PLOTS
 
 fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
@@ -327,8 +332,8 @@ plt.savefig(os.path.join(plot_dir,'density_search_setsize_onobjectfix_regression
 # CS VS RT ACROSS ECC
 print('\ncomparing mean CS and mean RT in VS across ecc\n')
 
-density_plot_correlation(np.mean(test_rt_ecc_vs_LOW,axis=-1),np.mean(test_rt_ecc_vs_HIGH,axis=-1),
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_rt_ecc_vs_LOW,axis=-1),np.nanmean(test_rt_ecc_vs_HIGH,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'RT [s]','CS','CS vs RT across ecc',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsRT_across-ecc.svg'),p_value=p_value)
 
@@ -346,8 +351,8 @@ for i in range(len(np.array(test_all_cs).T)):
 # CS VS NUMBER FIXATIONS ACROSS ECC
 print('\ncomparing mean CS and mean number Fixations in VS across ecc \n')
 
-density_plot_correlation(np.mean(test_fix_ecc_vs_LOW,axis=-1),np.mean(test_fix_ecc_vs_HIGH,axis=-1),
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_fix_ecc_vs_LOW,axis=-1),np.nanmean(test_fix_ecc_vs_HIGH,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          '# Fixations','CS','CS vs #Fix across ecc',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsFix_across-ecc.svg'),p_value=p_value)
 
@@ -365,8 +370,8 @@ for i in range(len(np.array(test_all_cs).T)):
 # CS VS On-object FIXATIONS ACROSS ECC
 print('\ncomparing mean CS and mean percentage On-Object Fixations in VS across ecc \n')
 
-density_plot_correlation(np.mean(test_onobjfix_ecc_vs_LOW,axis=-1)*100,np.mean(test_onobjfix_ecc_vs_HIGH,axis=-1)*100,
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_onobjfix_ecc_vs_LOW,axis=-1)*100,np.nanmean(test_onobjfix_ecc_vs_HIGH,axis=-1)*100,
+                         np.nanmean(test_all_cs,axis=-1),
                          'On-obj Fixations [%]','CS','CS vs percentage Onobj across ecc',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsOnobjFix_across-ecc.svg'),p_value=p_value)
 
@@ -386,8 +391,8 @@ for i in range(len(np.array(test_all_cs).T)):
 # CS VS RT ACROSS SET SIZE
 print('\ncomparing mean CS and mean RT in VS across set size \n')
 
-density_plot_correlation(np.mean(test_rt_set_vs_LOW,axis=-1),np.mean(test_rt_set_vs_HIGH,axis=-1),
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_rt_set_vs_LOW,axis=-1),np.nanmean(test_rt_set_vs_HIGH,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'RT [s]','CS','CS vs RT across set size',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsRT_across-set.svg'),p_value=p_value)
 
@@ -405,8 +410,8 @@ for i in range(len(np.array(test_all_cs).T)):
 # CS VS NUMBER FIXATIONS ACROSS SET SIZE
 print('\ncomparing mean CS and mean number Fixations in VS across set size \n')
 
-density_plot_correlation(np.mean(test_fix_set_vs_LOW,axis=-1),np.mean(test_fix_set_vs_HIGH,axis=-1),
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_fix_set_vs_LOW,axis=-1),np.nanmean(test_fix_set_vs_HIGH,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          '# Fixations','CS','CS vs #Fix across set size',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsFix_across-set.svg'),p_value=p_value)
 
@@ -424,8 +429,8 @@ for i in range(len(np.array(test_all_cs).T)):
 # CS VS On-object FIXATIONS ACROSS SET SIZE
 print('\ncomparing mean CS and mean percentage On-Object Fixations in VS across set size \n')
 
-density_plot_correlation(np.mean(test_onobjfix_set_vs_LOW,axis=-1)*100,np.mean(test_onobjfix_set_vs_HIGH,axis=-1)*100,
-                         np.mean(test_all_cs,axis=-1),
+density_plot_correlation(np.nanmean(test_onobjfix_set_vs_LOW,axis=-1)*100,np.nanmean(test_onobjfix_set_vs_HIGH,axis=-1)*100,
+                         np.nanmean(test_all_cs,axis=-1),
                          'On-obj Fixations [%]','CS','CS vs percentage Onobj across set size',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsOnobjFix_across-set.svg'),p_value=p_value)
 
@@ -483,7 +488,7 @@ for k in range(len(test_subs)):
 print('\ncomparing mean CS and mean RT/ecc slope in VS \n')
 
 density_plot_correlation(slope_RT_ecc_LOW,slope_RT_ecc_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'RT/ECC','CS','CS vs RT/ECC',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsRT_ECC_slope_across-set.svg'),p_value=p_value)
 
@@ -492,7 +497,7 @@ density_plot_correlation(slope_RT_ecc_LOW,slope_RT_ecc_HIGH,
 print('\ncomparing mean CS and mean RT/set slope in VS \n')
 
 density_plot_correlation(slope_RT_set_LOW,slope_RT_set_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'RT/set','CS','CS vs RT/set',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsRT_set_slope_across-set.svg'),p_value=p_value)
 
@@ -501,7 +506,7 @@ density_plot_correlation(slope_RT_set_LOW,slope_RT_set_HIGH,
 print('\ncomparing mean CS and mean fix/ecc slope in VS \n')
 
 density_plot_correlation(slope_fix_ecc_LOW,slope_fix_ecc_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'Fix/ECC','CS','CS vs Fix/ECC',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsFix_ECC_slope_across-set.svg'),p_value=p_value)
 
@@ -510,7 +515,7 @@ density_plot_correlation(slope_fix_ecc_LOW,slope_fix_ecc_HIGH,
 print('\ncomparing mean CS and mean fix/set slope in VS \n')
 
 density_plot_correlation(slope_fix_set_LOW,slope_fix_set_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'Fix/set','CS','CS vs Fix/set',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsFix_set_slope_across-set.svg'),p_value=p_value)
 
@@ -519,7 +524,7 @@ density_plot_correlation(slope_fix_set_LOW,slope_fix_set_HIGH,
 print('\ncomparing mean CS and mean on-object/ecc slope in VS \n')
 
 density_plot_correlation(slope_onobj_ecc_LOW,slope_onobj_ecc_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'on-object/ECC','CS','CS vs on-object/ECC',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsOnobj_ECC_slope_across-set.svg'),p_value=p_value)
 
@@ -529,7 +534,7 @@ density_plot_correlation(slope_onobj_ecc_LOW,slope_onobj_ecc_HIGH,
 print('\ncomparing mean CS and mean on-object/set slope in VS \n')
 
 density_plot_correlation(slope_onobj_set_LOW,slope_onobj_set_HIGH,
-                         np.mean(test_all_cs,axis=-1),
+                         np.nanmean(test_all_cs,axis=-1),
                          'on-object/set','CS','CS vs on-object/set',
                          os.path.join(plot_dir,'density-HIGH_LOW_CSvsOnobj_set_slope_across-set.svg'),p_value=p_value)
 

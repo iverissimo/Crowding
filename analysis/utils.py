@@ -380,7 +380,7 @@ def critical_spacing(data,ecc,num_trl=96):
         all_crit_dis.append(np.median(tfr[-num_trl:]))
         
         
-    mean_CS = np.mean(np.array(all_crit_dis))
+    mean_CS = np.nanmean(np.array(all_crit_dis))
 
     #if np.around(mean_CS,decimals=1)==.2 or np.around(mean_CS,decimals=1)==.8:
 
@@ -452,157 +452,6 @@ def accuracy_search(data,ecc,exclusion_all_thresh=0.85,exclusion_ecc_thresh=0.75
         
            
     
-def on_objectfix_ecc(data,eyedata,ecc,radius,hRes=1680,vRes=1050,screenHeight=30,screenDis=57):
-    # function to check percentage of on object fixations as function of ecc size for visual search
-    #
-    # INPUTS #
-    # data - df from behavioural csv, to get values for all trials
-    # eyedata - eyetracking data
-    # ecc - list with eccs used in task
-    #
-    # OUTPUTS #
-    # fix_all - mean fix for all ecc
-    
-    # list of values with target ecc
-    target_ecc = data['target_ecc'].values
-    # list of strings with the orientation of the target
-    target_or = data['target_orientation'].values
-    # list of strings with orientation indicated by key press
-    key_or = data['key_pressed'].values
-    # list of values of RT
-    RT = data['RT'].values
-    # radius of gabor in pixels
-    radius_pix = ang2pix(radius,screenHeight,
-                       screenDis,
-                       vRes)
-        
-    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
-    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
-    
-    fix_all = [] # fix for all ecc
-    
-    for _,j in enumerate(ecc):
-        
-        fix_ecc = []
-        
-        for i in range(len(data)): # for all actual trials 
-            
-            if key_or[i]==target_or[i] and int(target_ecc[i])==j: # if key press = target orientation and correct ecc
-                
-                # index for moment when display was shown
-                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
-                # eye tracker sample time of display
-                smp_display = eyedata[i]['events']['msg'][idx_display][0]
-                
-                num_fix = 0
-                for k,fix in enumerate(eyedata[i]['events']['Efix']):
-                    
-                    # if fixations between 150ms after display and key press time
-                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
-                        
-                        #if fixation not on target (not within target radius)
-                        fix_x = fix[-2] - hRes/2
-                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
-                        
-                        # get distractor positions as strings in list
-                        distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
-                        # convert to list of floats
-                        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
-                        # save distractor positions in pairs (x,y)
-                        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
-
-                        # if fixation within radius of any of the distractors
-                        for n in range(len(alldistr_pos)): 
-                            if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
-                                num_fix += 1 # save fixation
-                
-                if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
-                    on_obj_per = 0
-                else:
-                    on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
-
-                fix_ecc.append(on_obj_per) #append percentage of on object fixations of trial
-
-        fix_all.append(np.mean(fix_ecc)) # append mean percentage of on object fixations per ecc
-    
-    return fix_all
-
-
-
-def on_objectfix_set(data,eyedata,setsize,radius,hRes=1680,vRes=1050,screenHeight=30,screenDis=57):
-    # function to check percentage of on object fixations as function of set size for visual search
-    #
-    # INPUTS #
-    # data - df from behavioural csv, to get values for all trials
-    # eyedata - eyetracking data
-    # ecc - list with eccs used in task
-    #
-    # OUTPUTS #
-    # fix_all - mean fix for all ecc
-    
-    # list of values with target set size
-    target_set = data['set_size'].values
-    # list of strings with the orientation of the target
-    target_or = data['target_orientation'].values
-    # list of strings with orientation indicated by key press
-    key_or = data['key_pressed'].values
-    # list of values of RT
-    RT = data['RT'].values
-    # radius of gabor in pixels
-    radius_pix = ang2pix(radius,screenHeight,
-                       screenDis,
-                       vRes)
-        
-    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
-    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
-    
-    fix_all = [] # fix for all ecc
-    
-    for _,j in enumerate(setsize):
-        
-        fix_set = []
-        
-        for i in range(len(data)): # for all actual trials 
-            
-            if key_or[i]==target_or[i] and int(target_set[i])==j: # if key press = target orientation and correct set size
-                
-                # index for moment when display was shown
-                idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
-                # eye tracker sample time of display
-                smp_display = eyedata[i]['events']['msg'][idx_display][0]
-                
-                num_fix = 0
-                for k,fix in enumerate(eyedata[i]['events']['Efix']):
-                    
-                    # if fixations between 150ms after display and key press time
-                    if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
-                        
-                        #if fixation not on target (not within target radius)
-                        fix_x = fix[-2] - hRes/2
-                        fix_y = fix[-1] - vRes/2; fix_y = - fix_y
-                        
-                        # get distractor positions as strings in list
-                        distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
-                        # convert to list of floats
-                        distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
-                        # save distractor positions in pairs (x,y)
-                        alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
-
-                        # if fixation within radius of any of the distractors
-                        for n in range(len(alldistr_pos)): 
-                            if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
-                                num_fix += 1 # save fixation
-                
-                if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
-                    on_obj_per = 0
-                else:
-                    on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
-
-                fix_set.append(on_obj_per) #append percentage of on object fixations of trial
-
-        fix_all.append(np.mean(fix_set)) # append mean percentage of on object fixations per set size
-    
-    return fix_all
 
 def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05):
     
@@ -711,15 +560,14 @@ def surface_density(df_vs_dir,rad_roi,
     return np.array(surf_density)
 
 
-def density_mean_RT(data,density_arr,type_trial='ecc',density='high', ecc=[4,8,12],set_size=[5,15,30]):
+def density_mean_RT(data,density_arr,sub,density='high', ecc=[4,8,12],setsize=[5,15,30]):
     # function to check RT as function of ecc or set size for visual search
+    # ends up being a 3x3 dataframe
     #
     # INPUTS #
     # data - df from behavioural csv, to get values for all trials
     # density_arr - surface density array for all trials
-    # type_trial - get RT values in function of 'ecc' or 'set'
     # density - select high or low density trials
-    # threshold - threshold density value
     #
     # OUTPUTS #
     # RT_all - mean RT for all groups
@@ -732,38 +580,68 @@ def density_mean_RT(data,density_arr,type_trial='ecc',density='high', ecc=[4,8,1
     # list RT
     RT = data['RT'].values
     
-    if type_trial=='ecc':
-        # list of values with target ecc
-        target_type = data['target_ecc'].values
-        val = ecc # values to loop over
-    elif type_trial=='set':
-        # list of values with target set size
-        target_type = data['set_size'].values
-        val = set_size # values to loop over
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
     
-    RT_all = [] # RT for all ecc
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+    # dataframe to count the number of trials for each condition, sanity check
+    df_trial_num = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub']) 
     
-    for _,j in enumerate(val):
-        
-        RT_per_group = []
-        
-        for i in range(len(data)): # for all actual trials 
+    for _,s in enumerate(setsize): # for all set sizes 
+        for _,e in enumerate(ecc): # for all target ecc
 
-            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
+            RT_ecc_set = []
+            num_trial_ecc_set = 0
+
+            for t in range(len(data)): # for all actual trials 
                 
-                # save depending on density of trial
-                if density=='high' and density_arr[i]==True:
-                    RT_per_group.append(RT[i]) #append RT value
-                elif density=='low' and density_arr[i]==False:
-                    RT_per_group.append(RT[i]) #append RT value
+                # if key press = target orientation and specific ecc and specific set size
+                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s):
+                    
+                    # save depending on density of trial
+                    if (density=='high' and density_arr[t]==True) or (density=='low' and density_arr[t]==False):
+                        
+                        if RT[t]> .250 and RT[t]<5 : # reasonable search times
+                            RT_ecc_set.append(RT[t]) #append RT value
+                            num_trial_ecc_set+=1 # increment trial counter
+
+            if not RT_ecc_set: # if empty
+                RT_ecc_set = float('Inf')
+
+            # compute that mean RT and save in data frame           
+            df_out = df_out.append({str(e)+'_ecc': np.nanmean(RT_ecc_set), 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
+            
+            # save number of trials
+            df_trial_num = df_trial_num.append({str(e)+'_ecc': num_trial_ecc_set, 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
+            
+    # now reshape the dataframe (droping nans and making sure labels are ok)    
+    df_out = df_out.apply(lambda x: pd.Series(x.dropna().values))
+    df_out = df_out.dropna()
+    
+    for i in df_out.index:
+        df_out.at[i, 'set_size'] = setsize[i]
+      
+    df_out = df_out.replace(np.inf,np.nan)  # replace any infinites with nan, makes averaging later easier 
         
-        RT_all.append(np.mean(RT_per_group))
-        print('number of trials for group %d is %d'%(j,len(RT_per_group)))
+    # same for trial number counter   
+    df_trial_num = df_trial_num.apply(lambda x: pd.Series(x.dropna().values))
+    df_trial_num = df_trial_num.dropna()
     
-    return RT_all
+    for i in df_trial_num.index:
+        df_trial_num.at[i, 'set_size'] = setsize[i]
     
-def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
-                    ecc=[4,8,12],set_size=[5,15,30],
+    return df_out, df_trial_num
+
+    
+def density_meanfix(data,eyedata,density_arr,sub,density='high',
+                    ecc=[4,8,12],setsize=[5,15,30],
                     hRes=1680,vRes=1050,screenHeight=30,screenDis=57,size_gab=2.2):
     
     # function to check mean number of fixations as function of ecc or set size for visual search
@@ -776,7 +654,11 @@ def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
     # OUTPUTS #
     # fix_all - mean fix for all ecc
     
-
+    
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
     
     # list of strings with the orientation of the target
     target_or = data['target_orientation'].values
@@ -791,148 +673,81 @@ def density_meanfix(data,eyedata,density_arr,type_trial='ecc',density='high',
     # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
     sample_thresh = 1000*0.150 # 1000Hz * time in seconds
     
-    if type_trial=='ecc':
-        # list of values with target ecc
-        target_type = data['target_ecc'].values
-        val = ecc # values to loop over
-    elif type_trial=='set':
-        # list of values with target set size
-        target_type = data['set_size'].values
-        val = set_size # values to loop over
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+    # dataframe to count the number of trials for each condition, sanity check
+    df_trial_num = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub']) 
     
-    fix_all = [] # RT for all ecc
-    
-    for _,j in enumerate(val):
-        
-        fix_per_group = []
-        
-        for i in range(len(data)): # for all actual trials 
+    for _,s in enumerate(setsize): # for all set sizes 
+        for _,e in enumerate(ecc): # for all target ecc
+
+            fix_ecc_set = []
+            num_trial_ecc_set = 0
+
+            for t in range(len(data)): # for all actual trials 
+                
+                # if key press = target orientation and specific ecc and specific set size
+                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s):
+                    
+                    # save depending on density of trial
+                    if (density=='high' and density_arr[t]==True) or (density=='low' and density_arr[t]==False):
+                    
+                        # index for moment when display was shown
+                        idx_display = np.where(np.array(eyedata[t]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                        # eye tracker sample time of display
+                        smp_display = eyedata[t]['events']['msg'][idx_display][0]
+
+                        # get target positions as strings in list
+                        target_pos = data['target_position'][t].replace(']','').replace('[','').split(' ')
+                        # convert to list of floats
+                        target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+
+                        num_fix = 0
+                        for k,fix in enumerate(eyedata[t]['events']['Efix']):
+
+                            # if fixations between 150ms after display and key press time
+                            if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[t]*1000)):
+
+                                #if fixation not on target (not within target radius)
+                                fix_x = fix[-2] - hRes/2
+                                fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                                if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
+                                    num_fix += 1
+
+                        fix_ecc_set.append(num_fix) #append number of fixations for that trial value                    
+                        num_trial_ecc_set+=1 # increment trial counter
+
+            if not fix_ecc_set: # if empty
+                fix_ecc_set = float('Inf')
+
+            # compute mean number of fixations and save in data frame           
+            df_out = df_out.append({str(e)+'_ecc': np.nanmean(fix_ecc_set), 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
             
-            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
-                
-                # save depending on density of trial
-                if (density=='high' and density_arr[i]==True) or (density=='low' and density_arr[i]==False):
-                
-                    # index for moment when display was shown
-                    idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
-                    # eye tracker sample time of display
-                    smp_display = eyedata[i]['events']['msg'][idx_display][0]
-
-                    # get target positions as strings in list
-                    target_pos = data['target_position'][i].replace(']','').replace('[','').split(' ')
-                    # convert to list of floats
-                    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
-
-                    num_fix = 0
-                    for k,fix in enumerate(eyedata[i]['events']['Efix']):
-
-                        # if fixations between 150ms after display and key press time
-                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
-
-                            #if fixation not on target (not within target radius)
-                            fix_x = fix[-2] - hRes/2
-                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
-
-                            if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
-                                num_fix += 1
-
-                    fix_per_group.append(num_fix) #append number of fixations for that trial value
-
-        fix_all.append(np.mean(fix_per_group)) # append mean number of fixations per ecc
-        #print('number of trials for group %d is %d'%(j,len(fix_per_group)))
-    
-    return fix_all   
-
-
-
-def density_on_objectfix(data,eyedata,density_arr,type_trial='ecc',density='high',
-                    ecc=[4,8,12],set_size=[5,15,30],
-                    hRes=1680,vRes=1050,screenHeight=30,screenDis=57,radius=1.1):
-    
-    # function to check percentage of on object fixations as function of ecc or set size for visual search
-    #
-    # INPUTS #
-    # data - df from behavioural csv, to get values for all trials
-    # eyedata - eyetracking data
-    # ecc - list with eccs used in task
-    #
-    # OUTPUTS #
-    # fix_all - mean fix for all ecc
-    
-    # list of strings with the orientation of the target
-    target_or = data['target_orientation'].values
-    # list of strings with orientation indicated by key press
-    key_or = data['key_pressed'].values
-    # list of values of RT
-    RT = data['RT'].values
-    # radius of gabor in pixels
-    radius_pix = ang2pix(radius,screenHeight,
-                       screenDis,
-                       vRes)
-        
-    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
-    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
-    
-    if type_trial=='ecc':
-        # list of values with target ecc
-        target_type = data['target_ecc'].values
-        val = ecc # values to loop over
-    elif type_trial=='set':
-        # list of values with target set size
-        target_type = data['set_size'].values
-        val = set_size # values to loop over
-    
-    fix_all = [] # fix for all ecc
-    
-    for _,j in enumerate(val):
-        
-        fix_per_group = []
-        
-        for i in range(len(data)): # for all actual trials 
+            # save number of trials
+            df_trial_num = df_trial_num.append({str(e)+'_ecc': num_trial_ecc_set, 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
             
-            if key_or[i]==target_or[i] and int(target_type[i])==j: # if key press = target orientation and correct ecc/set size
-                
-                # save depending on density of trial
-                if (density=='high' and density_arr[i]==True) or (density=='low' and density_arr[i]==False):
-                
-                    # index for moment when display was shown
-                    idx_display = np.where(np.array(eyedata[i]['events']['msg'])[:,-1]=='var display True\n')[0][0]
-                    # eye tracker sample time of display
-                    smp_display = eyedata[i]['events']['msg'][idx_display][0]
-
-                    num_fix = 0
-                    for k,fix in enumerate(eyedata[i]['events']['Efix']):
-
-                        # if fixations between 150ms after display and key press time
-                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[i]*1000)):
-
-                            #if fixation not on target (not within target radius)
-                            fix_x = fix[-2] - hRes/2
-                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
-
-                            # get distractor positions as strings in list
-                            distr_pos = data['distractor_position'][i].replace(']','').replace('[','').replace(',','').split(' ')
-                            # convert to list of floats
-                            distr_pos = np.array([float(val) for i,val in enumerate(distr_pos) if len(val)>1])
-                            # save distractor positions in pairs (x,y)
-                            alldistr_pos = np.array([distr_pos[i*2:(i+1)*2] for i in range((len(distr_pos))//2)])
-
-                            # if fixation within radius of any of the distractors
-                            for n in range(len(alldistr_pos)): 
-                                if np.sqrt((fix_x-alldistr_pos[n][0])**2+(fix_y-alldistr_pos[n][1])**2) < radius_pix:
-                                    num_fix += 1 # save fixation
-
-                    if len(eyedata[i]['events']['Efix'])==0:   # if empty, to avoid division by 0
-                        on_obj_per = 0
-                    else:
-                        on_obj_per = num_fix/len(eyedata[i]['events']['Efix'])
-
-                    fix_per_group.append(on_obj_per) #append percentage of on object fixations of trial
-
-        fix_all.append(np.mean(fix_per_group)) # append mean percentage of on object fixations per ecc
-        #print('number of trials for group %d is %d'%(j,len(fix_per_group)))
+    # now reshape the dataframe (droping nans and making sure labels are ok)    
+    df_out = df_out.apply(lambda x: pd.Series(x.dropna().values))
+    df_out = df_out.dropna()
     
-    return fix_all
+    for i in df_out.index:
+        df_out.at[i, 'set_size'] = setsize[i]
+        
+    df_out = df_out.replace(np.inf,np.nan)  # replace any infinites with nan, makes averaging later easier 
+
+    # same for trial number counter   
+    df_trial_num = df_trial_num.apply(lambda x: pd.Series(x.dropna().values))
+    df_trial_num = df_trial_num.dropna()
+    
+    for i in df_trial_num.index:
+        df_trial_num.at[i, 'set_size'] = setsize[i]
+    
+    return df_out, df_trial_num
 
 
 def density_plot_correlation(arr_x_LOW,arr_x_HIGH,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05):
@@ -1190,13 +1005,17 @@ def mean_RT_set_ecc_combo(data,sub,ecc=[4, 8, 12],setsize=[5,15,30]):
             for t in range(len(data)): # for all actual trials 
                 
                 # if key press = target orientation and specific ecc and specific set size
-                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s): 
-                    RT_ecc_set.append(RT[t]) #append RT value
-                    
-                    num_trial_ecc_set+=1 # increment trial counter
+                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s):
+ 
+                    if RT[t]> .250 and RT[t]<5 : # reasonable search times
+                        RT_ecc_set.append(RT[t]) #append RT value
+                        num_trial_ecc_set+=1 # increment trial counter
+
+            if not RT_ecc_set: # if empty
+                RT_ecc_set = float('Inf')
 
             # compute that mean RT and save in data frame           
-            df_out = df_out.append({str(e)+'_ecc': np.mean(RT_ecc_set), 
+            df_out = df_out.append({str(e)+'_ecc': np.nanmean(RT_ecc_set), 
                                     'set_size': s, 
                                 'sub': sub},ignore_index=True)
             
@@ -1212,7 +1031,8 @@ def mean_RT_set_ecc_combo(data,sub,ecc=[4, 8, 12],setsize=[5,15,30]):
     for i in df_out.index:
         df_out.at[i, 'set_size'] = setsize[i]
         
-        
+    df_out = df_out.replace(np.inf,np.nan)  # replace any infinites with nan, makes averaging later easier 
+
     # same for trial number counter   
     df_trial_num = df_trial_num.apply(lambda x: pd.Series(x.dropna().values))
     df_trial_num = df_trial_num.dropna()
@@ -1299,9 +1119,12 @@ def mean_fix_set_ecc_combo(data,eyedata,sub,ecc=[4, 8, 12],
                                 
                     fix_ecc_set.append(num_fix) #append number of fixations for that trial value                    
                     num_trial_ecc_set+=1 # increment trial counter
-                    
+              
+            if not fix_ecc_set: # if empty
+                fix_ecc_set = float('Inf')
+
             # compute mean number of fixations and save in data frame           
-            df_out = df_out.append({str(e)+'_ecc': np.mean(fix_ecc_set), 
+            df_out = df_out.append({str(e)+'_ecc': np.nanmean(fix_ecc_set), 
                                     'set_size': s, 
                                 'sub': sub},ignore_index=True)
             
@@ -1317,7 +1140,8 @@ def mean_fix_set_ecc_combo(data,eyedata,sub,ecc=[4, 8, 12],
     for i in df_out.index:
         df_out.at[i, 'set_size'] = setsize[i]
         
-        
+    df_out = df_out.replace(np.inf,np.nan)  # replace any infinites with nan, makes averaging later easier 
+
     # same for trial number counter   
     df_trial_num = df_trial_num.apply(lambda x: pd.Series(x.dropna().values))
     df_trial_num = df_trial_num.dropna()
