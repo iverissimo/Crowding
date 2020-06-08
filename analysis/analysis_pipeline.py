@@ -73,7 +73,7 @@ vs_edf = [os.path.join(output_vs,x) for _,x in enumerate(os.listdir(output_vs)) 
 sum_file = os.path.join(os.path.split(output_vs)[0],'plots','summary','sum_measures.npz')
 
 if not os.path.isfile(sum_file):
-    sum_file = exclude_subs(crwd_csv,vs_csv,plot_dir,
+    sum_file = exclude_subs(crwd_csv,crwd_edf,vs_csv,plot_dir,
                                  trials_block = trials_block,
                                  miss_trials = miss_exclusion_thresh,
                                  acc_cut_off_crwd = cut_off,
@@ -179,7 +179,7 @@ for j in range(len(sum_measures['all_subs'])):
         # append matrix of combo 
         test_df_RT = test_df_RT.append(df_RT,ignore_index=True)
         # save values per ecc
-        test_rt_ecc_vs.append(np.array([np.mean(df_RT[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        test_rt_ecc_vs.append(np.array([np.nanmean(df_RT[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
         # save values per set size
         test_rt_set_vs.append(df_RT[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
 
@@ -188,7 +188,7 @@ for j in range(len(sum_measures['all_subs'])):
         # append matrix of combo 
         test_df_fix = test_df_fix.append(df_fix,ignore_index=True)
         # save values per ecc
-        test_fix_ecc_vs.append(np.array([np.mean(df_fix[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
+        test_fix_ecc_vs.append(np.array([np.nanmean(df_fix[str(x)+'_ecc'].values) for _,x in enumerate(ecc)]))
         # save values per set size
         test_fix_set_vs.append(df_fix[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
 
@@ -220,10 +220,10 @@ fig.savefig(os.path.join(plot_dir,'crowding_accuracy_hist.svg'), dpi=100)
 # wilcoxon test
 # non-parametric statistical hypothesis test used to compare two matched samples
 # to assess whether their population mean ranks differ
-pval_acc_crwd = wilcoxon(np.mean(np.array(test_acc_fl),axis=-1), np.mean(np.array(test_acc_nofl),axis=-1))[-1]
+pval_acc_crwd = wilcoxon(np.nanmean(np.array(test_acc_fl),axis=-1), np.nanmean(np.array(test_acc_nofl),axis=-1))[-1]
 
-crwd_acc4plot = pd.DataFrame(data=np.array([np.mean(np.array(test_acc_fl),axis=-1),
-                                np.mean(np.array(test_acc_nofl),axis=-1)]).T, 
+crwd_acc4plot = pd.DataFrame(data=np.array([np.nanmean(np.array(test_acc_fl),axis=-1),
+                                np.nanmean(np.array(test_acc_nofl),axis=-1)]).T, 
                              columns = ['mean_acc_fl','mean_acc_nofl'])
 
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
@@ -494,7 +494,7 @@ plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression.svg'), dpi=100,
 
 # CS VS RT ACROSS ECC
 print('\ncomparing mean CS and mean RT in VS across ecc \n')
-plot_correlation(np.mean(test_rt_ecc_vs,axis=-1),test_mean_cs,
+plot_correlation(np.nanmean(test_rt_ecc_vs,axis=-1),test_mean_cs,
                 'RT [s]','CS','CS vs RT across ecc',
                  os.path.join(plot_dir,'CSvsRT_across-ecc.svg'),p_value=p_value)
 
@@ -509,7 +509,7 @@ for i in range(len(np.array(test_all_cs).T)):
 
 # CS VS NUMBER FIXATIONS ACROSS ECC
 print('\ncomparing mean CS and mean number Fixations in VS across ecc \n')
-plot_correlation(np.mean(test_fix_ecc_vs,axis=-1),test_mean_cs,
+plot_correlation(np.nanmean(test_fix_ecc_vs,axis=-1),test_mean_cs,
                 '# Fixations','CS','CS vs #Fix across ecc',
                  os.path.join(plot_dir,'CSvsFix_across-ecc.svg'),p_value=p_value)
 
@@ -527,7 +527,7 @@ for i in range(len(np.array(test_all_cs).T)):
 
 # CS VS RT ACROSS SET SIZE
 print('\ncomparing mean CS and mean RT in VS across set size \n')
-plot_correlation(np.mean(test_rt_set_vs,axis=-1),test_mean_cs,
+plot_correlation(np.nanmean(test_rt_set_vs,axis=-1),test_mean_cs,
                 'RT [s]','CS','CS vs RT across set size',
                  os.path.join(plot_dir,'CSvsRT_across-set.svg'),p_value=p_value)
 
@@ -542,7 +542,7 @@ for i in range(len(np.array(test_all_cs).T)):
     
 # CS VS NUMBER FIXATIONS ACROSS SET SIZE
 print('\ncomparing mean CS and mean number Fixations in VS across set size \n')
-plot_correlation(np.mean(test_fix_set_vs,axis=-1),test_mean_cs,
+plot_correlation(np.nanmean(test_fix_set_vs,axis=-1),test_mean_cs,
                 '# Fixations','CS','CS vs #Fix across set size',
                  os.path.join(plot_dir,'CSvsFix_across-set.svg'),p_value=p_value)
 

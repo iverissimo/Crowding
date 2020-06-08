@@ -781,7 +781,69 @@ def density_plot_correlation(arr_x_LOW,arr_x_HIGH,arr_y,label_x,label_y,plt_titl
     plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
 
 
-def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_cut_off_crwd=0.6,ecc=[4,8,12],
+
+def check_fix(eyedata,exclusion_thresh=.10,rad=1,stim_time=0.05,
+              hRes=1680,vRes=1050,screenHeight=30,screenDis=57):
+    
+    # check if sub if fixating in beginning of trial
+    # or if needs to be excluded
+    # made for crowding task
+    
+    exclude = False
+
+    # radius around fixation to look at in pixels
+    rad_fix = ang2pix(rad,screenHeight,
+                       screenDis,
+                       vRes)
+
+    fix_center = [] # list to append if trial was fixating in center or not
+
+    for t,_ in enumerate(eyedata): # for all trials
+
+        # index for moment when display was shown
+        idx_display = np.where(np.array(eyedata[t]['events']['msg'])[:,-1]=='var VF left\n')[0]
+        if not idx_display:
+            idx_display = np.where(np.array(eyedata[t]['events']['msg'])[:,-1]=='var VF right\n')[0]
+
+        idx_display = idx_display[0]
+
+        # eye tracker sample time of display
+        smp_display = eyedata[t]['events']['msg'][idx_display][0]
+
+        num_fix_out = 0 # fixation out of center counter
+        for k,fix in enumerate(eyedata[t]['events']['Efix']):
+
+            # if fixations within display time
+            if (fix[0] > smp_display and fix[0] < np.round(smp_display + stim_time*1000)):
+                #if fixation not on center
+                fix_x = fix[-2] - hRes/2
+                fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                if np.sqrt((fix_x-hRes/2)**2+(fix_y-vRes/2)**2) > rad_fix:
+                    num_fix_out += 1
+
+        if num_fix_out>0: # if any fixation out of center
+            fix_center.append(False)
+        else:
+            fix_center.append(True) # if fixating in center
+
+
+    percent_fix = np.sum(fix_center)/len(eyedata)
+
+    if percent_fix<(1-exclusion_thresh):
+        print('Subject only fixates in center for %.2f %% of trials \n'\
+              'EXCLUDE SUBJECT'%(percent_fix*100))
+        exclude = True
+    else:
+        print('Subject fixates in center for %.2f %% of trials \n' \
+              'continuing analysis for crowding'%(percent_fix*100))
+
+    return {'percent_fix': percent_fix,'exclude':exclude} 
+
+
+
+
+def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_cut_off_crwd=0.6,ecc=[4,8,12],
                                         num_cs_trials=96,cut_off_acc_vs=0.85,cut_off_acc_ecc_vs=0.75):
     # function to load all behavior and eyetracking data and 
     # check if subject should be excluded
@@ -805,6 +867,8 @@ def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_c
     all_tfr = [] # target-flanker ratios
     all_cs = [] # critical spacings
     mean_cs = [] # mean CS
+
+    percent_fix_crwd = [] # percentage of trials were they were fixating in center
 
     acc_vs_ecc = [] # accuraccy visual search per ecc
     acc_vs_all = [] # accuracy visual search all
@@ -846,6 +910,17 @@ def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_c
         all_cs.append(cs['all_crit_dis'])
         mean_cs.append(cs['mean_CS'])
         EXCLUDE.append(cs['exclude'])
+
+        # check if subject was fixating in the center during crowding
+        # load eye data
+        asccii_name = convert2asc(int(os.path.split(crwd_edf[ind])[-1][-7:-4]),'crowding',os.path.split(crwd_edf[ind])[0])
+        print('loading edf for sub-%s data'%int(os.path.split(crwd_edf[ind])[-1][-7:-4]))
+        eyedata = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
+        
+        fix_center = check_fix(eyedata)
+        percent_fix_crwd.append(fix_center['percent_fix'])
+
+        EXCLUDE.append(fix_center['exclude'])
         
         
         # SEARCH
@@ -874,6 +949,7 @@ def exclude_subs(crwd_csv,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_c
         # save relevant variables from above in descriptive tsv
         summary_df = pd.DataFrame({'sub':all_subs[ind],
                                     'nan_trials_pct': missed_trials[ind],
+                                    'percent_fix_center':percent_fix_crwd[ind]*100,
                                     'accuracy_flankers_pct':acc_fl[ind]*100,
                                     'accuracy_noflankers_pct':acc_nofl[ind]*100,
                                     'crit_spacing_all':all_cs[ind],

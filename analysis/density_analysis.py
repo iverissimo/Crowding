@@ -68,7 +68,7 @@ vs_edf = [os.path.join(output_vs,x) for _,x in enumerate(os.listdir(output_vs)) 
 sum_file = os.path.join(os.path.split(output_vs)[0],'plots','summary','sum_measures.npz')
 
 if not os.path.isfile(sum_file):
-    sum_file = exclude_subs(crwd_csv,vs_csv,plot_dir,
+    sum_file = exclude_subs(crwd_csv,crwd_edf,vs_csv,plot_dir,
                                  trials_block = trials_block,
                                  miss_trials = miss_exclusion_thresh,
                                  acc_cut_off_crwd = cut_off,
