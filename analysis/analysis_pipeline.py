@@ -271,39 +271,7 @@ for g,_ in enumerate(ecc):
     fig.savefig(os.path.join(plot_dir,'crowding_%decc_accuracy_boxplot_wilcoxtest.svg'%(ecc[g])), dpi=100)
 
 
-# MEAN CRITICAL SPACING, WEIGHTED BY ACCURACY, PER ECC
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-weighted_cs_mean = []
-weighted_cs_std = []
-
-crwd_df4plot = pd.DataFrame([])
-
-for w in range(len(ecc)):
-    cs_ecc = [test_all_cs[val][w] for val in range(len(test_all_cs))]
-    acc_ecc = [test_acc_fl[val][w] for val in range(len(test_acc_fl))]
-    
-    weighted_cs_mean.append(weightstats.DescrStatsW(cs_ecc,weights=acc_ecc).mean)
-    weighted_cs_std.append(weightstats.DescrStatsW(cs_ecc,weights=acc_ecc).std_mean)
-    
-    crwd_df4plot = crwd_df4plot.append(pd.DataFrame({'ecc': np.tile(ecc[w],len(cs_ecc)),
-                                  'cs':cs_ecc,
-                                   'acc':acc_ecc,
-                                    'sub':np.array(test_subs)}),ignore_index=True)
-
-plt.errorbar(ecc, weighted_cs_mean, yerr=weighted_cs_std)
-plt.ylabel('Critical spacing',fontsize=18)
-plt.xlabel('ecc',fontsize=18)
-plt.title('Mean critical spacing, weighted by accuracy',fontsize=18)
-fig.savefig(os.path.join(plot_dir,'crowding_meanCS-weighted_errorbar.svg'), dpi=100)
-
 # SHOW INDIVIDUAL SUB CS DISTRIBITUION PER ECC
-fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-
-with sns.color_palette("pastel", len(test_subs)):
-    sns.catplot(x="ecc", y="cs", hue="sub", kind="point", data=crwd_df4plot)
-plt.title('Critical Spacing, per ecc')
-plt.savefig(os.path.join(plot_dir,'crowding_CS_ecc_individual.svg'), dpi=100)
-
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
 sns.lineplot(x='ecc', y='cs', data=crwd_df4plot,estimator='mean')
