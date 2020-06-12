@@ -28,6 +28,15 @@ from scipy.stats import wilcoxon, kstest, spearmanr, linregress, friedmanchisqua
 from statsmodels.stats import weightstats
 import seaborn as sns
 
+# set font type for plots globally
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+import matplotlib.patches as mpatches
+
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
 # open params jason file
 with open(os.path.join(os.getcwd(),'settings.json'),'r') as json_file:  
             params = json.load(json_file)   
@@ -282,10 +291,22 @@ plt.title('Critical Spacing, per ecc')
 fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_all.svg'), dpi=100)
 
 # BOXPLOTS WITH CS PER ECC
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-sns.boxplot(x='ecc', y='cs', data=crwd_df4plot)
-sns.swarmplot(x='ecc', y='cs', data=crwd_df4plot,color=".25")
-fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-weighted_boxplot.svg'), dpi=100)
+fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+v1 = sns.violinplot(x='ecc', y='cs', data=crwd_df4plot,cut=0, inner='box', palette='YlOrRd_r')#ax.margins(y=0.05)
+v1.set(xlabel=None)
+v1.set(ylabel=None)
+#plt.margins(y=0.025)
+#sns.swarmplot(x='ecc', y='cs', data=crwd_df4plot,color=".25",alpha=0.5)
+#plt.plot(np.array(test_all_cs).T,'r-o',c='k',alpha=0.1)#c='grey',alpha=0.5)
+plt.xticks(fontsize = 12)
+plt.yticks(fontsize = 12)
+
+#plt.title('Critical spacing distribution across eccentricity',fontsize=18,pad=10)
+plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
+plt.ylabel('Critical Spacing',fontsize=16,labelpad=10)
+plt.ylim(0.2,0.8)
+
+fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-violinplot.svg'), dpi=100)
 
 # do Friedman to see if averages are different 
 # The Friedman test tests the null hypothesis that repeated measurements of the same individuals have the same distribution. 
@@ -368,7 +389,48 @@ ax = plt.gca()
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_ecc_RT_boxplots.svg'), dpi=100,bbox_inches = 'tight')
 
+# For all ecc do separate violin plots
+# colors a bit off between legend and violin, so corrected for in inkscape
+for k,_ in enumerate(ecc):
+    colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
+                           ['#faad75','#ff6b00','#cc5702'],
+                           ['lightgoldenrodyellow','yellow','gold']])#['#ffea80','#fff200','#dbbe00']])
 
+    columns2drop = np.array([['sub','8_ecc','12_ecc'],
+                           ['sub','4_ecc','12_ecc'],
+                           ['sub','4_ecc','8_ecc']])
+
+    df4plot_RT_set_ecc = test_df_RT.drop(columns=columns2drop[k])
+    df4plot_RT_set_ecc = pd.melt(df4plot_RT_set_ecc, 'set_size', var_name='Target eccentricity [dva]', value_name='RT [s]')
+
+    fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
+    v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_RT_set_ecc,
+                  cut=0, inner='box', palette=colors_ecc[k])
+
+    # for proper legend on plot
+    patch_5 = mpatches.Patch(color=colors_ecc[k][0], label='5 items')
+    patch_15 = mpatches.Patch(color=colors_ecc[k][1], label='15 items')
+    patch_30 = mpatches.Patch(color=colors_ecc[k][2], label='30 items')
+
+    plt.legend(handles=[patch_5, patch_15,patch_30])
+    plt.xticks([], [])
+
+    v1.set(xlabel=None)
+    v1.set(ylabel=None)
+
+    plt.xticks(fontsize = 12)
+    plt.yticks(fontsize = 12)
+
+    if k==0:
+        plt.ylabel('RT [s]',fontsize=16,labelpad=10)
+        plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
+    plt.title('%d dva'%ecc[k],fontsize=18,pad=10)
+
+    plt.ylim(0.25,3)
+    plt.savefig(os.path.join(plot_dir,'search_ecc_RT_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
+    
+    
+    
 # RT VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
@@ -430,7 +492,47 @@ sns.boxplot(x='Target eccentricity [dva]', hue='set_size', y='# fixations', data
 ax = plt.gca()
 ax.set_title('ecc vs #fixations %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_boxplots.svg'), dpi=100,bbox_inches = 'tight')
- 
+
+# For all ecc do separate plots
+# colors a bit off between legend and violin, so corrected for in inkscape
+for k,_ in enumerate(ecc):
+    colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
+                           ['#faad75','#ff6b00','#cc5702'],
+                           ['lightgoldenrodyellow','yellow','gold']])#['#ffea80','#fff200','#dbbe00']])
+
+    columns2drop = np.array([['sub','8_ecc','12_ecc'],
+                           ['sub','4_ecc','12_ecc'],
+                           ['sub','4_ecc','8_ecc']])
+
+    df4plot_fix_set_ecc = test_df_fix.drop(columns=columns2drop[k])
+    df4plot_fix_set_ecc = pd.melt(df4plot_fix_set_ecc, 'set_size', var_name='Target eccentricity [dva]', value_name='RT [s]')
+
+    fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
+    v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_fix_set_ecc,
+                  cut=0, inner='box', palette=colors_ecc[k])
+
+    # for proper legend on plot
+    patch_5 = mpatches.Patch(color=colors_ecc[k][0], label='5 items')
+    patch_15 = mpatches.Patch(color=colors_ecc[k][1], label='15 items')
+    patch_30 = mpatches.Patch(color=colors_ecc[k][2], label='30 items')
+
+    plt.legend(handles=[patch_5, patch_15,patch_30])
+    plt.xticks([], [])
+
+    v1.set(xlabel=None)
+    v1.set(ylabel=None)
+
+    plt.xticks(fontsize = 12)
+    plt.yticks(fontsize = 12)
+
+    if k==0:
+        plt.ylabel('# Fixation',fontsize=16,labelpad=10)
+        plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
+    plt.title('%d dva'%ecc[k],fontsize=18,pad=10)
+
+    plt.ylim(0,10)
+    plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
+    
 
 # NUMBER OF FIXATIONS VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
@@ -450,6 +552,53 @@ ax.set(xlabel='set size', ylabel='# fixations')
 ax = plt.gca()
 ax.set_title('set size vs number fixations %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression.svg'), dpi=100,bbox_inches = 'tight')
+
+
+## IMPLEMENT ANOVA WITH STATSMODEL
+## FOR RT ##
+
+# first make new dataframe, with proper format
+df_new_RT = test_df_RT.drop(columns=['sub'])
+df_new_RT = pd.melt(df_new_RT,id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+
+# replace column names
+df_new_RT.columns = ['set', 'ecc', 'value']
+
+# generate a boxplot to see the data distribution by genotypes and years. Using boxplot, we can easily detect the 
+# differences between different groups
+#sns.boxplot(x="set", y="value", hue="ecc", data=df_new_RT, palette="Set3") 
+
+# Ordinary Least Squares (OLS) model
+# C(set):C(ecc) represent interaction term
+model = ols('value ~ C(set)*C(ecc)', data=df_new_RT).fit() # C = categorical; * - means it gives the results for each factor and the interaction
+anova_table = sm.stats.anova_lm(model, typ=2)
+#anova_table
+
+# save it
+anova_table.to_csv(os.path.join(plot_dir,'RT_ANOVA.csv'))
+
+
+## FOR NUMBER OF FIXATIONS ##
+
+# first make new dataframe, with proper format
+df_new_Fix = test_df_fix.drop(columns=['sub'])
+df_new_Fix = pd.melt(df_new_Fix,id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+
+# replace column names
+df_new_Fix.columns = ['set', 'ecc', 'value']
+
+# generate a boxplot to see the data distribution by genotypes and years. Using boxplot, we can easily detect the 
+# differences between different groups
+#sns.boxplot(x="set", y="value", hue="ecc", data=df_new_Fix, palette="Set3") 
+
+# Ordinary Least Squares (OLS) model
+# C(set):C(ecc) represent interaction term
+model = ols('value ~ C(set)*C(ecc)', data=df_new_Fix).fit() # C = categorical; * - means it gives the results for each factor and the interaction
+anova_table = sm.stats.anova_lm(model, typ=2)
+#anova_table
+
+# save it
+anova_table.to_csv(os.path.join(plot_dir,'Fix_ANOVA.csv'))
 
 
 
