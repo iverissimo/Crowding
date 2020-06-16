@@ -760,7 +760,8 @@ for _,s in enumerate(params['set_size']): # loop over set size
         
         corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,test_mean_cs,
                     '# Fixations','CS','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
-                     os.path.join(plot_dir,'CSvsFix_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value)
+                     os.path.join(plot_dir,'CSvsFix_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value,
+                     x_lim = [0,10])
         
         # save correlation values         
         corr_fix = corr_fix.append({str(e)+'_ecc': corr, 
@@ -866,7 +867,8 @@ for _,s in enumerate(params['set_size']+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(df_slope_RT_ecc[s].values,test_mean_cs,
                 'RT/ECC [s/dva]','CS','CS vs RT/ECC for %s items'%(str(s)),
-                 os.path.join(plot_dir,'CSvsRT_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsRT_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value,
+                 x_lim = [0,1],decimals=2)
 
     # save correlation values         
     corr_slope_RT_ecc = corr_slope_RT_ecc.append({s: corr},ignore_index=True)
@@ -884,7 +886,8 @@ for _,s in enumerate(params['set_size']+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(df_slope_Fix_ecc[s].values,test_mean_cs,
                 'Fix/ECC [fix/dva]','CS','CS vs Fix/ECC for %s items'%(str(s)),
-                 os.path.join(plot_dir,'CSvsFix_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsFix_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value,
+                 x_lim = [0,1],decimals=2)
 
     # save correlation values         
     corr_slope_Fix_ecc = corr_slope_Fix_ecc.append({s: corr},ignore_index=True)
@@ -947,7 +950,8 @@ for _,e in enumerate(ecc+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(df_slope_RT_set[e].values,test_mean_cs,
                 'RT/SET [s/item]','CS','CS vs RT/SET for %s ecc'%(str(e)),
-                 os.path.join(plot_dir,'CSvsRT_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsRT_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value,
+                 x_lim = [0,1],decimals=2)
 
     # save correlation values         
     corr_slope_RT_set = corr_slope_RT_set.append({e: corr},ignore_index=True)
@@ -965,7 +969,8 @@ for _,e in enumerate(ecc+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(df_slope_Fix_set[e].values,test_mean_cs,
                 'Fix/SET [fix/item]','CS','CS vs Fix/SET for %s ecc'%(str(e)),
-                 os.path.join(plot_dir,'CSvsFix_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value)
+                 os.path.join(plot_dir,'CSvsFix_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value,
+                 x_lim = [0,1],decimals=2)
 
     # save correlation values         
     corr_slope_Fix_set = corr_slope_Fix_set.append({e: corr},ignore_index=True)

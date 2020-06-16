@@ -453,7 +453,9 @@ def accuracy_search(data,ecc,exclusion_all_thresh=0.85,exclusion_ecc_thresh=0.75
            
     
 
-def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05):
+def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
+                     line_color='dimgrey',scatter_color = 'grey',
+                     x_lim = [.5,2.5], y_lim = [.2,.8],decimals=1):
     
     corr, pval = spearmanr(arr_x,arr_y)
 
@@ -461,15 +463,30 @@ def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05)
     if pval<p_value:
         print('SIGNIFICANT CORRELATION')
 
-    fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+    fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
     df4plot = pd.DataFrame({'xx': arr_x,
                             'yy': arr_y})
 
-    ax = sns.lmplot(x='xx', y='yy',data=df4plot)
-    ax.set(ylabel = label_y, xlabel = label_x)
-    ax = plt.gca()
-    ax.set_title(plt_title+' (rho=%.2f,pval=%.3f)'%(corr,pval))
+    ax = sns.lmplot(x='xx', y='yy',data=df4plot,
+                    line_kws={'color': line_color},scatter_kws={'color': scatter_color})
+    #ax.set(ylabel = label_y, xlabel = label_x)
+    #ax = plt.gca()
+    #ax.set_title(plt_title+' (rho=%.2f,pval=%.3f)'%(corr,pval))
+    
+    plt.ylabel(label_y,fontsize=16,labelpad=10)
+    plt.xlabel(label_x,fontsize=16,labelpad=10)
+    plt.title(r'$\rho$'+' = %.2f, p = %.3f'%(corr,pval),fontsize=18,pad=10)
+    
+    plt.ylim(y_lim)
+    plt.xlim(x_lim[0],None)
+    
+    plt.xticks(np.round(np.linspace(x_lim[0], np.round(max(arr_x),decimals=decimals), num=4),decimals=decimals),fontsize = 12)
+    plt.yticks(fontsize = 12)
+    
+    
+    sns.despine(offset=15)
+
     plt.savefig(outfile, dpi=100,bbox_inches = 'tight')
 
     return corr,pval
