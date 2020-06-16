@@ -23,6 +23,15 @@ from utils import *
 
 from scipy.stats import linregress
 
+# set font type for plots globally
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+import matplotlib.patches as mpatches
+
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
 
 # open params jason file
 with open(os.path.join(os.getcwd(),'settings.json'),'r') as json_file:  
@@ -184,6 +193,8 @@ for j in range(len(sum_measures['all_subs'])):
         
 # PLOTS
 
+# CHECK NUMBER OF CROWDED VS NON-CROWDED TRIALS
+
 fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
 
 plt.hist(test_iscrowded,bins=10,color='pink')
@@ -192,46 +203,100 @@ axis.set_xlabel('% of crowded trials',fontsize=14)
 axis.set_title('Histogram of percentage of crowded trials per participant')
 fig.savefig(os.path.join(plot_dir,'distribution_crowded_trials'), dpi=100)
 
+## LOW DENSITY
+d_melt_LOW = pd.melt(test_df_trialnum_LOW, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# replace column names
+d_melt_LOW.columns = ['Set', 'ECC', 'trials']
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-# RT VS ECC
+sns.boxplot(x="ECC", y="trials", hue="Set", data=d_melt_LOW) 
+plt.title('LOW density trials')
+fig.savefig(os.path.join(plot_dir,'distribution_crowded_trials_LOW'), dpi=100)
+
+## HIGH DENSITY
+d_melt_HIGH = pd.melt(test_df_trialnum_HIGH, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# replace column names
+d_melt_HIGH.columns = ['Set', 'ECC', 'trials']
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+sns.boxplot(x="ECC", y="trials", hue="Set", data=d_melt_HIGH) 
+plt.title('HIGH density trials')
+fig.savefig(os.path.join(plot_dir,'distribution_crowded_trials_HIGH'), dpi=100)
+
+## BAR PLOTS FOR NUMBER OF TRIALS
+# per ecc
+avg_high_trials_ecc = [d_melt_HIGH.loc[d_melt_HIGH['ECC'] == '%d_ecc'%x, 'trials'].sum()/len(test_subs) for x in ecc]
+avg_low_trials_ecc = [d_melt_LOW.loc[d_melt_LOW['ECC'] == '%d_ecc'%x, 'trials'].sum()/len(test_subs) for x in ecc]
+
+fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
+
+width = 0.35       # the width of the bars
+b1 = plt.bar(ecc, avg_high_trials_ecc,width,color='r')
+b2 = plt.bar(ecc+np.repeat(width,3), avg_low_trials_ecc,width,color='b')
+
+axis.set_xlabel('Eccentricity [dva]',fontsize=14)
+axis.legend( (b1, b2), ('HIGH', 'LOW') )
+
+axis.set_title('Average number of trials per eccentricity')
+fig.savefig(os.path.join(plot_dir,'density_bar_eccentricity'), dpi=100)
+
+# per set
+avg_high_trials_set = [d_melt_HIGH.loc[d_melt_HIGH['Set'] == x, 'trials'].sum()/len(test_subs) for x in [5,15,30]]
+avg_low_trials_set = [d_melt_LOW.loc[d_melt_LOW['Set'] == x, 'trials'].sum()/len(test_subs) for x in [5,15,30]]
+
+fig, axis = plt.subplots(1,1,figsize=(15,7.5),dpi=100)
+
+width = 0.70       # the width of the bars
+b1 = plt.bar([5,15,30], avg_high_trials_set,width,color='r')
+b2 = plt.bar([5,15,30]+np.repeat(width,3), avg_low_trials_set,width,color='b')
+
+axis.set_xlabel('Set size [items]',fontsize=14)
+axis.legend( (b1, b2), ('HIGH', 'LOW') )
+
+axis.set_title('Average number of trials per set size')
+fig.savefig(os.path.join(plot_dir,'density_bar_set'), dpi=100)
+
+
+# RT 
+# reshape DF to be more functional
+d_melt_RT_LOW = pd.melt(test_df_RT_LOW, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# replace column names
+d_melt_RT_LOW.columns = ['Set', 'ECC', 'RT']
+d_melt_RT_LOW['ECC'] = d_melt_RT_LOW['ECC'].replace({ '4_ecc' : 4, '8_ecc' : 8, '12_ecc' : 12 })
+d_melt_RT_LOW['Set'] = pd.to_numeric(d_melt_RT_LOW['Set'])
+
+# same for high
+d_melt_RT_HIGH = pd.melt(test_df_RT_HIGH, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# replace column names
+d_melt_RT_HIGH.columns = ['Set', 'ECC', 'RT']
+d_melt_RT_HIGH['ECC'] = d_melt_RT_HIGH['ECC'].replace({ '4_ecc' : 4, '8_ecc' : 8, '12_ecc' : 12 })
+d_melt_RT_HIGH['Set'] = pd.to_numeric(d_melt_RT_HIGH['Set'])
+
+# per ECCENTRICITY
 fig = plt.figure(figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
- 
-rt_ecc_vs4plot = pd.DataFrame([])
 
-for k in range(len(ecc)):
-    rt_ecc_vs4plot = rt_ecc_vs4plot.append(pd.DataFrame({'RT_LOW': np.array(test_rt_ecc_vs_LOW).T[k],
-                                                                 'RT_HIGH': np.array(test_rt_ecc_vs_HIGH).T[k],
-                                                                 'ecc':np.tile(ecc[k],len(test_subs))}))
-
-sns.regplot(x=rt_ecc_vs4plot['ecc'],y=rt_ecc_vs4plot['RT_LOW'],color='blue', marker='.',label='LOW')
-sns.regplot(x=rt_ecc_vs4plot['ecc'],y=rt_ecc_vs4plot['RT_HIGH'],color='red', marker='+',label='HIGH')
+sns.regplot(x=d_melt_RT_LOW['ECC'],y=d_melt_RT_LOW['RT'],color='blue', marker='.',label='LOW')
+sns.regplot(x=d_melt_RT_HIGH['ECC'],y=d_melt_RT_HIGH['RT'],color='red', marker='+',label='HIGH')
 
 ax = plt.gca()
 ax.set(xlabel='eccentricity [dva]', ylabel='RT [s]')
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
 ax.legend()
 plt.savefig(os.path.join(plot_dir,'density_search_ecc_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
- 
 
-# RT VS SET SIZE
-
+# per SET
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-rt_set_vs4plot = pd.DataFrame([])
-
-for k in range(len(params['set_size'])):
-    rt_set_vs4plot = rt_set_vs4plot.append(pd.DataFrame({'RT_LOW': np.array(test_rt_set_vs_LOW).T[k],
-                                                         'RT_HIGH': np.array(test_rt_set_vs_HIGH).T[k],
-                                                     'set':np.tile(params['set_size'][k],len(test_subs))}))
-
-sns.regplot(x=rt_set_vs4plot['set'],y=rt_set_vs4plot['RT_LOW'],color='blue', marker='.',label='LOW')
-sns.regplot(x=rt_set_vs4plot['set'],y=rt_set_vs4plot['RT_HIGH'],color='red', marker='+',label='HIGH')
+sns.regplot(x=d_melt_RT_LOW['Set'],y=d_melt_RT_LOW['RT'],color='blue', marker='.',label='LOW')
+sns.regplot(x=d_melt_RT_HIGH['Set'],y=d_melt_RT_HIGH['RT'],color='red', marker='+',label='HIGH')
     
 ax = plt.gca()
 ax.set(xlabel='set size', ylabel='RT [s]')
 ax.set_title('set size vs RT %d subs'%len(test_subs))
 ax.legend()
 plt.savefig(os.path.join(plot_dir,'density_search_setsize_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
+
  
 # EYETRACKING FOR VISUAL SEARCH
 
@@ -279,47 +344,7 @@ ax.legend()
 plt.savefig(os.path.join(plot_dir,'density_search_setsize_fix_regression.svg'), dpi=100,bbox_inches = 'tight')
 
 
-# PERCENTAGE OF ON OBJECT FIXATIONS VS ECC
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-onobj_ecc_vs4plot = pd.DataFrame([])
-
-for k in range(len(ecc)):
-    onobj_ecc_vs4plot = onobj_ecc_vs4plot.append(pd.DataFrame({'onobj_LOW': np.array(test_onobjfix_ecc_vs_LOW).T[k]*100,
-                                                               'onobj_HIGH': np.array(test_onobjfix_ecc_vs_HIGH).T[k]*100,
-                                                     'ecc':np.tile(ecc[k],len(test_subs))}))
-
-sns.regplot(x=onobj_ecc_vs4plot['ecc'],y=onobj_ecc_vs4plot['onobj_LOW'],color='blue', marker='.',label='LOW')
-sns.regplot(x=onobj_ecc_vs4plot['ecc'],y=onobj_ecc_vs4plot['onobj_HIGH'],color='red', marker='+',label='HIGH')    
-
-ax = plt.gca()
-ax.set_title('ecc vs on-object fixations %d subs'%len(test_subs))
-ax.set(xlabel='eccentricity [dva]', ylabel='On object fixation [%]')
-ax.axes.set_ylim(0,)
-ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_ecc_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
-
-
-# PERCENTAGE OF ON OBJECT FIXATIONS VS SET SIZE
-fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-
-onobj_set_vs4plot = pd.DataFrame([])
-
-for k in range(len(params['set_size'])):
-    onobj_set_vs4plot = onobj_set_vs4plot.append(pd.DataFrame({'onobj_LOW': np.array(test_onobjfix_set_vs_LOW).T[k]*100,
-                                                               'onobj_HIGH': np.array(test_onobjfix_set_vs_HIGH).T[k]*100,
-                                                     'set':np.tile(params['set_size'][k],len(test_subs))}))
-
-sns.regplot(x=onobj_set_vs4plot['set'],y=onobj_set_vs4plot['onobj_LOW'],color='blue', marker='.',label='LOW')
-sns.regplot(x=onobj_set_vs4plot['set'],y=onobj_set_vs4plot['onobj_HIGH'],color='red', marker='+',label='HIGH')    
-    
-ax = plt.gca()
-ax.set_title('set size vs on-object fixations %d subs'%len(test_subs))
-ax.set(xlabel='set size', ylabel='On object fixation [%]')
-ax.axes.set_ylim(0,)
-ax.legend()
-plt.savefig(os.path.join(plot_dir,'density_search_setsize_onobjectfix_regression.svg'), dpi=100,bbox_inches = 'tight')
- 
 
 # Correlations between tasks
 
