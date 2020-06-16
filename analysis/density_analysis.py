@@ -258,44 +258,45 @@ axis.set_title('Average number of trials per set size')
 fig.savefig(os.path.join(plot_dir,'density_bar_set'), dpi=100)
 
 
-# RT 
-# reshape DF to be more functional
-d_melt_RT_LOW = pd.melt(test_df_RT_LOW, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
-# replace column names
-d_melt_RT_LOW.columns = ['Set', 'ECC', 'RT']
-d_melt_RT_LOW['ECC'] = d_melt_RT_LOW['ECC'].replace({ '4_ecc' : 4, '8_ecc' : 8, '12_ecc' : 12 })
-d_melt_RT_LOW['Set'] = pd.to_numeric(d_melt_RT_LOW['Set'])
-
-# same for high
-d_melt_RT_HIGH = pd.melt(test_df_RT_HIGH, id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
-# replace column names
-d_melt_RT_HIGH.columns = ['Set', 'ECC', 'RT']
-d_melt_RT_HIGH['ECC'] = d_melt_RT_HIGH['ECC'].replace({ '4_ecc' : 4, '8_ecc' : 8, '12_ecc' : 12 })
-d_melt_RT_HIGH['Set'] = pd.to_numeric(d_melt_RT_HIGH['Set'])
-
-# per ECCENTRICITY
+# RT VS ECC
 fig = plt.figure(figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+ 
+rt_ecc_vs4plot = pd.DataFrame([])
 
-sns.regplot(x=d_melt_RT_LOW['ECC'],y=d_melt_RT_LOW['RT'],color='blue', marker='.',label='LOW')
-sns.regplot(x=d_melt_RT_HIGH['ECC'],y=d_melt_RT_HIGH['RT'],color='red', marker='+',label='HIGH')
+for k in range(len(ecc)):
+    rt_ecc_vs4plot = rt_ecc_vs4plot.append(pd.DataFrame({'RT_LOW': np.array(test_rt_ecc_vs_LOW).T[k],
+                                                                 'RT_HIGH': np.array(test_rt_ecc_vs_HIGH).T[k],
+                                                                 'ecc':np.tile(ecc[k],len(test_subs))}))
+
+sns.regplot(x=rt_ecc_vs4plot['ecc'],y=rt_ecc_vs4plot['RT_LOW'],color='blue', marker='.',label='LOW')
+sns.regplot(x=rt_ecc_vs4plot['ecc'],y=rt_ecc_vs4plot['RT_HIGH'],color='red', marker='+',label='HIGH')
 
 ax = plt.gca()
 ax.set(xlabel='eccentricity [dva]', ylabel='RT [s]')
 ax.set_title('ecc vs RT %d subs'%len(test_subs))
 ax.legend()
 plt.savefig(os.path.join(plot_dir,'density_search_ecc_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
+ 
 
-# per SET
+# RT VS SET SIZE
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
-sns.regplot(x=d_melt_RT_LOW['Set'],y=d_melt_RT_LOW['RT'],color='blue', marker='.',label='LOW')
-sns.regplot(x=d_melt_RT_HIGH['Set'],y=d_melt_RT_HIGH['RT'],color='red', marker='+',label='HIGH')
+rt_set_vs4plot = pd.DataFrame([])
+
+for k in range(len(params['set_size'])):
+    rt_set_vs4plot = rt_set_vs4plot.append(pd.DataFrame({'RT_LOW': np.array(test_rt_set_vs_LOW).T[k],
+                                                         'RT_HIGH': np.array(test_rt_set_vs_HIGH).T[k],
+                                                     'set':np.tile(params['set_size'][k],len(test_subs))}))
+
+sns.regplot(x=rt_set_vs4plot['set'],y=rt_set_vs4plot['RT_LOW'],color='blue', marker='.',label='LOW')
+sns.regplot(x=rt_set_vs4plot['set'],y=rt_set_vs4plot['RT_HIGH'],color='red', marker='+',label='HIGH')
     
 ax = plt.gca()
 ax.set(xlabel='set size', ylabel='RT [s]')
 ax.set_title('set size vs RT %d subs'%len(test_subs))
 ax.legend()
 plt.savefig(os.path.join(plot_dir,'density_search_setsize_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
+ 
 
  
 # EYETRACKING FOR VISUAL SEARCH
