@@ -980,6 +980,62 @@ for _,e in enumerate(ecc+['all']): # loop over eccentricity
 
 
 
+## add analysis were I do the correlations per condition
+# 3 x 3 grid
+# using different CS values (per eccentricity)
+# for appendix figures
+
+## FOR RT
+    
+corr_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+pval_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    df_trim = test_df_RT.loc[test_df_RT['set_size'] == s]
+    df_trim = df_trim.drop(columns=['set_size'])
+    
+    for e_ind,e in enumerate(ecc): # loop over eccentricity (using the specific CS for that eccentricity)
+        
+        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,np.array(test_all_cs).T[e_ind],
+                    'RT [s]','CS','CS vs RT for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(plot_dir,'CSvsRT_%s-ecc_%s-set_CS-%sdva.svg'%(str(e),str(s),str(e))),
+                                     p_value=p_value,y_lim = [.19,.81])
+        
+        # save correlation values         
+        corr_RT = corr_RT.append({str(e)+'_ecc': corr, 
+                                'set_size': s},ignore_index=True)
+        
+        # save p-values of said correlations          
+        pval_RT = pval_RT.append({str(e)+'_ecc': pval, 
+                                'set_size': s},ignore_index=True)
+
+
+## FOR FIXATIONS
+    
+corr_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+pval_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    df_trim = test_df_fix.loc[test_df_fix['set_size'] == s]
+    df_trim = df_trim.drop(columns=['set_size'])
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,np.array(test_all_cs).T[e_ind],
+                    '# Fixations','CS','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(plot_dir,'CSvsFix_%s-ecc_%s-set_CS-%sdva.svg'%(str(e),str(s),str(e))),
+                                     p_value=p_value,x_lim = [0,10],y_lim = [.19,.81])
+        
+        # save correlation values         
+        corr_fix = corr_fix.append({str(e)+'_ecc': corr, 
+                                'set_size': s},ignore_index=True)
+        
+        # save p-values of said correlations          
+        pval_fix = pval_fix.append({str(e)+'_ecc': pval, 
+                                'set_size': s},ignore_index=True)
+
 
 
 ##### 
