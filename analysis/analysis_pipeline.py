@@ -1021,7 +1021,7 @@ for _,s in enumerate(params['set_size']): # loop over set size
     df_trim = test_df_fix.loc[test_df_fix['set_size'] == s]
     df_trim = df_trim.drop(columns=['set_size'])
     
-    for _,e in enumerate(ecc): # loop over eccentricity
+    for e_ind,e in enumerate(ecc): # loop over eccentricity
         
         corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,np.array(test_all_cs).T[e_ind],
                     '# Fixations','CS','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
