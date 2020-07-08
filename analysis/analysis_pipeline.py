@@ -394,7 +394,7 @@ plt.savefig(os.path.join(plot_dir,'search_ecc_RT_boxplots.svg'), dpi=100,bbox_in
 for k,_ in enumerate(ecc):
     colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
                            ['#faad75','#ff6b00','#cc5702'],
-                           ['lightgoldenrodyellow','yellow','gold']])#['#ffea80','#fff200','#dbbe00']])
+                           ['#fff5a3','#eecb5f','#f4b900']])#['#ffea80','#fff200','#dbbe00']])
 
     columns2drop = np.array([['sub','8_ecc','12_ecc'],
                            ['sub','4_ecc','12_ecc'],
@@ -407,24 +407,20 @@ for k,_ in enumerate(ecc):
     v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_RT_set_ecc,
                   cut=0, inner='box', palette=colors_ecc[k])
 
-    # for proper legend on plot
-    patch_5 = mpatches.Patch(color=colors_ecc[k][0], label='5 items')
-    patch_15 = mpatches.Patch(color=colors_ecc[k][1], label='15 items')
-    patch_30 = mpatches.Patch(color=colors_ecc[k][2], label='30 items')
-
-    plt.legend(handles=[patch_5, patch_15,patch_30])
+    plt.legend().remove()
     plt.xticks([], [])
+    #plt.xticks([0,1,2], ('5', '15', '30'))
 
     v1.set(xlabel=None)
     v1.set(ylabel=None)
 
-    plt.xticks(fontsize = 12)
-    plt.yticks(fontsize = 12)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
 
     if k==0:
-        plt.ylabel('RT [s]',fontsize=16,labelpad=10)
-        plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
-    plt.title('%d dva'%ecc[k],fontsize=18,pad=10)
+        plt.ylabel('RT [s]',fontsize=18,labelpad=10)
+        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
+    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
 
     plt.ylim(0.25,3)
     plt.savefig(os.path.join(plot_dir,'search_ecc_RT_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
@@ -498,40 +494,37 @@ plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_boxplots.svg'), dpi=100,bbo
 for k,_ in enumerate(ecc):
     colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
                            ['#faad75','#ff6b00','#cc5702'],
-                           ['lightgoldenrodyellow','yellow','gold']])#['#ffea80','#fff200','#dbbe00']])
+                           ['#fff5a3','#eecb5f','#f4b900']])#['#ffea80','#fff200','#dbbe00']])
 
     columns2drop = np.array([['sub','8_ecc','12_ecc'],
                            ['sub','4_ecc','12_ecc'],
                            ['sub','4_ecc','8_ecc']])
 
     df4plot_fix_set_ecc = test_df_fix.drop(columns=columns2drop[k])
-    df4plot_fix_set_ecc = pd.melt(df4plot_fix_set_ecc, 'set_size', var_name='Target eccentricity [dva]', value_name='RT [s]')
+    df4plot_fix_set_ecc = pd.melt(df4plot_fix_set_ecc, 'set_size', var_name='Target eccentricity [dva]', value_name='# Fixations')
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
-    v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_fix_set_ecc,
+    v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='# Fixations', data=df4plot_fix_set_ecc,
                   cut=0, inner='box', palette=colors_ecc[k])
 
-    # for proper legend on plot
-    patch_5 = mpatches.Patch(color=colors_ecc[k][0], label='5 items')
-    patch_15 = mpatches.Patch(color=colors_ecc[k][1], label='15 items')
-    patch_30 = mpatches.Patch(color=colors_ecc[k][2], label='30 items')
-
-    plt.legend(handles=[patch_5, patch_15,patch_30])
+    plt.legend().remove()
     plt.xticks([], [])
+    #plt.xticks([0,1,2], ('5', '15', '30'))
 
     v1.set(xlabel=None)
     v1.set(ylabel=None)
 
-    plt.xticks(fontsize = 12)
-    plt.yticks(fontsize = 12)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
 
     if k==0:
-        plt.ylabel('# Fixation',fontsize=16,labelpad=10)
-        plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
-    plt.title('%d dva'%ecc[k],fontsize=18,pad=10)
+        plt.ylabel('# Fixations',fontsize=18,labelpad=10)
+        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
+    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
 
     plt.ylim(0,10)
     plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
+    
     
 
 # NUMBER OF FIXATIONS VS SET SIZE
