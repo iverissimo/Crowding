@@ -1334,3 +1334,86 @@ def df_all_trial_RT_fix(data,eyedata,sub,ecc=[4, 8, 12],
     return df_out
 
 
+
+def mean_ACC_set_ecc_combo(data,sub,ecc=[4, 8, 12],setsize=[5,15,30]):
+    # function to check accuracy as function of ecc for visual search
+    #
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # sub - sub number
+    # ecc - list with eccs used in task
+    #
+    # OUTPUTS #
+    # ACC_all - mean ACC for all ecc
+        
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
+    
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    
+    # list RT
+    RT = data['RT'].values
+    
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
+    # dataframe to count the number of trials for each condition, sanity check
+    df_trial_num = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub']) 
+    
+    
+    for _,s in enumerate(setsize): # for all set sizes 
+        for _,e in enumerate(ecc): # for all target ecc
+
+            CORRECT_ecc_set = 0
+            num_trial_ecc_set = 0
+
+            for t in range(len(data)): # for all actual trials 
+                
+                # if specific ecc and specific set size
+                if (int(target_ecc[t])==e) and (int(target_set[t])==s):
+                    
+                    num_trial_ecc_set+=1 # increment trial counter
+                    
+                    # if key press = target orientation 
+                    if (key_or[t]==target_or[t]):
+
+                        if RT[t]> .250 and RT[t]<5 : # reasonable search times
+                            
+                            CORRECT_ecc_set+=1 # count correct trials
+
+            
+            Accuracy = CORRECT_ecc_set/num_trial_ecc_set
+
+            # compute that mean RT and save in data frame           
+            df_out = df_out.append({str(e)+'_ecc': Accuracy, 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
+            
+            # save number of trials
+            df_trial_num = df_trial_num.append({str(e)+'_ecc': num_trial_ecc_set, 
+                                    'set_size': s, 
+                                'sub': sub},ignore_index=True)
+            
+    # now reshape the dataframe (droping nans and making sure labels are ok)    
+    df_out = df_out.apply(lambda x: pd.Series(x.dropna().values))
+    df_out = df_out.dropna()
+    
+    for i in df_out.index:
+        df_out.at[i, 'set_size'] = setsize[i]
+        
+    df_out = df_out.replace(np.inf,np.nan)  # replace any infinites with nan, makes averaging later easier 
+
+    # same for trial number counter   
+    df_trial_num = df_trial_num.apply(lambda x: pd.Series(x.dropna().values))
+    df_trial_num = df_trial_num.dropna()
+    
+    for i in df_trial_num.index:
+        df_trial_num.at[i, 'set_size'] = setsize[i]
+    
+    return df_out, df_trial_num
+
+
