@@ -400,57 +400,67 @@ def critical_spacing(data,ecc,num_trl=96):
 
 
 
-def accuracy_search(data,ecc,exclusion_all_thresh=0.85,exclusion_ecc_thresh=0.75):
+def accuracy_search(data,setsize=[5,15,30],exclusion_all_thresh=0.85,exclusion_set_thresh=0.75):
     # function to check accuracy for visual search
     #
     # INPUTS #
     # data - df from behavioural csv, to get values for all trials
-    # ecc - list with eccs used in task
-    # exclusion_thresh - accuracy value on which to exclude subject
+    # set_size - list with set sizes used in task
+    # exclusion_all_thresh - accuracy value on which to exclude subject (overall)
+    # exclusion_set_thresh - accuracy value on which to exclude subject (given set)
     #
     # OUTPUTS #
-    # acc_ecc - accuracy for all ecc
+    # acc_set - accuracy for each set size
     # overall_acc - overall accuracy
     # exclude - bool saying if we should exclude sub or not
     
     exclude = False
     
-    # list of values with target ecc
-    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
+    
     # list of strings with the orientation of the target
     target_or = data['target_orientation'].values
     # list of strings with orientation indicated by key press
     key_or = data['key_pressed'].values
     
-    # initialize counters
-    ans_corr = np.zeros((len(ecc))) # counter for correct answers, with flanker trials
-    ans_ecc = np.zeros((len(ecc))) # ecc counter for with flanker trials
-        
-    for i in range(len(data)): # for all actual trials 
-        
-        # ecc index for this trial
-        ecc_idx = np.where(np.array(ecc)==int(target_ecc[i]))[0][0]
-        
-        ans_ecc[ecc_idx] += 1 #increment overall counter for right ecc
-                    
-        if key_or[i]==target_or[i]: # if key press = target orientation
-            ans_corr[ecc_idx] += 1 #increment correct answer counter for right ecc
-
-    acc_ecc = ans_corr/ans_ecc # accuracy, per ecc
-    overall_acc = ans_corr.sum()/ans_ecc.sum() # overall accuracy
-    print('Accuracy is %s %% for ecc %s'%(str(acc_ecc*100),str(ecc)))
+    # list RT
+    RT = data['RT'].values
     
-    if overall_acc<exclusion_all_thresh or min(acc_ecc)<exclusion_ecc_thresh:
+    corrct_trl = np.zeros((len(setsize))) # counter for correct answers
+    all_trials = np.zeros((len(setsize))) # counter for all trials
+    
+    for _,s in enumerate(setsize): # for all set sizes 
+
+        for t in range(len(data)): # for all actual trials
+            
+            set_idx = np.where(np.array(setsize)==s)[0][0]
+
+            # if specific set size
+            if (int(target_set[t])==s):
+
+                all_trials[set_idx]+=1 # increment trial counter
+
+                # if key press = target orientation 
+                if (key_or[t]==target_or[t]):
+                    if RT[t]> .250 and RT[t]<5 : # reasonable search times
+
+                        corrct_trl[set_idx]+=1 # count correct trials
+
+    acc_set = corrct_trl/all_trials # accuracy, per set
+    overall_acc = corrct_trl.sum()/all_trials.sum() # overall accuracy
+    print('Accuracy is %s %% for set sizes %s'%(str(acc_set*100),str(setsize)))
+    
+    if overall_acc<exclusion_all_thresh or min(acc_set)<exclusion_set_thresh:
         print('Accuracy for visual search is %s %% for subject \n'\
-              'EXCLUDE SUBJECT'%(str(acc_ecc*100)))
+              'EXCLUDE SUBJECT'%(str(acc_set*100)))
         exclude = True
     else:
-        print('Accuracy for visual search is %s %% for subject'%(str(acc_ecc*100)))
+        print('Accuracy for visual search is %s %% for subject'%(str(acc_set*100)))
 
-    return {'acc_ecc': acc_ecc,
+    return {'acc_set': acc_set,
             'overall_acc': overall_acc,'exclude':exclude} 
         
-           
     
 
 def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
@@ -860,8 +870,8 @@ def check_fix(eyedata,exclusion_thresh=.10,rad=1,stim_time=0.05,
 
 
 
-def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_cut_off_crwd=0.6,ecc=[4,8,12],
-                                        num_cs_trials=96,cut_off_acc_vs=0.85,cut_off_acc_ecc_vs=0.75):
+def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0.25,acc_cut_off_crwd=0.6,ecc=[4,8,12],setsize=[5,15,30],
+                                        num_cs_trials=96,cut_off_acc_vs=0.85,cut_off_acc_set_vs=0.75):
     # function to load all behavior and eyetracking data and 
     # check if subject should be excluded
     # giving back summary file and structure with relevant measure for
@@ -887,7 +897,7 @@ def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0
 
     percent_fix_crwd = [] # percentage of trials were they were fixating in center
 
-    acc_vs_ecc = [] # accuraccy visual search per ecc
+    acc_vs_set = [] # accuraccy visual search per set size
     acc_vs_all = [] # accuracy visual search all
 
     rt_vs = [] # RT visual search 
@@ -946,9 +956,9 @@ def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0
         df_vs = pd.read_csv(vs_csv[ind], sep='\t')
 
         # check accuracy
-        vs_acc = accuracy_search(df_vs,ecc,exclusion_all_thresh=cut_off_acc_vs,exclusion_ecc_thresh=cut_off_acc_ecc_vs)
+        vs_acc = accuracy_search(df_vs,setsize=setsize,exclusion_all_thresh=cut_off_acc_vs,exclusion_set_thresh=cut_off_acc_set_vs)
 
-        acc_vs_ecc.append(vs_acc['acc_ecc'])
+        acc_vs_set.append(vs_acc['acc_set'])
         acc_vs_all.append(vs_acc['overall_acc'])
 
         EXCLUDE.append(vs_acc['exclude'])
@@ -971,7 +981,7 @@ def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0
                                     'accuracy_noflankers_pct':acc_nofl[ind]*100,
                                     'crit_spacing_all':all_cs[ind],
                                     'crit_spacing_mean':mean_cs[ind],
-                                    'accuracy_vs_all_pct':acc_vs_ecc[ind]*100,
+                                    'accuracy_vs_all_pct':acc_vs_set[ind]*100,
                                     'accuracy_vs_mean_pct':acc_vs_all[ind]*100,
                                     'exclude':ex_sub
                                   })
@@ -992,7 +1002,7 @@ def exclude_subs(crwd_csv,crwd_edf,vs_csv,out_dir,trials_block=144,miss_trials=0
              acc_fl = acc_fl,
              acc_nofl = acc_nofl,
              all_cs = all_cs,
-             acc_vs_ecc = acc_vs_ecc
+             acc_vs_set = acc_vs_set
              )
     
     return out_file

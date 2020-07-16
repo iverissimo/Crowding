@@ -14,7 +14,7 @@
     "cut_off_acc_crwd": 0.6,
     "cut_off_miss_trials_crwd": 0.25,
     "cut_off_acc_vs" : 0.85,
-    "cut_off_acc_ecc_vs" : 0.75,
+    "cut_off_acc_set_vs" : 0.75,
 
 
     "p_val_crwd": 0.010,

@@ -67,7 +67,7 @@ p_value = params['p_val_crwd'] # p-value thresh
 
 miss_exclusion_thresh = params['cut_off_miss_trials_crwd'] # percentage of missed trials for crowding
 vs_exclusion_acc_thresh= params['cut_off_acc_vs'] # percentage of accurate trials for search
-vs_exclusion_acc_ecc_thresh=params['cut_off_acc_ecc_vs'] # percentage of accurate trials for search (per ecc)
+vs_exclusion_acc_set_thresh=params['cut_off_acc_set_vs'] # percentage of accurate trials for search (per ecc)
 
 
 # list of csv and edf filenames in folder
@@ -89,7 +89,7 @@ if not os.path.isfile(sum_file):
                                  ecc = ecc,
                                  num_cs_trials = last_trials,
                                  cut_off_acc_vs = vs_exclusion_acc_thresh,
-                                 cut_off_acc_ecc_vs = vs_exclusion_acc_ecc_thresh)
+                                 cut_off_acc_set_vs = vs_exclusion_acc_set_thresh)
 
 sum_measures = np.load(sum_file) # all relevant measures
   
@@ -144,7 +144,7 @@ test_acc_fl = []
 test_acc_nofl = []
 test_all_cs = []
 test_mean_cs = []
-test_acc_vs_ecc = []
+test_acc_vs_set = []
 test_rt_ecc_vs = []
 test_rt_set_vs = []
 test_fix_ecc_vs = []
@@ -181,7 +181,7 @@ for j in range(len(sum_measures['all_subs'])):
         test_mean_cs.append(sum_measures['mean_cs'][j])
 
         # accuracy search
-        test_acc_vs_ecc.append(sum_measures['acc_vs_ecc'][j])
+        test_acc_vs_set.append(list(sum_measures['acc_vs_set'][j]))
 
         ## reaction time search 
         df_RT, _ = mean_RT_set_ecc_combo(df_vs,sum_measures['all_subs'][j])
@@ -346,9 +346,9 @@ print('Now look at visual search data')
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
 plt.subplot(1,2,1)
-plt.hist(np.array(test_acc_vs_ecc))
+plt.hist(np.array(test_acc_vs_set))
 plt.title('Accuracy visual search')
-plt.legend(['4°','8°','12°'])
+plt.legend(['5 items','15 items','30 items'])
 plt.xlim(0.85,1)
 
 plt.subplot(1,2,2)
@@ -446,15 +446,6 @@ ax = plt.gca()
 ax.set_title('set size vs RT %d subs'%len(test_subs))
 plt.savefig(os.path.join(plot_dir,'search_setsize_RT_regression.svg'), dpi=100,bbox_inches = 'tight')
  
-
-# INVERSE EFFICIENCY SCORE
-inv_eff = np.array(test_rt_ecc_vs)/np.array(test_acc_vs_ecc)
-inv_eff_mean = np.mean(inv_eff,axis=0)
-print('mean inverse efficiency score, per ecc is %s'%str(inv_eff_mean))
-
-#inv_eff_set = np.array(test_rt_set_vs)/np.array(test_acc_vs_set)
-#inv_eff_set_mean = np.mean(inv_eff_set,axis=0)
-#print('mean inverse efficiency score, per set size is %s'%str(inv_eff_set_mean))
 
 # EYETRACKING FOR VISUAL SEARCH
 
