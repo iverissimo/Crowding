@@ -34,8 +34,7 @@ plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 import matplotlib.patches as mpatches
 
-import statsmodels.api as sm
-from statsmodels.formula.api import ols
+from statsmodels.stats.anova import AnovaRM
 
 # open params jason file
 with open(os.path.join(os.getcwd(),'settings.json'),'r') as json_file:  
