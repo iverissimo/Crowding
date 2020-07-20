@@ -465,7 +465,7 @@ def accuracy_search(data,setsize=[5,15,30],exclusion_all_thresh=0.85,exclusion_s
 
 def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
                      line_color='dimgrey',scatter_color = 'grey',
-                     x_lim = [.5,2.5], y_lim = [.2,.8],decimals=1):
+                     y_lim = [.5,2.5], x_lim = [.2,.8],decimals=1):
     
     corr, pval = spearmanr(arr_x,arr_y)
 
@@ -488,8 +488,8 @@ def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
     plt.xlabel(label_x,fontsize=16,labelpad=10)
     plt.title(r'$\rho$'+' = %.2f, p = %.3f'%(corr,pval),fontsize=18,pad=10)
     
-    plt.ylim(y_lim)
-    plt.xlim(x_lim[0],None)
+    plt.ylim(y_lim) #y_lim[0],None)
+    plt.xlim(x_lim)
     
     plt.xticks(np.round(np.linspace(x_lim[0], np.round(max(arr_x),decimals=decimals), num=4),decimals=decimals),fontsize = 12)
     plt.yticks(fontsize = 12)
