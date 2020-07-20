@@ -541,48 +541,66 @@ plt.savefig(os.path.join(plot_dir,'search_setsize_fix_regression.svg'), dpi=100,
 ## IMPLEMENT ANOVA WITH STATSMODEL
 ## FOR RT ##
 
-# first make new dataframe, with proper format
-df_new_RT = test_df_RT.drop(columns=['sub'])
-df_new_RT = pd.melt(df_new_RT,id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# reshape data frame
+new_DF = pd.DataFrame(columns=['sub','set_size','ecc','RT'])
 
-# replace column names
-df_new_RT.columns = ['set', 'ecc', 'value']
+for _,sj in enumerate(test_subs): # loop over subject
+    df_trim = test_df_RT.loc[test_df_RT['sub'] == sj]
+    
+    for _,s in enumerate(params['set_size']): # loop over set size
+        
+        new_df_trim = df_trim.loc[df_trim['set_size'] == s]
 
-# generate a boxplot to see the data distribution by genotypes and years. Using boxplot, we can easily detect the 
-# differences between different groups
-#sns.boxplot(x="set", y="value", hue="ecc", data=df_new_RT, palette="Set3") 
+        for e_ind,e in enumerate(ecc): # loop over eccentricity
+            
+             new_DF = new_DF.append({
+                                'sub': sj,
+                                'set_size': s,
+                                'ecc': e,
+                                'RT': new_df_trim[str(e)+'_ecc'].values[0] 
+                                 },ignore_index=True)
+                
+aovrm2way = AnovaRM(new_DF, depvar='RT', subject='sub', within=['set_size', 'ecc'])
+res2way = aovrm2way.fit()
 
-# Ordinary Least Squares (OLS) model
-# C(set):C(ecc) represent interaction term
-model = ols('value ~ C(set)*C(ecc)', data=df_new_RT).fit() # C = categorical; * - means it gives the results for each factor and the interaction
-anova_table = sm.stats.anova_lm(model, typ=2)
-#anova_table
+print(res2way)
 
 # save it
-anova_table.to_csv(os.path.join(plot_dir,'RT_ANOVA.csv'))
+res2way.anova_table.to_csv(os.path.join(plot_dir,'RT_ANOVA.csv'))
+
+#sns.boxplot(x="set_size", y="RT", hue="ecc", data=new_DF, palette="Set3") 
 
 
 ## FOR NUMBER OF FIXATIONS ##
 
-# first make new dataframe, with proper format
-df_new_Fix = test_df_fix.drop(columns=['sub'])
-df_new_Fix = pd.melt(df_new_Fix,id_vars=['set_size'], value_vars=['4_ecc', '8_ecc', '12_ecc'])
+# reshape data frame
+new_DF = pd.DataFrame(columns=['sub','set_size','ecc','Fixations'])
 
-# replace column names
-df_new_Fix.columns = ['set', 'ecc', 'value']
+for _,sj in enumerate(test_subs): # loop over subject
+    df_trim = test_df_fix.loc[test_df_RT['sub'] == sj]
+    
+    for _,s in enumerate(params['set_size']): # loop over set size
+        
+        new_df_trim = df_trim.loc[df_trim['set_size'] == s]
 
-# generate a boxplot to see the data distribution by genotypes and years. Using boxplot, we can easily detect the 
-# differences between different groups
-#sns.boxplot(x="set", y="value", hue="ecc", data=df_new_Fix, palette="Set3") 
+        for e_ind,e in enumerate(ecc): # loop over eccentricity
+            
+             new_DF = new_DF.append({
+                                'sub': sj,
+                                'set_size': s,
+                                'ecc': e,
+                                'Fixations': new_df_trim[str(e)+'_ecc'].values[0] 
+                                 },ignore_index=True)
+                
+aovrm2way = AnovaRM(new_DF, depvar='Fixations', subject='sub', within=['set_size', 'ecc'])
+res2way = aovrm2way.fit()
 
-# Ordinary Least Squares (OLS) model
-# C(set):C(ecc) represent interaction term
-model = ols('value ~ C(set)*C(ecc)', data=df_new_Fix).fit() # C = categorical; * - means it gives the results for each factor and the interaction
-anova_table = sm.stats.anova_lm(model, typ=2)
-#anova_table
+print(res2way)
 
 # save it
-anova_table.to_csv(os.path.join(plot_dir,'Fix_ANOVA.csv'))
+res2way.anova_table.to_csv(os.path.join(plot_dir,'Fix_ANOVA.csv'))
+
+#sns.boxplot(x="set_size", y="Fixations", hue="ecc", data=new_DF, palette="Set3") 
 
 
 
