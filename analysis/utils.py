@@ -1427,3 +1427,52 @@ def mean_ACC_set_ecc_combo(data,sub,ecc=[4, 8, 12],setsize=[5,15,30]):
     return df_out, df_trial_num
 
 
+def RT_crowding(data,sub,flanker=False,ecc=[4,8,12]):
+    # function to get RT for crowding for a subject
+    # saves df with average values divided by ecc
+    
+    # INPUTS #
+    # data - df from behavioural csv, to get values for all trials
+    # sub - sub id
+    # ecc - list with eccs used in task
+    # flanker - True/False if we want trials with/out flankers
+
+    # OUTPUTS #
+    # df_out - dataframe
+    
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=['sub','ecc','RT'])
+    
+    if flanker==False:
+        data = data.loc[(data['flanker_presence']=='no flankers')]
+    elif flanker==False:
+        data = data.loc[(data['flanker_presence']=='flankers')]
+    
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+    # list RT
+    RT = data['RT'].values
+
+    
+    for _,e in enumerate(ecc): # for all target ecc
+        
+        RT_avg = []
+        
+        for t in range(len(data)): # for all actual trials 
+
+            if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e): # if correct answer, and eccentricity
+
+                RT_avg.append(RT[t])
+
+        
+        # compute mean number of fixations and save in data frame           
+        df_out = df_out.append({'RT': np.nanmean(RT_avg),
+                                'ecc': e, 
+                                'sub': sub},ignore_index=True)
+
+    return df_out
+

@@ -153,6 +153,9 @@ test_fix_set_vs = []
 test_df_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
 test_df_fix = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size','sub'])
 
+test_df_crowding_RT_NOfl = pd.DataFrame(columns=['sub','ecc','RT'])
+test_df_crowding_RT_FL = pd.DataFrame(columns=['sub','ecc','RT'])
+
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -161,10 +164,15 @@ for j in range(len(sum_measures['all_subs'])):
         if counter<len(exclusion_ind)-1:
             counter+=1   
     else:
-        # load behav data
+        # load crowding data
+        df_crwd = pd.read_csv(crwd_csv[j], sep='\t')
+        # choose only actual pratice block (first block (first 144) where used to save training, doesn't count)
+        df_crwd = df_crwd.loc[int(trials_block)::]
+
+        # load behav data search
         df_vs = pd.read_csv(vs_csv[j], sep='\t')
 
-        # load eye data
+        # load eye data search
         asccii_name = convert2asc(sum_measures['all_subs'][j],'search',output_vs)
         print('loading edf for sub-%s data'%sum_measures['all_subs'][j])
         eye_data = read_edf(asccii_name, 'start_trial', stop='stop_trial', debug=False)
@@ -200,6 +208,15 @@ for j in range(len(sum_measures['all_subs'])):
         # save values per set size
         test_fix_set_vs.append(df_fix[[str(x)+'_ecc' for _,x in enumerate(ecc)]].mean(axis=1).values)
 
+        # save RT crowding
+        test_df_crowding_RT_NOfl = test_df_crowding_RT_NOfl.append(RT_crowding(df_crwd,
+                                                                               sum_measures['all_subs'][j],
+                                                                               flanker=False,ecc=ecc),
+                                                                   ignore_index=True)
+        test_df_crowding_RT_FL = test_df_crowding_RT_FL.append(RT_crowding(df_crwd,
+                                                                           sum_measures['all_subs'][j],
+                                                                           flanker=True,ecc=ecc),
+                                                                   ignore_index=True)
 
 
 # PLOTS
@@ -338,6 +355,59 @@ else:
 
 
 print('Now look at visual search data')
+
+
+# PLOT RT FOR NO FLANKER CONDITION
+# to see if differences between ecc
+
+df4plot_RT_NOfl = test_df_crowding_RT_NOfl.drop(columns=['sub'])
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+sns.boxplot(x='ecc',y='RT', data=df4plot_RT_NOfl)
+sns.swarmplot(x="ecc", y="RT", data=df4plot_RT_NOfl, color=".3")
+plt.ylabel('RT [s]')
+plt.xlabel('ECC [dva]')
+plt.title('RT crowding (without flankers)')
+fig.savefig(os.path.join(plot_dir,'crowding_RT_NOflanker.svg'), dpi=100)
+
+# do Friedman to see if averages are different 
+# The Friedman test tests the null hypothesis that repeated measurements of the same individuals have the same distribution. 
+#It is often used to test for consistency among measurements obtained in different ways.
+
+pfriedman = friedmanchisquare(df4plot_RT_NOfl.loc[(df4plot_RT_NOfl['ecc']==4)]['RT'].values, 
+                              df4plot_RT_NOfl.loc[(df4plot_RT_NOfl['ecc']==8)]['RT'].values, 
+                              df4plot_RT_NOfl.loc[(df4plot_RT_NOfl['ecc']==12)]['RT'].values)[-1]
+if pfriedman<p_value:
+    print('RT without flankers between ecc is different, friedman with p-value = %.6f'%pfriedman)
+else:
+    print('RT without flankers between ecc is the same, p-value = %.6f'%pfriedman)
+
+
+df4plot_RT_FL = test_df_crowding_RT_FL.drop(columns=['sub'])
+
+fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
+
+sns.boxplot(x='ecc',y='RT', data=df4plot_RT_FL)
+sns.swarmplot(x="ecc", y="RT", data=df4plot_RT_FL, color=".3")
+plt.ylabel('RT [s]')
+plt.xlabel('ECC [dva]')
+plt.title('RT crowding (with flankers)')
+fig.savefig(os.path.join(plot_dir,'crowding_RT_flanker.svg'), dpi=100)
+
+# do Friedman to see if averages are different 
+# The Friedman test tests the null hypothesis that repeated measurements of the same individuals have the same distribution. 
+#It is often used to test for consistency among measurements obtained in different ways.
+
+pfriedman = friedmanchisquare(df4plot_RT_FL.loc[(df4plot_RT_FL['ecc']==4)]['RT'].values, 
+                              df4plot_RT_FL.loc[(df4plot_RT_FL['ecc']==8)]['RT'].values, 
+                              df4plot_RT_FL.loc[(df4plot_RT_FL['ecc']==12)]['RT'].values)[-1]
+if pfriedman<p_value:
+    print('RT with flankers between ecc is different, friedman with p-value = %.6f'%pfriedman)
+else:
+    print('RT with flankers between ecc is the same, p-value = %.6f'%pfriedman)
+
+##### 
 
 # VISUAL SEARCH
 
@@ -929,7 +999,7 @@ for e_ind,e in enumerate(ecc): # loop over eccentricity
 
     # save p-values of said correlations          
     pval_slope_Fix_set = pval_slope_Fix_set.append({e: pval},ignore_index=True)
-    
+
 
 ##### 
 # IF NEEDED, CAN CHOOSE A SUBJECT AND TRIAL TO PLOT THE SCANPATH OR RAW GAZE DATA ##
