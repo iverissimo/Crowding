@@ -608,76 +608,6 @@ res2way.anova_table.to_csv(os.path.join(plot_dir,'Fix_ANOVA.csv'))
 #The Spearman correlation is a nonparametric measure of the monotonicity of the relationship between two datasets. 
 #Unlike the Pearson correlation, the Spearman correlation does not assume that both datasets are normally distributed.
 
-###### CORRELATIONS RELATIVE TO ECC #######
-
-# CS VS RT ACROSS ECC
-print('\ncomparing mean CS and mean RT in VS across ecc \n')
-plot_correlation(np.nanmean(test_rt_ecc_vs,axis=-1),test_mean_cs,
-                'RT [s]','CS','CS vs RT across ecc',
-                 os.path.join(plot_dir,'CSvsRT_across-ecc.svg'),p_value=p_value)
-
-
-# CS VS RT PER ECC
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean RT in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(test_rt_ecc_vs).T[i],test_mean_cs,
-                    'RT [s]','CS','CS vs RT at %d ecc'%ecc[i],
-                     os.path.join(plot_dir,'CSvsRT_%d-ecc.svg'%ecc[i]),p_value=p_value)
-
-
-# CS VS NUMBER FIXATIONS ACROSS ECC
-print('\ncomparing mean CS and mean number Fixations in VS across ecc \n')
-plot_correlation(np.nanmean(test_fix_ecc_vs,axis=-1),test_mean_cs,
-                '# Fixations','CS','CS vs #Fix across ecc',
-                 os.path.join(plot_dir,'CSvsFix_across-ecc.svg'),p_value=p_value)
-
-
-# CS VS NUMBER FIXATIONS PER ECC
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean Number Fixations in VS for ecc %d\n'%ecc[i])
-    plot_correlation(np.array(test_fix_ecc_vs).T[i],test_mean_cs,
-                    '# Fixations','CS','CS vs #Fix at %d ecc'%ecc[i],
-                     os.path.join(plot_dir,'CSvsFix_%d-ecc.svg'%ecc[i]),p_value=p_value)
-
-
-
-###### CORRELATIONS RELATIVE TO SET SIZE #######
-
-# CS VS RT ACROSS SET SIZE
-print('\ncomparing mean CS and mean RT in VS across set size \n')
-plot_correlation(np.nanmean(test_rt_set_vs,axis=-1),test_mean_cs,
-                'RT [s]','CS','CS vs RT across set size',
-                 os.path.join(plot_dir,'CSvsRT_across-set.svg'),p_value=p_value)
-
-
-# CS VS RT PER SET SIZE
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean RT in VS for set size %d\n'%params['set_size'][i])
-    plot_correlation(np.array(test_rt_set_vs).T[i],test_mean_cs,
-                    'RT [s]','CS','CS vs RT at %d set size'%params['set_size'][i],
-                     os.path.join(plot_dir,'CSvsRT_%d-set.svg'%params['set_size'][i]),p_value=p_value)
-
-    
-# CS VS NUMBER FIXATIONS ACROSS SET SIZE
-print('\ncomparing mean CS and mean number Fixations in VS across set size \n')
-plot_correlation(np.nanmean(test_fix_set_vs,axis=-1),test_mean_cs,
-                '# Fixations','CS','CS vs #Fix across set size',
-                 os.path.join(plot_dir,'CSvsFix_across-set.svg'),p_value=p_value)
-
-
-# CS VS NUMBER FIXATIONS PER SET SIZE
-for i in range(len(np.array(test_all_cs).T)):
-    print('\ncomparing mean CS and mean Number Fixations in VS for set size %d\n'%params['set_size'][i])
-    plot_correlation(np.array(test_fix_set_vs).T[i],test_mean_cs,
-                    '# Fixations','CS','CS vs #Fix at %d set size'%params['set_size'][i],
-                     os.path.join(plot_dir,'CSvsFix_%d-set.svg'%params['set_size'][i]),p_value=p_value)
-
-
-# save correlation and respective p-values
-# per ecc and set
-# making a correlation 3x3 matrix
-# to see how this holds
- 
 ## FOR RT
     
 corr_RT = pd.DataFrame(columns=[str(x)+'_ecc' for _,x in enumerate(ecc)]+['set_size'])
@@ -690,8 +620,8 @@ for _,s in enumerate(params['set_size']): # loop over set size
     
     for _,e in enumerate(ecc): # loop over eccentricity
         
-        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,test_mean_cs,
-                    'RT [s]','CS','CS vs RT for %s ecc and %s items'%(str(e),str(s)),
+        corr,pval = plot_correlation(test_mean_cs,df_trim[str(e)+'_ecc'].values,
+                    'CS','RT [s]','CS vs RT for %s ecc and %s items'%(str(e),str(s)),
                      os.path.join(plot_dir,'CSvsRT_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value)
         
         # save correlation values         
@@ -759,10 +689,10 @@ for _,s in enumerate(params['set_size']): # loop over set size
     
     for _,e in enumerate(ecc): # loop over eccentricity
         
-        corr,pval = plot_correlation(df_trim[str(e)+'_ecc'].values,test_mean_cs,
-                    '# Fixations','CS','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
+        corr,pval = plot_correlation(test_mean_cs,df_trim[str(e)+'_ecc'].values,
+                    'CS','# Fixations','CS vs #Fix for %s ecc and %s items'%(str(e),str(s)),
                      os.path.join(plot_dir,'CSvsFix_%s-ecc_%s-set.svg'%(str(e),str(s))),p_value=p_value,
-                     x_lim = [0,10])
+                     y_lim = [0,8])
         
         # save correlation values         
         corr_fix = corr_fix.append({str(e)+'_ecc': corr, 
@@ -771,6 +701,7 @@ for _,s in enumerate(params['set_size']): # loop over set size
         # save p-values of said correlations          
         pval_fix = pval_fix.append({str(e)+'_ecc': pval, 
                                 'set_size': s},ignore_index=True)
+        
 
 # now reshape the dataframe (droping nans and making sure labels are ok)    
 corr_fix = corr_fix.apply(lambda x: pd.Series(x.dropna().values))
@@ -866,10 +797,10 @@ pval_slope_RT_ecc = pd.DataFrame(columns=params['set_size']+['all'])
   
 for _,s in enumerate(params['set_size']+['all']): # loop over eccentricity
 
-    corr,pval = plot_correlation(df_slope_RT_ecc[s].values,test_mean_cs,
-                'RT/ECC [s/dva]','CS','CS vs RT/ECC for %s items'%(str(s)),
+    corr,pval = plot_correlation(test_mean_cs,df_slope_RT_ecc[s].values,
+                'CS','RT/ECC [s/dva]','CS vs RT/ECC for %s items'%(str(s)),
                  os.path.join(plot_dir,'CSvsRT_ECC_SLOPE_%s-set.svg'%(str(s))),p_value=p_value,
-                 x_lim = [0,1],decimals=2)
+                 x_lim = [0.2,0.8],y_lim = [0,0.25],decimals=1)
 
     # save correlation values         
     corr_slope_RT_ecc = corr_slope_RT_ecc.append({s: corr},ignore_index=True)
