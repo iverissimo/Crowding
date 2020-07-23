@@ -467,7 +467,7 @@ def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
                      line_color='dimgrey',scatter_color = 'grey',
                      y_lim = [.5,2.5], x_lim = [.2,.8],decimals=1):
     
-    corr, pval = spearmanr(arr_x,arr_y)
+    corr, pval = spearmanr(arr_x,arr_y,nan_policy='omit')
 
     print('correlation = %.6f, p-value = %.6f'%(corr,pval))
     if pval<p_value:
@@ -1475,4 +1475,178 @@ def RT_crowding(data,sub,flanker=False,ecc=[4,8,12]):
                                 'sub': sub},ignore_index=True)
 
     return df_out
+
+
+def df_distance_fixations(data,eyedata,sub,ecc=[4, 8, 12],
+                           hRes=1680,vRes=1050,screenHeight=30,screenDis=57,
+                           size_gab=2.2,setsize=[5,15,30]):
+    
+    # function to compute distance between consecutive fixations across trials
+    # for visual search 
+    
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
+
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+
+    # list RT
+    RT = data['RT'].values
+
+    # radius of gabor in pixels
+    r_gabor = ang2pix(size_gab/2,screenHeight,
+                       screenDis,
+                       vRes)
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=['ecc','set_size','sub'])
+
+    for _,s in enumerate(setsize): # for all set sizes 
+        for _,e in enumerate(ecc): # for all target ecc
+
+            distance_fix = []
+            num_trial_ecc_set = 0
+
+            for t in range(len(data)): # for all actual trials 
+
+                # if key press = target orientation and specific ecc and specific set size
+                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s): 
+
+                    # index for moment when display was shown
+                    idx_display = np.where(np.array(eyedata[t]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                    # eye tracker sample time of display
+                    smp_display = eyedata[t]['events']['msg'][idx_display][0]
+
+                    # get target positions as strings in list
+                    target_pos = data['target_position'][t].replace(']','').replace('[','').split(' ')
+                    # convert to list of floats
+                    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+
+                    fix_pos = [] # to append each fixation coordinates
+                    
+                    for k,fix in enumerate(eyedata[t]['events']['Efix']):
+
+                        # if fixations between 150ms after display and key press time
+                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[t]*1000)):
+
+                            #if fixation not on target (not within target radius)
+                            fix_x = fix[-2] - hRes/2
+                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                            if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
+                                
+                                fix_pos.append(np.array([fix_x,fix_y]))
+                    
+                    if np.array((fix_pos)).shape[0]>1: # if at least two fixations
+                        #print(np.array((fix_pos)).shape)
+                        dist = []
+                        for i in range(np.array((fix_pos)).shape[0]-1):
+                            dist.append(np.sqrt((fix_pos[i][0]-fix_pos[i+1][0])**2 + (fix_pos[i][1]-fix_pos[i+1][1])**2))
+                    else:
+                        dist = [np.nan]
+                      
+                    distance_fix.append(dist) #append number of fixations for that trial value  
+                    num_trial_ecc_set+=1 # increment trial counter
+
+            #if not fix_ecc_set: # if empty
+            #    fix_ecc_set = float('Inf')
+
+            # compute mean number of fixations and save in data frame           
+            df_out = df_out.append({'fix_distance': np.array(distance_fix),
+                                    'ecc': e, 
+                                    'set_size': s,
+                                    'sub': sub},ignore_index=True)
+    
+    
+    return df_out
+
+
+def df_duration_fixations(data,eyedata,sub,ecc=[4, 8, 12],
+                           hRes=1680,vRes=1050,screenHeight=30,screenDis=57,
+                           size_gab=2.2,setsize=[5,15,30]):
+    
+    # function to compute distance between consecutive fixations across trials
+    # for visual search 
+    
+    # list of values with target ecc
+    target_ecc = data['target_ecc'].values
+    # list of values with display set size
+    target_set = data['set_size'].values
+
+    # list of strings with the orientation of the target
+    target_or = data['target_orientation'].values
+    # list of strings with orientation indicated by key press
+    key_or = data['key_pressed'].values
+
+    # list RT
+    RT = data['RT'].values
+
+    # radius of gabor in pixels
+    r_gabor = ang2pix(size_gab/2,screenHeight,
+                       screenDis,
+                       vRes)
+    # number of samples in 150ms (we'll not count with fixations prior to 150ms after stim display)
+    sample_thresh = 1000*0.150 # 1000Hz * time in seconds
+
+    # dataframe to output values
+    df_out = pd.DataFrame(columns=['ecc','set_size','sub'])
+
+    for _,s in enumerate(setsize): # for all set sizes 
+        for _,e in enumerate(ecc): # for all target ecc
+
+            all_dur_fix = []
+            num_trial_ecc_set = 0
+
+            for t in range(len(data)): # for all actual trials 
+
+                # if key press = target orientation and specific ecc and specific set size
+                if (key_or[t]==target_or[t]) and (int(target_ecc[t])==e) and (int(target_set[t])==s): 
+
+                    # index for moment when display was shown
+                    idx_display = np.where(np.array(eyedata[t]['events']['msg'])[:,-1]=='var display True\n')[0][0]
+                    # eye tracker sample time of display
+                    smp_display = eyedata[t]['events']['msg'][idx_display][0]
+
+                    # get target positions as strings in list
+                    target_pos = data['target_position'][t].replace(']','').replace('[','').split(' ')
+                    # convert to list of floats
+                    target_pos = np.array([float(val) for i,val in enumerate(target_pos) if len(val)>1])
+
+                    fix_dur = [] # to append each fixation duration
+                    
+                    for k,fix in enumerate(eyedata[t]['events']['Efix']):
+
+                        # if fixations between 150ms after display and key press time
+                        if (fix[0] > (smp_display+sample_thresh) and fix[0] < np.round(smp_display + RT[t]*1000)):
+
+                            #if fixation not on target (not within target radius)
+                            fix_x = fix[-2] - hRes/2
+                            fix_y = fix[-1] - vRes/2; fix_y = - fix_y
+
+                            if np.sqrt((fix_x-target_pos[0])**2+(fix_y-target_pos[1])**2) > r_gabor:
+                                
+                                fix_dur.append(eyedata[t]['events']['Efix'][k][2]/1000) # samples/1000Hz = seconds
+                    
+                    all_dur_fix.append(fix_dur) #append duration of fixations for that trial value  
+                    num_trial_ecc_set+=1 # increment trial counter
+
+            #if not fix_ecc_set: # if empty
+            #    fix_ecc_set = float('Inf')
+
+            # compute mean number of fixations and save in data frame           
+            df_out = df_out.append({'fix_duration': np.array(all_dur_fix),
+                                    'ecc': e, 
+                                    'set_size': s,
+                                    'sub': sub},ignore_index=True)
+    
+    
+    return df_out
+
+
 

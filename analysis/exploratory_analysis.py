@@ -33,6 +33,7 @@ plt.rcParams['font.sans-serif'] = 'Helvetica'
 import matplotlib.patches as mpatches
 
 from statsmodels.stats.anova import AnovaRM
+import itertools
 
 # open params jason file
 with open(os.path.join(os.getcwd(),'settings.json'),'r') as json_file:  
@@ -103,6 +104,8 @@ test_mean_cs = []
 
 # data frames with interesting values divided
 test_df_corr_RT_fix = pd.DataFrame(columns=['ecc','set_size','sub'])
+test_df_fix_dist = pd.DataFrame(columns=['ecc','set_size','sub'])
+test_df_fix_dur = pd.DataFrame(columns=['ecc','set_size','sub'])
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -171,6 +174,11 @@ for j in range(len(sum_measures['all_subs'])):
         # save all corr df
         test_df_corr_RT_fix = test_df_corr_RT_fix.append(df_corr,ignore_index=True)
 
+        # save all distances between consecutive fixations
+        test_df_fix_dist = test_df_fix_dist.append(df_distance_fixations(df_vs,eye_data,sum_measures['all_subs'][j]),ignore_index=True)
+        # same for durations
+        test_df_fix_dur = test_df_fix_dur.append(df_duration_fixations(df_vs,eye_data,sum_measures['all_subs'][j]),ignore_index=True)
+
 
 # dir to save extra plots, tryouts to not make a mess in output folder
 test_plot_dir = os.path.join(plot_dir,'exploratory')
@@ -192,7 +200,201 @@ corr,pval = plot_correlation(np.array(test_mean_cs).T,df_across_corr['corr'].val
                                      p_value=p_value,y_lim = [0.6,1])
 
 
+# compute mean distance between fixations in pixels, for each condition combination
+# and subject, to visualize in a boxplot 
 
+new_df4plot = pd.DataFrame(columns=['ecc','set_size','sub'])
+
+for _,sj in enumerate(test_subs):
+    
+    dist_counter = 0
+    
+    for _,s in enumerate(params['set_size']):
+        for _,e in enumerate(ecc):
+            
+            list_of_lists = test_df_fix_dist.loc[(test_df_fix_dist['ecc']==e)&\
+                     (test_df_fix_dist['set_size']==s) &\
+                    (test_df_fix_dist['sub']== sj)]['fix_distance'].values[0]
+            flattened_list = [y for x in list_of_lists for y in x]
+            
+            dist_counter += len(flattened_list)
+            
+            # compute mean number of fixations and save in data frame           
+            new_df4plot = new_df4plot.append({'fix_distance': np.nanmean(flattened_list),
+                                    'ecc': e, 
+                                    'set_size': s,
+                                    'sub': sj},ignore_index=True)
+    print(dist_counter)
+
+
+#sns.boxplot(x="ecc", y="fix_distance", hue="set_size", data=new_df4plot, palette="Set3") 
+
+# MAKE ANOVA TO SEE IF EFFECT OF ECC OR SET SIZE
+aovrm2way = AnovaRM(new_df4plot, depvar='fix_distance', subject='sub', within=['set_size', 'ecc'])
+res2way = aovrm2way.fit()
+
+print(res2way)
+
+# save it
+res2way.anova_table.to_csv(os.path.join(test_plot_dir,'FixDIST_ANOVA.csv'))
+# This implementation currently only supports fully balanced designs."
+# a couple of participants have conditions with nan, because they didnt 2 two fixations in the condition combination
+# so can't compute anova
+
+# For all ecc do separate violin plots
+# colors a bit off between legend and violin, so corrected for in inkscape
+for k,_ in enumerate(ecc):
+    colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
+                           ['#faad75','#ff6b00','#cc5702'],
+                       ['#fff5a3','#eecb5f','#f4b900']])#['#ffea80','#fff200','#dbbe00']])
+
+    df4plot_vs_FIXdist = new_df4plot.loc[new_df4plot['ecc']==ecc[k]]
+
+    fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
+    v1 = sns.violinplot(x='ecc', hue='set_size', y='fix_distance', data=df4plot_vs_FIXdist,
+                  cut=0, inner='box', palette=colors_ecc[k])
+
+    plt.legend().remove()
+    plt.xticks([], [])
+    #plt.xticks([0,1,2], ('5', '15', '30'))
+
+    v1.set(xlabel=None)
+    v1.set(ylabel=None)
+
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+
+    if k==0:
+        plt.ylabel('Distance between Fixations [pixels]',fontsize=18,labelpad=10)
+        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
+    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
+
+    plt.ylim(50,450)
+    plt.savefig(os.path.join(test_plot_dir,'search_ecc_FIX_dist_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
+    
+## correlate mean CS with mean distance between fixations per condition
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        df_trim = new_df4plot.loc[(new_df4plot['set_size'] == s)&(new_df4plot['ecc'] == e)]
+        
+        corr,pval = plot_correlation(test_mean_cs,df_trim['fix_distance'].values,
+                    'CS','Distance between Fixations [pixel]','CS vs Fixdistance for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(test_plot_dir,'CSvsDistFIX_%s-ecc_%s-set.svg'%(str(e),str(s))),
+                                     p_value=p_value, y_lim=[50,450])
+        
+
+# now do same but across trials 
+#(so aggregate all values for a subject, and compute mean overall distance between fixations of that sub)
+# maybe more sensible since not that many fixations
+
+aggregate_df4plot = pd.DataFrame(columns=['sub'])
+
+for _,sj in enumerate(test_subs):
+    
+    dist_counter = 0
+    
+    list_of_lists = [y for x in test_df_fix_dist.loc[(test_df_fix_dist['sub']== sj)]['fix_distance'].values for y in x]
+    flattened_list = [y for x in list_of_lists for y in x]
+
+    dist_counter += len(flattened_list)
+
+    # compute mean number of fixations and save in data frame           
+    aggregate_df4plot = aggregate_df4plot.append({'fix_distance': np.nanmean(flattened_list),
+                            'sub': sj},ignore_index=True)
+    print(dist_counter)
+
+
+corr,pval = plot_correlation(test_mean_cs,aggregate_df4plot['fix_distance'].values,
+                    'CS','Distance between Fixations [pixel]','CS vs Fixdistance all',
+                     os.path.join(test_plot_dir,'CSvsDistFIX_all.svg'),
+                                     p_value=p_value, y_lim=[50,450])
+        
+# compute mean duration of each fixations in seconds, for each condition combination
+# and subject, to visualize in a boxplot 
+
+dur_df4plot = pd.DataFrame(columns=['ecc','set_size','sub'])
+
+for _,sj in enumerate(test_subs):
+    
+    dist_counter = 0
+    
+    for _,s in enumerate(params['set_size']):
+        for _,e in enumerate(ecc):
+            
+            list_of_lists = test_df_fix_dur.loc[(test_df_fix_dur['ecc']==e)&\
+                     (test_df_fix_dur['set_size']==s) &\
+                    (test_df_fix_dur['sub']== sj)]['fix_duration'].values[0]
+            flattened_list = [y for x in list_of_lists for y in x]
+            
+            dist_counter += len(flattened_list)
+            
+            # compute mean number of fixations and save in data frame           
+            dur_df4plot = dur_df4plot.append({'fix_duration': np.nanmean(flattened_list),
+                                    'ecc': e, 
+                                    'set_size': s,
+                                    'sub': sj},ignore_index=True)
+    print(dist_counter)
+
+
+#sns.boxplot(x="ecc", y="fix_duration", hue="set_size", data=dur_df4plot, palette="Set3") 
+
+# MAKE ANOVA TO SEE IF EFFECT OF ECC OR SET SIZE
+aovrm2way = AnovaRM(dur_df4plot, depvar='fix_duration', subject='sub', within=['set_size', 'ecc'])
+res2way = aovrm2way.fit()
+
+print(res2way)
+
+# save it
+res2way.anova_table.to_csv(os.path.join(test_plot_dir,'FixDUR_ANOVA.csv'))
+
+# For all ecc do separate violin plots
+# colors a bit off between legend and violin, so corrected for in inkscape
+for k,_ in enumerate(ecc):
+    colors_ecc = np.array([['#ff8c8c','#e31a1c','#870000'],
+                           ['#faad75','#ff6b00','#cc5702'],
+                       ['#fff5a3','#eecb5f','#f4b900']])#['#ffea80','#fff200','#dbbe00']])
+
+    df4plot_vs_FIXdur = dur_df4plot.loc[dur_df4plot['ecc']==ecc[k]]
+
+    fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
+    v1 = sns.violinplot(x='ecc', hue='set_size', y='fix_duration', data=df4plot_vs_FIXdur,
+                  cut=0, inner='box', palette=colors_ecc[k])
+
+    plt.legend().remove()
+    plt.xticks([], [])
+    #plt.xticks([0,1,2], ('5', '15', '30'))
+
+    v1.set(xlabel=None)
+    v1.set(ylabel=None)
+
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+
+    if k==0:
+        plt.ylabel('Fixation Duration [s]',fontsize=18,labelpad=10)
+        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
+    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
+
+    plt.ylim(.125,.350)
+    plt.savefig(os.path.join(test_plot_dir,'search_ecc_FIX_dur_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
+    
+
+## correlate mean CS with mean fixations duration per condition
+
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        df_trim = dur_df4plot.loc[(dur_df4plot['set_size'] == s)&(dur_df4plot['ecc'] == e)]
+        
+        corr,pval = plot_correlation(test_mean_cs,df_trim['fix_duration'].values,
+                    'CS','Fixations duration [s]','CS vs Fix duration for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(test_plot_dir,'CSvsDurFIX_%s-ecc_%s-set.svg'%(str(e),str(s))),
+                                     p_value=p_value, y_lim=[.125,.350])
+        
 
 
 
