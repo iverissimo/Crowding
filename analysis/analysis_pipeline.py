@@ -297,6 +297,15 @@ for g,_ in enumerate(ecc):
 
 
 # SHOW INDIVIDUAL SUB CS DISTRIBITUION PER ECC
+
+crwd_df4plot = pd.DataFrame([])
+
+for w in range(len(ecc)):
+    cs_ecc = [test_all_cs[val][w] for val in range(len(test_all_cs))]
+    crwd_df4plot = crwd_df4plot.append(pd.DataFrame({'ecc': np.tile(ecc[w],len(cs_ecc)),
+                                  'cs':cs_ecc,
+                                    'sub':np.array(test_subs)}),ignore_index=True)
+
 fig= plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
 
 sns.lineplot(x='ecc', y='cs', data=crwd_df4plot,estimator='mean')
