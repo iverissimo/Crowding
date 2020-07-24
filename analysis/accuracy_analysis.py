@@ -246,6 +246,26 @@ for k,_ in enumerate(ecc):
     plt.savefig(os.path.join(plot_dir,'search_ecc_ACC_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
     
 
+# make table with search accuracy
+data_ACC_SEARCH = [{'4 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==5]['4_ecc'].values), 
+                  '8 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==5]['8_ecc'].values), 
+                  '12 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==5]['12_ecc'].values),
+                  }, 
+                 {'4 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==15]['4_ecc'].values), 
+                  '8 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==15]['8_ecc'].values), 
+                  '12 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==15]['12_ecc'].values),
+                  }, 
+                  {'4 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==30]['4_ecc'].values), 
+                  '8 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==30]['8_ecc'].values), 
+                  '12 dva': np.mean(test_df_vs_accuracy.loc[test_df_vs_accuracy['set_size']==30]['12_ecc'].values),
+                  }] 
+  
+# Creates padas DataFrame by passing  
+# Lists of dictionaries and row index. 
+df_ACC_SEARCH = pd.DataFrame(data_ACC_SEARCH, index =['5 items', '15 items','30 items']) 
+
+df_ACC_SEARCH.to_csv(os.path.join(plot_dir,'accuracy_search.csv'))
+
 ## IMPLEMENT ANOVA WITH STATSMODEL
 ## FOR ACCURACY ##
 
