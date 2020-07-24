@@ -225,7 +225,7 @@ for k,_ in enumerate(ecc):
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
     v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='Accuracy', data=df4plot_vs_accuracy,
-                  cut=0, inner='box', palette=colors_ecc[k])
+                  cut=0, inner='box', palette=colors_ecc[k],linewidth=3)
 
     plt.legend().remove()
     plt.xticks([], [])

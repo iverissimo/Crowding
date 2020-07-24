@@ -308,7 +308,7 @@ fig.savefig(os.path.join(plot_dir,'crowding_CS_ecc_all.svg'), dpi=100)
 
 # BOXPLOTS WITH CS PER ECC
 fig = plt.figure(num=None, figsize=(15,7.5), dpi=100, facecolor='w', edgecolor='k')
-v1 = sns.violinplot(x='ecc', y='cs', data=crwd_df4plot,cut=0, inner='box', palette='YlOrRd_r')#ax.margins(y=0.05)
+v1 = sns.violinplot(x='ecc', y='cs', data=crwd_df4plot,cut=0, inner='box', palette='YlOrRd_r',linewidth=3)#ax.margins(y=0.05)
 v1.set(xlabel=None)
 v1.set(ylabel=None)
 #plt.margins(y=0.025)
@@ -474,7 +474,7 @@ for k,_ in enumerate(ecc):
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
     v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='RT [s]', data=df4plot_RT_set_ecc,
-                  cut=0, inner='box', palette=colors_ecc[k])
+                  cut=0, inner='box', palette=colors_ecc[k],linewidth=3)
 
     plt.legend().remove()
     plt.xticks([], [])
@@ -565,7 +565,7 @@ for k,_ in enumerate(ecc):
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
     v1 = sns.violinplot(x='Target eccentricity [dva]', hue='set_size', y='# Fixations', data=df4plot_fix_set_ecc,
-                  cut=0, inner='box', palette=colors_ecc[k])
+                  cut=0, inner='box', palette=colors_ecc[k],linewidth=3)
 
     plt.legend().remove()
     plt.xticks([], [])
