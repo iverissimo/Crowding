@@ -252,7 +252,7 @@ for k,_ in enumerate(ecc):
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
     v1 = sns.violinplot(x='ecc', hue='set_size', y='fix_distance', data=df4plot_vs_FIXdist,
-                  cut=0, inner='box', palette=colors_ecc[k])
+                  cut=0, inner='box', palette=colors_ecc[k],linewidth=3)
 
     plt.legend().remove()
     plt.xticks([], [])
@@ -361,7 +361,7 @@ for k,_ in enumerate(ecc):
 
     fig = plt.figure(num=None, figsize=(7.5,7.5), dpi=100, facecolor='w', edgecolor='k')
     v1 = sns.violinplot(x='ecc', hue='set_size', y='fix_duration', data=df4plot_vs_FIXdur,
-                  cut=0, inner='box', palette=colors_ecc[k])
+                  cut=0, inner='box', palette=colors_ecc[k],linewidth=3)
 
     plt.legend().remove()
     plt.xticks([], [])
@@ -391,7 +391,7 @@ for _,s in enumerate(params['set_size']): # loop over set size
         df_trim = dur_df4plot.loc[(dur_df4plot['set_size'] == s)&(dur_df4plot['ecc'] == e)]
         
         corr,pval = plot_correlation(test_mean_cs,df_trim['fix_duration'].values,
-                    'CS','Fixations duration [s]','CS vs Fix duration for %s ecc and %s items'%(str(e),str(s)),
+                    'CS','Fixation duration [s]','CS vs Fix duration for %s ecc and %s items'%(str(e),str(s)),
                      os.path.join(test_plot_dir,'CSvsDurFIX_%s-ecc_%s-set.svg'%(str(e),str(s))),
                                      p_value=p_value, y_lim=[.125,.350])
         
