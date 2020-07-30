@@ -491,7 +491,8 @@ def plot_correlation(arr_x,arr_y,label_x,label_y,plt_title,outfile,p_value=0.05,
     plt.ylim(y_lim) #y_lim[0],None)
     plt.xlim(x_lim)
     
-    plt.xticks(np.round(np.linspace(x_lim[0], np.round(max(arr_x),decimals=decimals), num=4),decimals=decimals),fontsize = 12)
+    #plt.xticks(np.round(np.linspace(x_lim[0], np.round(max(arr_x),decimals=decimals), num=4),decimals=decimals),fontsize = 12)
+    plt.xticks(np.round(np.linspace(x_lim[0], x_lim[1], num=7),decimals=decimals),fontsize = 12)
     plt.yticks(fontsize = 12)
     
     

@@ -323,12 +323,12 @@ v1.set(ylabel=None)
 #plt.margins(y=0.025)
 #sns.swarmplot(x='ecc', y='cs', data=crwd_df4plot,color=".25",alpha=0.5)
 #plt.plot(np.array(test_all_cs).T,'r-o',c='k',alpha=0.1)#c='grey',alpha=0.5)
-plt.xticks(fontsize = 12)
-plt.yticks(fontsize = 12)
+plt.xticks(fontsize = 20)
+plt.yticks(fontsize = 20)
 
 #plt.title('Critical spacing distribution across eccentricity',fontsize=18,pad=10)
-plt.xlabel('Eccentricity [dva]',fontsize=16,labelpad=10)
-plt.ylabel('Critical Spacing',fontsize=16,labelpad=10)
+plt.xlabel('Eccentricity [dva]',fontsize=30,labelpad=16)
+plt.ylabel('Critical Spacing',fontsize=30,labelpad=16)
 plt.ylim(0.2,0.8)
 
 fig.savefig(os.path.join(plot_dir,'crowding_meanCS-ecc-violinplot.svg'), dpi=100)
@@ -492,13 +492,14 @@ for k,_ in enumerate(ecc):
     v1.set(xlabel=None)
     v1.set(ylabel=None)
 
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
+    plt.xticks(fontsize = 20)
+    plt.yticks(fontsize = 20)
 
     if k==0:
-        plt.ylabel('RT [s]',fontsize=18,labelpad=10)
-        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
-    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
+        plt.ylabel('RT [s]',fontsize=30,labelpad=16)
+    elif k==1:
+        plt.xlabel('Set Size [items]',fontsize=30,labelpad=40)
+    plt.title('%d dva'%ecc[k],fontsize=30,pad=12)
 
     plt.ylim(0.25,3)
     plt.savefig(os.path.join(plot_dir,'search_ecc_RT_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
@@ -583,13 +584,14 @@ for k,_ in enumerate(ecc):
     v1.set(xlabel=None)
     v1.set(ylabel=None)
 
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
+    plt.xticks(fontsize = 20)
+    plt.yticks(fontsize = 20)
 
     if k==0:
-        plt.ylabel('# Fixations',fontsize=18,labelpad=10)
-        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
-    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
+        plt.ylabel('# Fixations',fontsize=30,labelpad=16)
+    elif k==1:
+        plt.xlabel('Set Size [items]',fontsize=30,labelpad=40)
+    plt.title('%d dva'%ecc[k],fontsize=30,pad=12)
 
     plt.ylim(0,10)
     plt.savefig(os.path.join(plot_dir,'search_ecc_numfix_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
@@ -881,7 +883,7 @@ pval_slope_RT_set = pd.DataFrame(columns=ecc+['all'])
 for _,e in enumerate(ecc+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(test_mean_cs,df_slope_RT_set[e].values,
-                'CS','RT/SET [s/item]','CS vs RT/SET for %s ecc'%(str(e)),
+                'CS','RT/set size [s/item]','CS vs RT/set size for %s ecc'%(str(e)),
                  os.path.join(plot_dir,'CSvsRT_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value,
                  x_lim = [0.2,0.8],y_lim = [0,0.05],decimals=1)
 
@@ -900,7 +902,7 @@ pval_slope_Fix_set = pd.DataFrame(columns=ecc+['all'])
 for _,e in enumerate(ecc+['all']): # loop over eccentricity
 
     corr,pval = plot_correlation(test_mean_cs,df_slope_Fix_set[e].values,
-                'CS','Fix/SET [fix/item]','CS vs Fix/SET for %s ecc'%(str(e)),
+                'CS','# Fixations/set size [fix/item]','CS vs # Fixations/set size for %s ecc'%(str(e)),
                  os.path.join(plot_dir,'CSvsFix_SET_SLOPE_%s-ecc.svg'%(str(e))),p_value=p_value,
                  x_lim = [0.2,0.8],y_lim = [0,0.25],decimals=1)
 
@@ -980,7 +982,7 @@ pval_slope_RT_set = pd.DataFrame(columns=ecc+['all'])
 for e_ind,e in enumerate(ecc): # loop over eccentricity
 
     corr,pval = plot_correlation(np.array(test_all_cs).T[e_ind],df_slope_RT_set[e].values,
-                'CS','RT/SET [s/item]','CS vs RT/SET for %s ecc'%(str(e)),
+                'CS','RT/set size [s/item]','CS vs RT/set size for %s ecc'%(str(e)),
                  os.path.join(plot_dir,'CSvsRT_SET_SLOPE_%s-ecc_CS-%sdva.svg'%(str(e),str(e))),p_value=p_value,
                  x_lim = [0.19,0.81],y_lim = [0,0.05],decimals=1)
 
@@ -999,7 +1001,7 @@ pval_slope_Fix_set = pd.DataFrame(columns=ecc+['all'])
 for e_ind,e in enumerate(ecc): # loop over eccentricity
 
     corr,pval = plot_correlation(np.array(test_all_cs).T[e_ind],df_slope_Fix_set[e].values,
-                'CS','Fix/SET [fix/item]','CS vs Fix/SET for %s ecc'%(str(e)),
+                'CS','# Fixations/set size [fix/item]','CS vs # Fixations/set size for %s ecc'%(str(e)),
                  os.path.join(plot_dir,'CSvsFix_SET_SLOPE_%s-ecc_CS-%sdva.svg'%(str(e),str(e))),p_value=p_value,
                  x_lim = [0.19,0.81],y_lim = [0,0.25],decimals=1)
 
