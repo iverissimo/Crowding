@@ -234,13 +234,14 @@ for k,_ in enumerate(ecc):
     v1.set(xlabel=None)
     v1.set(ylabel=None)
 
-    plt.xticks(fontsize = 14)
-    plt.yticks(fontsize = 14)
+    plt.xticks(fontsize = 20)
+    plt.yticks(fontsize = 20)
 
     if k==0:
-        plt.ylabel('Accuracy',fontsize=18,labelpad=10)
-        plt.xlabel('Set Size [items]',fontsize=18,labelpad=35)
-    plt.title('%d dva'%ecc[k],fontsize=22,pad=10)
+        plt.ylabel('Accuracy',fontsize=30,labelpad=16)
+    elif k==1:
+        plt.xlabel('Set Size [items]',fontsize=30,labelpad=40)
+    plt.title('%d dva'%ecc[k],fontsize=30,pad=12)
 
     plt.ylim(0.7,1)
     plt.savefig(os.path.join(plot_dir,'search_ecc_ACC_violin_%decc.svg'%ecc[k]), dpi=100,bbox_inches = 'tight')
