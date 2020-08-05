@@ -106,6 +106,8 @@ test_mean_cs = []
 test_df_corr_RT_fix = pd.DataFrame(columns=['ecc','set_size','sub'])
 test_df_fix_dist = pd.DataFrame(columns=['ecc','set_size','sub'])
 test_df_fix_dur = pd.DataFrame(columns=['ecc','set_size','sub'])
+test_df_fix_times_dur = pd.DataFrame(columns=['ecc','set_size','sub'])
+
 
 for j in range(len(sum_measures['all_subs'])):
     
@@ -135,6 +137,16 @@ for j in range(len(sum_measures['all_subs'])):
         
         # reunite RT and fixations for all trials
         df_RT_fix = df_all_trial_RT_fix(df_vs,eye_data,sum_measures['all_subs'][j])
+
+        # save average number of fixations times x duration
+        # note that sum of empty list is 0, hence exception
+        df_fix_dur = df_duration_fixations(df_vs,eye_data,sum_measures['all_subs'][j])
+        test_df_fix_times_dur = test_df_fix_times_dur.append(pd.DataFrame({'fix_times_dur': pd.DataFrame([np.mean([np.sum(x) for _,x in enumerate(df_fix_dur['fix_duration'].iloc[ind]) if np.sum(x)!=0])] for ind in range(len(df_fix_dur['fix_duration'])))[0],
+                                                            'ecc': df_fix_dur['ecc'], 
+                                                            'set_size': df_fix_dur['set_size'],
+                                                            'sub': np.tile(sum_measures['all_subs'][j],len(df_fix_dur['ecc']))}),
+                                                            ignore_index=True)
+       
 
         # dataframe to output values
         df_corr = pd.DataFrame(columns=['ecc','set_size','sub'])
@@ -177,7 +189,7 @@ for j in range(len(sum_measures['all_subs'])):
         # save all distances between consecutive fixations
         test_df_fix_dist = test_df_fix_dist.append(df_distance_fixations(df_vs,eye_data,sum_measures['all_subs'][j]),ignore_index=True)
         # same for durations
-        test_df_fix_dur = test_df_fix_dur.append(df_duration_fixations(df_vs,eye_data,sum_measures['all_subs'][j]),ignore_index=True)
+        test_df_fix_dur = test_df_fix_dur.append(df_fix_dur,ignore_index=True)
 
 
 # dir to save extra plots, tryouts to not make a mess in output folder
@@ -396,7 +408,20 @@ for _,s in enumerate(params['set_size']): # loop over set size
                                      p_value=p_value, y_lim=[.125,.350])
         
 
+## TO ADD
+# compute average #fix x fix-duration and correlate to CS
 
+for _,s in enumerate(params['set_size']): # loop over set size
+    
+    for _,e in enumerate(ecc): # loop over eccentricity
+        
+        df_trim = test_df_fix_times_dur.loc[(test_df_fix_times_dur['set_size'] == s)&(test_df_fix_times_dur['ecc'] == e)]
+        
+        corr,pval = plot_correlation(test_mean_cs,df_trim['fix_times_dur'].values,
+                    'CS','# Fixations * duration [s]','CS vs Fix * duration for %s ecc and %s items'%(str(e),str(s)),
+                     os.path.join(test_plot_dir,'CSvsFIX_times_Dur_%s-ecc_%s-set.svg'%(str(e),str(s))),
+                                     p_value=p_value, y_lim=[.17,2.5])
+        
 
 
 
